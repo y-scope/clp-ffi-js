@@ -1,0 +1,6 @@
+# production
+/build
+
+# IDEs
+/.idea
+/.vscode
