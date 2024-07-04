@@ -10,12 +10,3 @@
 [submodule "src/submodules/zstd"]
 	path = src/submodules/zstd
 	url = https://github.com/facebook/zstd.git
-[submodule "src/submodules/src/submodules/fmt"]
-	path = src/submodules/src/submodules/fmt
-	url = https://github.com/fmtlib/fmt.git
-[submodule "src/submodules/src/submodules/spdlog"]
-	path = src/submodules/src/submodules/spdlog
-	url = https://github.com/gabime/spdlog.git
-[submodule "src/submodules/src/submodules/zstd"]
-	path = src/submodules/src/submodules/zstd
-	url = https://github.com/facebook/zstd.git
