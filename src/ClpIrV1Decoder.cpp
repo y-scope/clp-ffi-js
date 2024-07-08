@@ -10,7 +10,8 @@
 #include "spdlog/spdlog.h"
 #include "types.hpp"
 
-static constexpr size_t cDefaultInitialNumLogEvents = 500'000;
+static constexpr size_t cDefaultNumCharsPerMessage = 512;
+static constexpr size_t cDefaultNumLogEvents = 500'000;
 static constexpr size_t cFullRangeEndIdx = 0;
 static constexpr size_t cLogLevelNone = 0;
 
@@ -77,7 +78,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
         results.set("numInvalidEvents", end_idx - begin_idx);
         return results;
     } else if (m_log_events.empty()) {
-        m_log_events.reserve(cDefaultInitialNumLogEvents);
+        m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto const result{m_deserializer.deserialize_log_event()};
             if (result.has_error()) {
@@ -108,13 +109,15 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         return emscripten::val::null();
     }
 
+    std::string message;
+    message.reserve(cDefaultNumCharsPerMessage);
     emscripten::val results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
             m_log_events.data() + begin_idx,
             end_idx - begin_idx
     );
     for (auto const& log_event : log_events_span) {
-        std::string message;
+        message.clear();
 
         // TODO: Replace below handlers code by an OSS decoding method once it's added in the future
         auto constant_handler = [&](std::string const& value, size_t begin_pos, size_t length) {
