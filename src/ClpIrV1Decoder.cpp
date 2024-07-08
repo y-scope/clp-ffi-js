@@ -116,6 +116,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     for (auto const& log_event : log_events_span) {
         std::string message;
 
+        // TODO: Replace below handlers code by an OSS decoding method once it's added in the future
         auto constant_handler = [&](std::string const& value, size_t begin_pos, size_t length) {
             message.append(value, begin_pos, length);
         };
