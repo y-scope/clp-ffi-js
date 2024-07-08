@@ -1,0 +1,86 @@
+version: "3"
+
+includes:
+  utils: "tools/yscope-dev-utils/taskfiles/utils.yml"
+
+vars:
+  # Paths
+  G_BUILD_DIR: "{{.ROOT_DIR}}/build"
+  G_EMSCIPRTEN_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_WSAM_BUILD_DIR: "{{.G_BUILD_DIR}}/wasm"
+
+tasks:
+  default:
+    deps: ["wasm"]
+
+  clean:
+    cmds:
+      - task: "clean-emscripten"
+      - task: "clean-wasm"
+      - "rm -rf '{{.G_BUILD_DIR}}'"
+
+  clean-emscripten:
+    cmds:
+      - "rm -rf '{{.G_EMSCIPRTEN_DIR}}'"
+
+  clean-wasm:
+    cmds:
+      - "rm -rf '{{.G_WSAM_BUILD_DIR}}'"
+
+  emscripten:
+    deps:
+      - "init"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_EMSCIPRTEN_DIR}}"
+    cmds:
+      - task: "clean-emscripten"
+      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSCIPRTEN_DIR}}'"
+      - |-
+        cd {{.G_EMSCIPRTEN_DIR}}
+        ./emsdk install latest
+        ./emsdk activate latest
+      # This comamnd must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+    sources: ["{{.TASKFILE}}"]
+    generates: ["{{.CHECKSUM_FILE}}"]
+
+  wasm:
+    deps:
+      - "emscripten"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      CMAKE_TOOLCHAIN_FILE: "{{.G_EMSCIPRTEN_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+      OUTPUT_DIR: "{{.G_WSAM_BUILD_DIR}}"
+    cmds:
+      - task: "clean-wasm"
+      - "mkdir '{{.OUTPUT_DIR}}'"
+      - |-
+        cd "{{.OUTPUT_DIR}}"
+        cmake "{{.ROOT_DIR}}" -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE"={{.CMAKE_TOOLCHAIN_FILE}}"
+        make
+      # This comamnd must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+    sources: ["src/**/*"]
+    generates: ["{{.CHECKSUM_FILE}}"]
+
+  init:
+    internal: true
+    run: "once"
+    slient: true
+    cmds:
+      - "mkdir -p '{{.G_BUILD_DIR}}'"

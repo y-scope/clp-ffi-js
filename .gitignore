@@ -1,6 +1,7 @@
 # production
-/build
+build
+.task
 
 # IDEs
-/.idea
-/.vscode
+.idea
+.vscode
