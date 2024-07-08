@@ -150,9 +150,9 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         }
 
         size_t log_level{cLogLevelNone};
-        for (auto const& log_level_name : cLogLevelNames) {
-            if (message.substr(1).starts_with(log_level_name)) {
-                log_level = &log_level_name - cLogLevelNames.data();
+        for (size_t i = 1; i < cLogLevelNames.size(); ++i) {
+            if (message.substr(1).starts_with(cLogLevelNames[i])) {
+                log_level = i;
                 break;
             }
         }

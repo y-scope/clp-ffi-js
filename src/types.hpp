@@ -3,8 +3,8 @@
 
 #include <array>
 
-constexpr std::array<char const*, 7> cLogLevelNames = {
-        nullptr,
+constexpr std::array<std::string_view, 7> cLogLevelNames = {
+        "NONE",  // This should not be used.
         "TRACE",
         "DEBUG",
         "INFO",
