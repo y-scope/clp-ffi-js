@@ -46,12 +46,12 @@ public:
 private:
     // Constructor
     explicit ClpIrV1Decoder(
-            std::vector<char const> data_buffer,
+            std::unique_ptr<char const[]> data_buffer,
             std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
     );
 
-    std::vector<char const> m_data_buffer;
+    std::unique_ptr<char const[]> m_data_buffer;
     clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> m_deserializer;
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_log_events;
     clp::TimestampPattern m_ts_pattern;

@@ -18,12 +18,12 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
     auto length = data_array["length"].as<size_t>();
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
-    auto data_buffer = std::vector<char const>(length);
+    auto data_buffer = std::make_unique<char const[]>(length);
     emscripten::val::module_property("HEAPU8")
-            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
+            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.get()));
 
     auto zstd_decompressor = std::make_shared<clp::streaming_compression::zstd::Decompressor>();
-    zstd_decompressor->open(data_buffer.data(), length);
+    zstd_decompressor->open(data_buffer.get(), length);
 
     bool is_four_bytes_encoding{true};
     if (auto const err{
@@ -55,7 +55,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
 }
 
 ClpIrV1Decoder::ClpIrV1Decoder(
-        std::vector<char const> data_buffer,
+        std::unique_ptr<char const[]> data_buffer,
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
@@ -95,7 +95,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
             }
             m_log_events.emplace_back(result.value());
         }
-        m_data_buffer.clear();
+        m_data_buffer.reset(nullptr);
     }
 
     results.set("numValidEvents", m_log_events.size());
