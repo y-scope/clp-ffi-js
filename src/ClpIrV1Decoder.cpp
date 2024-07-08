@@ -65,8 +65,6 @@ ClpIrV1Decoder::ClpIrV1Decoder(
     m_ts_pattern = m_deserializer.get_timestamp_pattern();
 }
 
-ClpIrV1Decoder::~ClpIrV1Decoder() {}
-
 size_t ClpIrV1Decoder::get_estimated_num_events() {
     return m_log_events.size();
 }

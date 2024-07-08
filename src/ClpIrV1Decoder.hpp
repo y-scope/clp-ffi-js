@@ -24,7 +24,7 @@ public:
     [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder*;
 
     // Destructor
-    ~ClpIrV1Decoder();
+    ~ClpIrV1Decoder() = default;
 
     // Explicitly disable copy and move constructor/assignment
     ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
