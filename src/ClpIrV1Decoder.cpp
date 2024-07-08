@@ -65,11 +65,11 @@ ClpIrV1Decoder::ClpIrV1Decoder(
     m_ts_pattern = m_deserializer.get_timestamp_pattern();
 }
 
-size_t ClpIrV1Decoder::get_estimated_num_events() {
+auto ClpIrV1Decoder::get_estimated_num_events() -> size_t {
     return m_log_events.size();
 }
 
-emscripten::val ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) {
+auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
     emscripten::val results = emscripten::val::object();
     if (cFullRangeEndIdx != end_idx) {
         SPDLOG_ERROR("Partial range indexing building is not yet supported.");
@@ -103,7 +103,7 @@ emscripten::val ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) {
     return results;
 }
 
-emscripten::val ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) {
+auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val {
     if (m_log_events.size() < end_idx) {
         return emscripten::val::null();
     }
