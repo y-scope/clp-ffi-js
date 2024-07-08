@@ -15,14 +15,14 @@ static constexpr size_t cFullRangeEndIdx = 0;
 static constexpr size_t cLogLevelNone = 0;
 
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder* {
-    auto length = data_array["length"].as<size_t>();
+    auto length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
-    auto data_buffer = std::make_unique<char const[]>(length);
+    auto data_buffer{std::make_unique<char const[]>(length)};
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.get()));
 
-    auto zstd_decompressor = std::make_shared<clp::streaming_compression::zstd::Decompressor>();
+    auto zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.get(), length);
 
     bool is_four_bytes_encoding{true};
