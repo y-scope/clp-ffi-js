@@ -1,6 +1,7 @@
 # Build
 .task
 build
+cmake-build-*
 
 # IDEs
 .idea
