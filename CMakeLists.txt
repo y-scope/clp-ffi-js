@@ -59,6 +59,8 @@ target_include_directories(
         ClpIrV1Decoder
         PRIVATE
         ${BOOST_EXTRACT_DIR}
+        src/
+        src/submodules/clp/components/core/src
         src/submodules/clp/components/core/src/clp
         src/submodules/clp/components/core/submodules
         src/submodules/fmt/include
