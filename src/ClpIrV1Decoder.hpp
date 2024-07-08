@@ -7,6 +7,9 @@
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 
+/**
+ * Deserializes Zstd-compressed CLP IR V1 byte streams and formats extracted log events.
+ */
 class ClpIrV1Decoder {
 public:
     /**
