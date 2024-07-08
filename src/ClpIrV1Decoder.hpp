@@ -32,6 +32,8 @@ public:
     // Explicitly disable copy and move constructor/assignment
     ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
     ClpIrV1Decoder& operator=(ClpIrV1Decoder const&) = delete;
+    ClpIrV1Decoder(ClpIrV1Decoder&&) = delete;
+    ClpIrV1Decoder& operator=(ClpIrV1Decoder&&) = delete;
 
     /**
      * Calculates the estimated number of events stored in the log.
