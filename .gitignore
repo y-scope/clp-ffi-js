@@ -1,6 +1,6 @@
-# production
-build
+# Build
 .task
+build
 
 # IDEs
 .idea
