@@ -27,6 +27,7 @@ set(CMAKE_EXECUTABLE_SUFFIX ".js")
 add_executable(
         ClpIrV1Decoder
 
+        src/bindings.cpp
         src/ClpIrV1Decoder.cpp
 
         src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
