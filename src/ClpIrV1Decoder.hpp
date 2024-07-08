@@ -22,7 +22,7 @@ public:
      *
      * @param data_array JS Uint8Array which contains the Zstd-compressed CLP IR V1 bytes.
      * @return the created instance.
-     * @throw std::exception if any error occurs.
+     * @throw DecodingException if any error occurs.
      */
     [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder*;
 

@@ -10,6 +10,9 @@
 #include "spdlog/spdlog.h"
 #include "types.hpp"
 
+// Constants
+static constexpr char cIsNotFourByteEncErrorMessage[] = "Is not four byte encoding.";
+
 static constexpr size_t cDefaultNumCharsPerMessage = 512;
 static constexpr size_t cDefaultNumLogEvents = 500'000;
 static constexpr size_t cFullRangeEndIdx = 0;
@@ -35,9 +38,14 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         SPDLOG_CRITICAL("Failed to decode encoding type.");
         throw err;
     }
+
     if (false == is_four_bytes_encoding) {
-        SPDLOG_CRITICAL("Is not four byte encoding.");
-        throw std::exception();
+        throw DecodingException(
+                clp::ErrorCode::ErrorCode_Unsupported,
+                __FILENAME__,
+                __LINE__,
+                cIsNotFourByteEncErrorMessage
+        );
     }
     auto result{clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>::create(
             *zstd_decompressor
@@ -49,7 +57,12 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 error_code.category().name(),
                 error_code.message()
         );
-        throw std::exception();
+        throw DecodingException(
+                clp::ErrorCode::ErrorCode_MetadataCorrupted,
+                __FILENAME__,
+                __LINE__,
+                "Failed to decompress"
+        );
     }
 
     return new ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
@@ -71,12 +84,13 @@ auto ClpIrV1Decoder::get_estimated_num_events() -> size_t {
 }
 
 auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
-    emscripten::val results{emscripten::val::object()};
     if (cFullRangeEndIdx != end_idx) {
-        SPDLOG_ERROR("Partial range indexing building is not yet supported.");
-        results.set("numValidEvents", 0);
-        results.set("numInvalidEvents", end_idx - begin_idx);
-        return results;
+        throw DecodingException(
+                clp::ErrorCode::ErrorCode_Unsupported,
+                __FILENAME__,
+                __LINE__,
+                "Partial range indexing building is not yet supported."
+        );
     } else if (m_log_events.empty()) {
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
@@ -91,6 +105,12 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
                             error.category().name(),
                             error.message()
                     );
+                    throw DecodingException(
+                            clp::ErrorCode::ErrorCode_Corrupt,
+                            __FILENAME__,
+                            __LINE__,
+                            "Failed to decompress."
+                    );
                 }
                 break;
             }
@@ -99,6 +119,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
         m_data_buffer.reset(nullptr);
     }
 
+    emscripten::val results{emscripten::val::object()};
     results.set("numValidEvents", m_log_events.size());
     results.set("numInvalidEvents", 0);
     return results;
