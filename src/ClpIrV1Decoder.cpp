@@ -70,7 +70,7 @@ auto ClpIrV1Decoder::get_estimated_num_events() -> size_t {
 }
 
 auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
-    emscripten::val results = emscripten::val::object();
+    emscripten::val results{emscripten::val::object()};
     if (cFullRangeEndIdx != end_idx) {
         SPDLOG_ERROR("Partial range indexing building is not yet supported.");
         results.set("numValidEvents", 0);
@@ -108,7 +108,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         return emscripten::val::null();
     }
 
-    emscripten::val results = emscripten::val::array();
+    emscripten::val results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
             m_log_events.data() + begin_idx,
             end_idx - begin_idx
@@ -145,7 +145,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
             break;
         }
 
-        size_t log_level = cLogLevelNone;
+        size_t log_level{cLogLevelNone};
         for (auto const& log_level_name : cLogLevelNames) {
             if (message.substr(1).starts_with(log_level_name)) {
                 log_level = &log_level_name - cLogLevelNames.data();
