@@ -1,12 +1,32 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(ClpIrV1Decoder)
+include(ExternalProject)
+
+project(ClpIrV1Decoder
+    LANGUAGES CXX C
+)
+
+# Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20 sources.
+if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
+    message(FATAL_ERROR "This project is intended to be built with Unix Makefiles on a Unix system.")
+endif()
+
+# Enable compile commands by default if the generator supports it.
+if (NOT CMAKE_EXPORT_COMPILE_COMMANDS)
+    set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
+        "Enable/Disable output of compile commands during generation." FORCE)
+endif()
+
+# Set the default build type to Release if not specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)." FORCE)
+endif()
 
 # Download and extract Boost
-set(BOOST_VERSION "1.85.0")
+set(BOOST_VERSION "1.85.0" CACHE STRING "Version of Boost library to be used when compiling CLP sources.")
 string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 
-include(ExternalProject)
 ExternalProject_Add(
         Boost
         URL "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
