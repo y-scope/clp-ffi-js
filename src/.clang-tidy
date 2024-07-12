@@ -1,5 +1,7 @@
 ---
-Checks: >- 
+Checks: >-
+  -modernize-deprecated-headers,
+  -misc-include-cleaner,
   bugprone-*,
   -bugprone-easily-swappable-parameters,
   cert-*,
