@@ -84,7 +84,7 @@ auto ClpIrV1Decoder::get_estimated_num_events() -> size_t {
 }
 
 auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
-    if (cFullRangeEndIdx != end_idx) {
+    if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
         throw DecodingException(
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
