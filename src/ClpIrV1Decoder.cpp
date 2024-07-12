@@ -10,6 +10,7 @@
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
+#include <clp/TraceableException.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
