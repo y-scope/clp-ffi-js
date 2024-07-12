@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-include(ExternalProject)
+include(FetchContent)
 
 project(ClpIrV1Decoder
     LANGUAGES CXX C
@@ -27,26 +27,57 @@ endif()
 set(BOOST_VERSION "1.85.0" CACHE STRING "Version of Boost library to be used when compiling CLP sources.")
 string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 
-ExternalProject_Add(
+set(BOOST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/wasm/boost" CACHE STRING
+    "Directory containing Boost sources, fetched from official release if non existent.")
+if (NOT EXISTS ${BOOST_SRC_DIR})
+    FetchContent_Declare(
         Boost
         URL "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
-        PREFIX "${CMAKE_BINARY_DIR}/boost"
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        LOG_DOWNLOAD ON
-)
-ExternalProject_Get_Property(Boost SOURCE_DIR)
-set(BOOST_EXTRACT_DIR "${SOURCE_DIR}")
+        SOURCE_DIR ${BOOST_SRC_DIR}
+    )
+    message(STATUS "Fetching Boost from official release.")
+    FetchContent_MakeAvailable(Boost)
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++23")
-set(CMAKE_CXX_STANDARD 23)
+set(BIN_NAME "ClpIrV1Decoder" CACHE STRING "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
+add_executable(${BIN_NAME})
+
+target_compile_features(${BIN_NAME}
+    PRIVATE
+    cxx_std_20
+)
 
 set(CMAKE_EXECUTABLE_SUFFIX ".js")
 
-add_executable(
-        ClpIrV1Decoder
+target_link_options(${BIN_NAME} PRIVATE
+    "-s EXPORTED_FUNCTIONS=['_malloc','_free']"
+    "-s MODULARIZE=1"
+    "-s EXPORT_ES6=1"
+    "-s ENVIRONMENT=worker"
+    "-lembind"
+    "-s ALLOW_MEMORY_GROWTH=1"
+    "-s WASM_BIGINT"
+    "-flto"
+    "--closure 1"
+)
 
+target_compile_definitions(${BIN_NAME} PUBLIC SPDLOG_FMT_EXTERNAL=1)
+
+target_include_directories(
+        ${BIN_NAME}
+        PRIVATE
+        ${BOOST_SRC_DIR}
+        src/
+        src/submodules/clp/components/core/src
+        src/submodules/clp/components/core/src/clp
+        src/submodules/clp/components/core/submodules
+        src/submodules/fmt/include
+        src/submodules/spdlog/include
+        src/submodules/zstd/lib
+)
+
+target_sources(${BIN_NAME}
+        PRIVATE
         src/bindings.cpp
         src/ClpIrV1Decoder.cpp
 
@@ -69,22 +100,4 @@ add_executable(
         src/submodules/zstd/lib/decompress/zstd_ddict.c
         src/submodules/zstd/lib/decompress/zstd_decompress_block.c
         src/submodules/zstd/lib/decompress/zstd_decompress.c
-)
-
-set_target_properties(ClpIrV1Decoder PROPERTIES COMPILE_FLAGS "-O3")
-set_target_properties(ClpIrV1Decoder PROPERTIES LINK_FLAGS    "-s EXPORTED_FUNCTIONS=['_malloc','_free'] -s MODULARIZE=1 -s EXPORT_ES6=1 -s ENVIRONMENT=worker -lembind -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT -flto -O3 --closure 1")
-
-target_compile_definitions(ClpIrV1Decoder PUBLIC SPDLOG_FMT_EXTERNAL=1)
-
-target_include_directories(
-        ClpIrV1Decoder
-        PRIVATE
-        ${BOOST_EXTRACT_DIR}
-        src/
-        src/submodules/clp/components/core/src
-        src/submodules/clp/components/core/src/clp
-        src/submodules/clp/components/core/submodules
-        src/submodules/fmt/include
-        src/submodules/spdlog/include
-        src/submodules/zstd/lib
 )
