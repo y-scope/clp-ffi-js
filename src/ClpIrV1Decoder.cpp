@@ -11,14 +11,12 @@
 #include "types.hpp"
 
 // Constants
-static constexpr char cIsNotFourByteEncErrorMessage[] = "Is not four byte encoding.";
-
 namespace {
 constexpr size_t cDefaultNumCharsPerMessage{512};
 constexpr size_t cDefaultNumLogEvents{500'000};
 constexpr size_t cFullRangeEndIdx{0};
 constexpr size_t cLogLevelNone{0};
-}
+}  // namespace
 
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder* {
     auto length{data_array["length"].as<size_t>()};
@@ -46,7 +44,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
-                cIsNotFourByteEncErrorMessage
+                "Is not four byte encoding."
         );
     }
     auto result{clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>::create(
@@ -70,22 +68,11 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
     return new ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
 }
 
-ClpIrV1Decoder::ClpIrV1Decoder(
-        std::unique_ptr<char const[]> data_buffer,
-        std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
-        clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
-)
-        : m_data_buffer{std::move(data_buffer)},
-          m_zstd_decompressor{zstd_decompressor},
-          m_deserializer{std::move(deserializer)} {
-    m_ts_pattern = m_deserializer.get_timestamp_pattern();
-}
-
-auto ClpIrV1Decoder::get_estimated_num_events() -> size_t {
+auto ClpIrV1Decoder::get_estimated_num_events() -> size_t const {
     return m_log_events.size();
 }
 
-auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
+auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val const {
     if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
         throw DecodingException(
                 clp::ErrorCode::ErrorCode_Unsupported,
@@ -127,7 +114,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
     return results;
 }
 
-auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val {
+auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val const {
     if (m_log_events.size() < end_idx) {
         return emscripten::val::null();
     }
@@ -193,4 +180,15 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     }
 
     return results;
+}
+
+ClpIrV1Decoder::ClpIrV1Decoder(
+        std::unique_ptr<char const[]> data_buffer,
+        std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
+        clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
+)
+        : m_data_buffer{std::move(data_buffer)},
+          m_zstd_decompressor{zstd_decompressor},
+          m_deserializer{std::move(deserializer)} {
+    m_ts_pattern = m_deserializer.get_timestamp_pattern();
 }
