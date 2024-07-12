@@ -1,21 +1,10 @@
-#ifndef CLP_FFI_JS_TYPES_HPP
-#define CLP_FFI_JS_TYPES_HPP
+#ifndef CLPIRV1DECODER_CLPJSEXCEPTION_HPP
+#define CLPIRV1DECODER_CLPJSEXCEPTION_HPP
 
-#include <array>
+#include <clp/ErrorCode.hpp>
+#include <clp/TraceableException.hpp>
 #include <string>
 #include <utility>
-
-using namespace std::string_view_literals;
-
-constexpr std::array cLogLevelNames = {
-        "NONE"sv,  // This should not be used.
-        "TRACE"sv,
-        "DEBUG"sv,
-        "INFO"sv,
-        "WARN"sv,
-        "ERROR"sv,
-        "FATAL"sv,
-};
 
 class ClpJsException : public clp::TraceableException {
 public:
@@ -35,5 +24,4 @@ public:
 private:
     std::string m_message;
 };
-
-#endif  // CLP_FFI_JS_TYPES_HPP
+#endif  // CLPIRV1DECODER_CLPJSEXCEPTION_HPP

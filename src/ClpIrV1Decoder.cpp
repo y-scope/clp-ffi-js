@@ -5,11 +5,11 @@
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
+#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
-#include <clp/TraceableException.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -19,9 +19,10 @@
 
 #include <spdlog/spdlog.h>
 
-#include "types.hpp"
+#include "ClpJsException.hpp"
+#include "constants.hpp"
 
-using namespace std::string_literals;
+using namespace std::literals::string_literals;
 
 // Constants
 namespace {

@@ -3,6 +3,7 @@
 
 #include <emscripten/val.h>
 
+#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
