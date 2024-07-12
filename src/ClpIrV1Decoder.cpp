@@ -35,8 +35,13 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         };
         clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
     {
-        SPDLOG_CRITICAL("Failed to decode encoding type.");
-        throw err;
+        SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
+        throw DecodingException(
+                clp::ErrorCode::ErrorCode_MetadataCorrupted,
+                __FILENAME__,
+                __LINE__,
+                "Failed to decode encoding type.."
+        );
     }
 
     if (false == is_four_bytes_encoding) {
