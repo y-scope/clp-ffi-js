@@ -26,14 +26,15 @@
 using namespace std::literals::string_literals;
 
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_ptr<ClpIrV1Decoder> {
-    auto length{data_array["length"].as<size_t>()};
+    auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
     auto data_buffer{std::make_unique<char const[]>(length)};
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.get()));
 
-    auto zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()};
+    auto const zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()
+    };
     zstd_decompressor->open(data_buffer.get(), length);
 
     bool is_four_bytes_encoding{true};
@@ -139,7 +140,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
-    emscripten::val results{emscripten::val::array()};
+    emscripten::val const results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
             m_log_events.begin() + begin_idx,
             m_log_events.begin() + end_idx
@@ -148,19 +149,20 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         message.clear();
 
         // TODO: Replace below handlers code by an OSS decoding method once it's added in the future
-        auto constant_handler = [&](std::string const& value, size_t begin_pos, size_t length) {
-            message.append(value, begin_pos, length);
-        };
+        auto const constant_handler = [&](std::string const& value, size_t begin_pos, size_t length
+                                      ) { message.append(value, begin_pos, length); };
 
-        auto encoded_int_handler = [&](clp::ir::four_byte_encoded_variable_t value) {
+        auto const encoded_int_handler = [&](clp::ir::four_byte_encoded_variable_t value) {
             message.append(clp::ffi::decode_integer_var(value));
         };
 
-        auto encoded_float_handler = [&](clp::ir::four_byte_encoded_variable_t encoded_float) {
-            message.append(clp::ffi::decode_float_var(encoded_float));
-        };
+        auto const encoded_float_handler
+                = [&](clp::ir::four_byte_encoded_variable_t encoded_float) {
+                      message.append(clp::ffi::decode_float_var(encoded_float));
+                  };
 
-        auto dict_var_handler = [&](std::string const& dict_var) { message.append(dict_var); };
+        auto const dict_var_handler
+                = [&](std::string const& dict_var) { message.append(dict_var); };
 
         try {
             clp::ffi::ir_stream::generic_decode_message<true>(
