@@ -25,14 +25,6 @@
 
 using namespace std::literals::string_literals;
 
-// Constants
-namespace {
-constexpr size_t cDefaultNumCharsPerMessage{512};
-constexpr size_t cDefaultNumLogEvents{500'000};
-constexpr size_t cFullRangeEndIdx{0};
-constexpr size_t cLogLevelNone{0};
-}  // namespace
-
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_ptr<ClpIrV1Decoder> {
     auto length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
@@ -96,6 +88,7 @@ auto ClpIrV1Decoder::get_estimated_num_events() const -> size_t {
 }
 
 auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
+    constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
@@ -106,6 +99,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
     }
     if (false == m_full_range_built) {
         m_full_range_built = true;
+        constexpr size_t cDefaultNumLogEvents{500'000};
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto const result{m_deserializer.deserialize_log_event()};
@@ -143,7 +137,8 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     }
 
     std::string message;
-    message.reserve(cDefaultNumCharsPerMessage);
+    constexpr size_t cDefaultReservedMessageLength{512};
+    message.reserve(cDefaultReservedMessageLength);
     emscripten::val results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
             m_log_events.begin() + begin_idx,
@@ -182,9 +177,12 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
             break;
         }
 
+        constexpr size_t cLogLevelNone{0};
+        constexpr size_t cLogLevelBeginIdx{cLogLevelNone + 1};
+        constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        for (size_t i = 1; i < cLogLevelNames.size(); ++i) {
-            if (message.substr(1).starts_with(cLogLevelNames[i])) {
+        for (size_t i = cLogLevelBeginIdx; i < cLogLevelNames.size(); ++i) {
+            if (message.substr(cLogLevelPositionInMessages).starts_with(cLogLevelNames[i])) {
                 log_level = i;
                 break;
             }
