@@ -5,7 +5,7 @@
 
 using namespace std::literals::string_view_literals;
 
-constexpr std::array cLogLevelNames = {
+constexpr std::array cLogLevelNames{
         "NONE"sv,  // This should not be used.
         "TRACE"sv,
         "DEBUG"sv,
