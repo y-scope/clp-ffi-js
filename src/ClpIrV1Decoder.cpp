@@ -101,10 +101,11 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
-                "Partial range indexing building is not yet supported."
+                "Partial range index building is not yet supported."
         );
     }
-    if (0 == m_log_events.capacity()) {
+    if (false == m_full_range_built) {
+        m_full_range_built = true;
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto const result{m_deserializer.deserialize_log_event()};
@@ -209,7 +210,8 @@ ClpIrV1Decoder::ClpIrV1Decoder(
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
-        : m_data_buffer{std::move(data_buffer)},
+        : m_full_range_built{false},
+          m_data_buffer{std::move(data_buffer)},
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
