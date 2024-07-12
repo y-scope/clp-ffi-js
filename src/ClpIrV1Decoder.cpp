@@ -142,8 +142,8 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     message.reserve(cDefaultReservedMessageLength);
     emscripten::val const results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
-            m_log_events.begin() + begin_idx,
-            m_log_events.begin() + end_idx
+            m_log_events.begin() + static_cast<std::ptrdiff_t>(begin_idx),
+            m_log_events.begin() + static_cast<std::ptrdiff_t>(end_idx)
     );
     for (auto const& log_event : log_events_span) {
         message.clear();
