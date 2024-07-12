@@ -1,14 +1,27 @@
 #include "ClpIrV1Decoder.hpp"
 
-#include <emscripten/emscripten.h>
+#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 
-#include <clp/ffi/encoding_methods.hpp>
+#include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
+#include <clp/ir/LogEventDeserializer.hpp>
+#include <clp/ir/types.hpp>
+#include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
+#include <clp/TraceableException.hpp>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <span>
+#include <system_error>
+#include <utility>
 
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+
 #include "types.hpp"
+
+using namespace std::string_literals;
 
 // Constants
 namespace {
@@ -18,7 +31,7 @@ constexpr size_t cFullRangeEndIdx{0};
 constexpr size_t cLogLevelNone{0};
 }  // namespace
 
-auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder* {
+auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_ptr<ClpIrV1Decoder> {
     auto length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
@@ -36,7 +49,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
     {
         SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw DecodingException(
+        throw ClpJsException(
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
@@ -45,7 +58,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
     }
 
     if (false == is_four_bytes_encoding) {
-        throw DecodingException(
+        throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
@@ -62,7 +75,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 error_code.category().name(),
                 error_code.message()
         );
-        throw DecodingException(
+        throw ClpJsException(
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
@@ -70,7 +83,10 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         );
     }
 
-    return new ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
+    std::unique_ptr<ClpIrV1Decoder> ptr(
+            new ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()))
+    );
+    return ptr;
 }
 
 auto ClpIrV1Decoder::get_estimated_num_events() -> size_t const {
@@ -79,13 +95,14 @@ auto ClpIrV1Decoder::get_estimated_num_events() -> size_t const {
 
 auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val const {
     if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
-        throw DecodingException(
+        throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
                 "Partial range indexing building is not yet supported."
         );
-    } else if (m_log_events.empty()) {
+    }
+    if (0 == m_log_events.capacity()) {
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto const result{m_deserializer.deserialize_log_event()};
@@ -101,11 +118,11 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
                 SPDLOG_ERROR("File contains an incomplete IR stream");
                 break;
             }
-            throw DecodingException(
+            throw ClpJsException(
                     clp::ErrorCode::ErrorCode_Corrupt,
                     __FILENAME__,
                     __LINE__,
-                    "Failed to decompress."
+                    "Failed to decompress: "s + error.category().name() + ":" + error.message()
             );
         }
         m_data_buffer.reset(nullptr);
@@ -118,7 +135,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
 }
 
 auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val const {
-    if (m_log_events.size() < end_idx) {
+    if (0 > begin_idx || m_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
 
@@ -126,8 +143,8 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     message.reserve(cDefaultNumCharsPerMessage);
     emscripten::val results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
-            m_log_events.data() + begin_idx,
-            end_idx - begin_idx
+            m_log_events.begin() + begin_idx,
+            m_log_events.begin() + end_idx
     );
     for (auto const& log_event : log_events_span) {
         message.clear();
@@ -191,7 +208,6 @@ ClpIrV1Decoder::ClpIrV1Decoder(
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
         : m_data_buffer{std::move(data_buffer)},
-          m_zstd_decompressor{zstd_decompressor},
-          m_deserializer{std::move(deserializer)} {
-    m_ts_pattern = m_deserializer.get_timestamp_pattern();
-}
+          m_zstd_decompressor{std::move(zstd_decompressor)},
+          m_deserializer{std::move(deserializer)},
+          m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}

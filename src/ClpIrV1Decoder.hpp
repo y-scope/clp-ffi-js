@@ -3,12 +3,16 @@
 
 #include <emscripten/val.h>
 
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
+#include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
+#include <clp/TimestampPattern.hpp>
+#include <cstddef>
+#include <memory>
+#include <vector>
 
 /**
- * Deserializes Zstd-compressed CLP IR V1 byte streams and formats extracted log events.
+ * Deserializes ZStandard-compressed CLP IR V1 byte streams and formats extracted log events.
  */
 class ClpIrV1Decoder {
 public:
@@ -24,16 +28,17 @@ public:
      * @return the created instance.
      * @throw DecodingException if any error occurs.
      */
-    [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder*;
+    [[nodiscard]] static auto create(emscripten::val const& data_array
+    ) -> std::unique_ptr<ClpIrV1Decoder>;
 
     // Destructor
     ~ClpIrV1Decoder() = default;
 
     // Explicitly disable copy and move constructor/assignment
     ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
-    ClpIrV1Decoder& operator=(ClpIrV1Decoder const&) = delete;
     ClpIrV1Decoder(ClpIrV1Decoder&&) = delete;
-    ClpIrV1Decoder& operator=(ClpIrV1Decoder&&) = delete;
+    auto operator=(ClpIrV1Decoder const&) -> ClpIrV1Decoder& = delete;
+    auto operator=(ClpIrV1Decoder&&) -> ClpIrV1Decoder& = delete;
 
     /**
      * Calculates the estimated number of events stored in the log.
