@@ -89,26 +89,24 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto const result{m_deserializer.deserialize_log_event()};
-            if (result.has_error()) {
-                auto const error{result.error()};
-                if (std::errc::result_out_of_range == error) {
-                    SPDLOG_ERROR("File contains an incomplete IR stream");
-                } else if (std::errc::no_message_available != error) {
-                    SPDLOG_ERROR(
-                            "Failed to decompress: {}:{}",
-                            error.category().name(),
-                            error.message()
-                    );
-                    throw DecodingException(
-                            clp::ErrorCode::ErrorCode_Corrupt,
-                            __FILENAME__,
-                            __LINE__,
-                            "Failed to decompress."
-                    );
-                }
+            if (false == result.has_error()) {
+                m_log_events.emplace_back(result.value());
+                continue;
+            }
+            auto const error{result.error()};
+            if (std::errc::no_message_available == error) {
                 break;
             }
-            m_log_events.emplace_back(result.value());
+            if (std::errc::result_out_of_range == error) {
+                SPDLOG_ERROR("File contains an incomplete IR stream");
+                break;
+            }
+            throw DecodingException(
+                    clp::ErrorCode::ErrorCode_Corrupt,
+                    __FILENAME__,
+                    __LINE__,
+                    "Failed to decompress."
+            );
         }
         m_data_buffer.reset(nullptr);
     }
