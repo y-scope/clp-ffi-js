@@ -13,10 +13,12 @@
 // Constants
 static constexpr char cIsNotFourByteEncErrorMessage[] = "Is not four byte encoding.";
 
-static constexpr size_t cDefaultNumCharsPerMessage = 512;
-static constexpr size_t cDefaultNumLogEvents = 500'000;
-static constexpr size_t cFullRangeEndIdx = 0;
-static constexpr size_t cLogLevelNone = 0;
+namespace {
+constexpr size_t cDefaultNumCharsPerMessage{512};
+constexpr size_t cDefaultNumLogEvents{500'000};
+constexpr size_t cFullRangeEndIdx{0};
+constexpr size_t cLogLevelNone{0};
+}
 
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder* {
     auto length{data_array["length"].as<size_t>()};
