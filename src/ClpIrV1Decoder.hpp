@@ -50,10 +50,10 @@ public:
      *
      * @return The estimated number of events in the log.
      */
-    [[nodiscard]] auto get_estimated_num_events() -> size_t const;
+    [[nodiscard]] auto get_estimated_num_events() const -> size_t;
 
-    [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val const;
-    [[nodiscard]] auto decode(size_t begin_idx, size_t end_idx) -> emscripten::val const;
+    [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val;
+    [[nodiscard]] auto decode(size_t begin_idx, size_t end_idx) -> emscripten::val;
 
 private:
     // Constructor

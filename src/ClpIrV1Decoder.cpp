@@ -91,11 +91,11 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_pt
     return ptr;
 }
 
-auto ClpIrV1Decoder::get_estimated_num_events() -> size_t const {
+auto ClpIrV1Decoder::get_estimated_num_events() const -> size_t {
     return m_log_events.size();
 }
 
-auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val const {
+auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
     if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
@@ -137,7 +137,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
     return results;
 }
 
-auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val const {
+auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val {
     if (m_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
