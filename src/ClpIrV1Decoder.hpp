@@ -30,16 +30,19 @@ public:
      * @return the created instance.
      * @throw DecodingException if any error occurs.
      */
-    [[nodiscard]] static auto create(emscripten::val const& data_array
-    ) -> std::unique_ptr<ClpIrV1Decoder>;
+    [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder;
 
     // Destructor
     ~ClpIrV1Decoder() = default;
 
-    // Explicitly disable copy and move constructor/assignment
+    // Explicitly disable copy constructor/assignment
     ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
-    ClpIrV1Decoder(ClpIrV1Decoder&&) = delete;
     auto operator=(ClpIrV1Decoder const&) -> ClpIrV1Decoder& = delete;
+
+    // Define default move constructor
+    ClpIrV1Decoder(ClpIrV1Decoder&&) = default;
+    // Delete assignment operator due to Emscripten (derived from LLVM)
+    // being unable to resolve the move constructor for clp::ir::LogEventDeserializer
     auto operator=(ClpIrV1Decoder&&) -> ClpIrV1Decoder& = delete;
 
     /**
@@ -58,7 +61,7 @@ public:
 private:
     // Constructor
     explicit ClpIrV1Decoder(
-            std::unique_ptr<char const[]> data_buffer,
+            std::unique_ptr<char const[]>&& data_buffer,
             std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
     );

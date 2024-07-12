@@ -25,7 +25,7 @@
 
 using namespace std::literals::string_literals;
 
-auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_ptr<ClpIrV1Decoder> {
+auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
@@ -78,10 +78,9 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> std::unique_pt
         );
     }
 
-    std::unique_ptr<ClpIrV1Decoder> ptr(
-            new ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()))
+    return std::move(
+            ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()))
     );
-    return ptr;
 }
 
 auto ClpIrV1Decoder::get_estimated_num_events() const -> size_t {
@@ -206,7 +205,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
 }
 
 ClpIrV1Decoder::ClpIrV1Decoder(
-        std::unique_ptr<char const[]> data_buffer,
+        std::unique_ptr<char const[]>&& data_buffer,
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
