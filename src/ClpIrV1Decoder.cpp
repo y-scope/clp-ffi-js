@@ -214,3 +214,11 @@ ClpIrV1Decoder::ClpIrV1Decoder(
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
+
+EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
+    emscripten::class_<ClpIrV1Decoder>("ClpIrV1Decoder")
+            .constructor(&ClpIrV1Decoder::create, emscripten::return_value_policy::take_ownership())
+            .function("estimatedNumEvents", &ClpIrV1Decoder::get_estimated_num_events)
+            .function("buildIdx", &ClpIrV1Decoder::build_idx)
+            .function("decode", &ClpIrV1Decoder::decode);
+}

@@ -74,12 +74,4 @@ private:
     std::shared_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
 };
 
-EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
-    emscripten::class_<ClpIrV1Decoder>("ClpIrV1Decoder")
-            .constructor(&ClpIrV1Decoder::create, emscripten::return_value_policy::take_ownership())
-            .function("estimatedNumEvents", &ClpIrV1Decoder::get_estimated_num_events)
-            .function("buildIdx", &ClpIrV1Decoder::build_idx)
-            .function("decode", &ClpIrV1Decoder::decode);
-}
-
 #endif  // CLP_FFI_JS_CLPIRV1DECODER_HPP
