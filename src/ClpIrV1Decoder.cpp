@@ -137,7 +137,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
 }
 
 auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val const {
-    if (0 > begin_idx || m_log_events.size() < end_idx || begin_idx >= end_idx) {
+    if (m_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
 
