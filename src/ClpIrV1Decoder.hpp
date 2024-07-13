@@ -48,11 +48,10 @@ public:
     /**
      * Retrieves an estimated number of log events.
      *
-     * @return The estimated number based the calling sequences with method `build_idx()`.
-     * - Before `build_idx()` is called
-     *   - Return cFullRangeEndIdx=0, indicating that there are no events stored in the log.
-     * - After `build_idx()` is called
-     *   - Return the number of log events that have been deserialized.
+     * @return Before `build_idx()` is called, return cFullRangeEndIdx=0, indicating that there is
+     * no event stored in the log.
+     * @return After `build_idx()` is called, return the number of log events that have been
+     * successfully deserialized.
      */
     [[nodiscard]] auto get_estimated_num_events() const -> size_t;
 
@@ -62,8 +61,9 @@ public:
      * @param beginIdx
      * @param endIdx
      * @return Count of the successfully deserialized ("valid") log events and count of any
-     * un-deserializable ("invalid") log events within the range; or null if any log event in the
-     * range doesn't exist (e.g., the range exceeds the number of log events in the file).
+     * un-deserializable ("invalid") log events within the range
+     * @return null if any log event in the range does not exist (e.g., the range exceeds the number
+     * of log events in the file).
      */
     [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val;
 
