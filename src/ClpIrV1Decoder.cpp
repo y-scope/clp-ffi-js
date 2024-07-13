@@ -134,6 +134,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         return emscripten::val::null();
     }
 
+    size_t log_num{begin_idx + 1};
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
@@ -195,8 +196,9 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
                 message.c_str(),
                 log_event.get_timestamp(),
                 log_level,
-                begin_idx + (&log_event - log_events_span.data()) + 1
+                log_num
         );
+        ++log_num;
     }
 
     return results;
