@@ -75,7 +75,7 @@ public:
      * @return The decoded log events on success or null if any log event in the range doesn't exist
      * (e.g., the range exceeds the number of log events in the file).
      */
-    [[nodiscard]] auto decode(size_t begin_idx, size_t end_idx) -> emscripten::val;
+    [[nodiscard]] auto decode(size_t begin_idx, size_t end_idx) const -> emscripten::val;
 
 private:
     // Constructor
