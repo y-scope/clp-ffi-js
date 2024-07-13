@@ -72,8 +72,9 @@ public:
      *
      * @param beginIdx
      * @param endIdx
-     * @return The decoded log events on success or null if any log event in the range doesn't exist
-     * (e.g., the range exceeds the number of log events in the file).
+     * @return The decoded log events on success.
+     * @return null if if any log event in the range doesn't exist (e.g., the range exceeds the
+     * number of log events in the file).
      */
     [[nodiscard]] auto decode(size_t begin_idx, size_t end_idx) const -> emscripten::val;
 
