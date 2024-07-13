@@ -48,7 +48,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
-                "Failed to decode encoding type.."
+                "Failed to decode encoding type."
         );
     }
 
