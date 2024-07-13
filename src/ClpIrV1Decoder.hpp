@@ -1,17 +1,17 @@
 #ifndef CLP_FFI_JS_CLPIRV1DECODER_HPP
 #define CLP_FFI_JS_CLPIRV1DECODER_HPP
 
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
+#include <cstddef>
+#include <memory>
+#include <vector>
 
 #include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
-#include <cstddef>
-#include <memory>
-#include <vector>
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 /**
  * Deserializes ZStandard-compressed CLP IR V1 byte streams and formats extracted log events.

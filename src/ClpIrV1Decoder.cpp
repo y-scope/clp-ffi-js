@@ -1,7 +1,11 @@
 #include "ClpIrV1Decoder.hpp"
 
-#include <emscripten/em_asm.h>
-#include <emscripten/val.h>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <span>
+#include <system_error>
+#include <utility>
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
@@ -11,13 +15,8 @@
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <clp/TraceableException.hpp>
-#include <cstddef>
-#include <cstdint>
-#include <memory>
-#include <span>
-#include <system_error>
-#include <utility>
-
+#include <emscripten/em_asm.h>
+#include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
 #include "ClpJsException.hpp"

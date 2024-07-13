@@ -1,10 +1,11 @@
 #ifndef CLPIRV1DECODER_CLPJSEXCEPTION_HPP
 #define CLPIRV1DECODER_CLPJSEXCEPTION_HPP
 
-#include <clp/ErrorCode.hpp>
-#include <clp/TraceableException.hpp>
 #include <string>
 #include <utility>
+
+#include <clp/ErrorCode.hpp>
+#include <clp/TraceableException.hpp>
 
 class ClpJsException : public clp::TraceableException {
 public:
