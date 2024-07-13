@@ -123,7 +123,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
         m_data_buffer.reset(nullptr);
     }
 
-    emscripten::val results{emscripten::val::object()};
+    auto results{emscripten::val::object()};
     results.set("numValidEvents", m_log_events.size());
     results.set("numInvalidEvents", 0);
     return results;
@@ -137,7 +137,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
-    emscripten::val const results{emscripten::val::array()};
+    auto const results{emscripten::val::array()};
     std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
             m_log_events.begin() + static_cast<std::ptrdiff_t>(begin_idx),
             m_log_events.begin() + static_cast<std::ptrdiff_t>(end_idx)
