@@ -87,7 +87,7 @@ private:
 
     std::unique_ptr<char const[]> m_data_buffer;
     clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> m_deserializer;
-    bool m_full_range_built;
+    bool m_full_range_built{false};
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_log_events;
     clp::TimestampPattern m_ts_pattern;
     std::shared_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;

@@ -207,8 +207,7 @@ ClpIrV1Decoder::ClpIrV1Decoder(
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
-        : m_full_range_built{false},
-          m_data_buffer{std::move(data_buffer)},
+        : m_data_buffer{std::move(data_buffer)},
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
