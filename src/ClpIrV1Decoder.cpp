@@ -180,7 +180,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) -> emscripten::val
         constexpr size_t cLogLevelBeginIdx{cLogLevelNone + 1};
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        for (size_t i = cLogLevelBeginIdx; i < cLogLevelNames.size(); ++i) {
+        for (size_t i{cLogLevelBeginIdx}; i < cLogLevelNames.size(); ++i) {
             if (message.substr(cLogLevelPositionInMessages).starts_with(cLogLevelNames[i])) {
                 log_level = i;
                 break;
