@@ -78,9 +78,7 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         );
     }
 
-    return std::move(
-            ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()))
-    );
+    return ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
 }
 
 auto ClpIrV1Decoder::get_estimated_num_events() const -> size_t {
