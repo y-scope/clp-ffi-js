@@ -39,7 +39,7 @@ if (NOT EXISTS ${BOOST_SRC_DIR})
     )
     message(STATUS "Fetching Boost from official release.")
     FetchContent_MakeAvailable(Boost)
-endif()
+endif ()
 
 set(BIN_NAME "ClpIrV1Decoder" CACHE STRING "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
 add_executable(${BIN_NAME})
