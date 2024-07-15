@@ -32,7 +32,7 @@ set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
     "Directory containing Boost sources, fetched from official release if non existent.")
 if (NOT EXISTS ${BOOST_SRC_DIR})
     # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare() for CMake 3.24 and above
-    cmake_policy(SET CMP0063 NEW)
+    cmake_policy(SET CMP0135 NEW)
 
     FetchContent_Declare(
         Boost
