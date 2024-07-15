@@ -20,14 +20,14 @@ endif()
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'Release' as none was specified.")
-    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build (Debug, Release, RelWithDebInfo, MinSizeRel)." FORCE)
-endif()
+    set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)
+endif ()
 
 # Download and extract Boost
 set(BOOST_VERSION "1.85.0" CACHE STRING "Version of Boost library to be used when compiling CLP sources.")
 string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 
-set(BOOST_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/build/wasm/boost" CACHE STRING
+set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
     "Directory containing Boost sources, fetched from official release if non existent.")
 if (NOT EXISTS ${BOOST_SRC_DIR})
     FetchContent_Declare(
@@ -61,43 +61,44 @@ target_link_options(${BIN_NAME} PRIVATE
     "--closure 1"
 )
 
-target_compile_definitions(${BIN_NAME} PUBLIC SPDLOG_FMT_EXTERNAL=1)
+target_compile_definitions(${BIN_NAME}
+    PUBLIC
+    SPDLOG_FMT_EXTERNAL=1
+)
 
-target_include_directories(
-        ${BIN_NAME}
-        PRIVATE
-        ${BOOST_SRC_DIR}
-        src/
-        src/submodules/clp/components/core/src
-        src/submodules/clp/components/core/src/clp
-        src/submodules/clp/components/core/submodules
-        src/submodules/fmt/include
-        src/submodules/spdlog/include
-        src/submodules/zstd/lib
+target_include_directories(${BIN_NAME}
+    PRIVATE
+    ${BOOST_SRC_DIR}
+    src/
+    src/submodules/clp/components/core/src
+    src/submodules/clp/components/core/src/clp
+    src/submodules/clp/components/core/submodules
+    src/submodules/fmt/include
+    src/submodules/spdlog/include
+    src/submodules/zstd/lib
 )
 
 target_sources(${BIN_NAME}
-        PRIVATE
-        src/bindings.cpp
-        src/ClpIrV1Decoder.cpp
+    PRIVATE
+    src/ClpIrV1Decoder.cpp
 
-        src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
-        src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
-        src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
-        src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
-        src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
-        src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
+    src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
+    src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
+    src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
+    src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
 
-        src/submodules/fmt/src/format.cc
+    src/submodules/fmt/src/format.cc
 
-        src/submodules/zstd/lib/common/entropy_common.c
-        src/submodules/zstd/lib/common/error_private.c
-        src/submodules/zstd/lib/common/fse_decompress.c
-        src/submodules/zstd/lib/common/zstd_trace.c
-        src/submodules/zstd/lib/common/xxhash.c
-        src/submodules/zstd/lib/common/zstd_common.c
-        src/submodules/zstd/lib/decompress/huf_decompress.c
-        src/submodules/zstd/lib/decompress/zstd_ddict.c
-        src/submodules/zstd/lib/decompress/zstd_decompress_block.c
-        src/submodules/zstd/lib/decompress/zstd_decompress.c
+    src/submodules/zstd/lib/common/entropy_common.c
+    src/submodules/zstd/lib/common/error_private.c
+    src/submodules/zstd/lib/common/fse_decompress.c
+    src/submodules/zstd/lib/common/zstd_trace.c
+    src/submodules/zstd/lib/common/xxhash.c
+    src/submodules/zstd/lib/common/zstd_common.c
+    src/submodules/zstd/lib/decompress/huf_decompress.c
+    src/submodules/zstd/lib/decompress/zstd_ddict.c
+    src/submodules/zstd/lib/decompress/zstd_decompress_block.c
+    src/submodules/zstd/lib/decompress/zstd_decompress.c
 )
