@@ -15,7 +15,7 @@ endif ()
 if (NOT CMAKE_EXPORT_COMPILE_COMMANDS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE BOOL
         "Enable/Disable output of compile commands during generation." FORCE)
-endif()
+endif ()
 
 # Set the default build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
