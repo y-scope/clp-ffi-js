@@ -31,11 +31,13 @@ string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
     "Directory containing Boost sources, fetched from official release if non existent.")
 if (NOT EXISTS ${BOOST_SRC_DIR})
+    # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare() for CMake 3.24 and above
+    cmake_policy(SET CMP0063 NEW)
+
     FetchContent_Declare(
         Boost
         URL "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
         SOURCE_DIR ${BOOST_SRC_DIR}
-        DOWNLOAD_EXTRACT_TIMESTAMP ON
     )
     message(STATUS "Fetching Boost from official release.")
     FetchContent_MakeAvailable(Boost)
