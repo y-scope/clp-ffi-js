@@ -113,9 +113,9 @@ target_sources(${BIN_NAME}
     src/submodules/zstd/lib/common/entropy_common.c
     src/submodules/zstd/lib/common/error_private.c
     src/submodules/zstd/lib/common/fse_decompress.c
+    src/submodules/zstd/lib/common/zstd_common.c
     src/submodules/zstd/lib/common/zstd_trace.c
     src/submodules/zstd/lib/common/xxhash.c
-    src/submodules/zstd/lib/common/zstd_common.c
     src/submodules/zstd/lib/decompress/huf_decompress.c
     src/submodules/zstd/lib/decompress/zstd_ddict.c
     src/submodules/zstd/lib/decompress/zstd_decompress_block.c
