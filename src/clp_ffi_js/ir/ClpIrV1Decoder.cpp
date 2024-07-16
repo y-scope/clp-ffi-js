@@ -21,9 +21,9 @@
 #include <clp_ffi_js/ClpJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
 
-namespace clp_ffi_js {
 using namespace std::literals::string_literals;
 
+namespace clp_ffi_js {
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
