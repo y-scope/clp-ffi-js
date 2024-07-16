@@ -99,7 +99,7 @@ target_include_directories(${BIN_NAME}
 
 target_sources(${BIN_NAME}
     PRIVATE
-    src/ClpIrV1Decoder.cpp
+    src/clp_ffi_js/ir/ClpIrV1Decoder.cpp
 
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
     src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp

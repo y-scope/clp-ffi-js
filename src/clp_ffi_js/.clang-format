@@ -72,6 +72,9 @@ FixNamespaceComments: true
 IncludeBlocks: "Regroup"
 IncludeCategories:
   # NOTE: A header is grouped by first matching regex
+  # Project headers
+  - Regex: "^<clp_ffi_js"
+    Priority: 4
   # Library headers. Update when adding new libraries.
   # NOTE: clang-format retains leading white-space on a line in violation of the YAML spec.
   - Regex: "<(emscripten|fmt|spdlog)"
@@ -84,9 +87,6 @@ IncludeCategories:
   # C++ standard libraries
   - Regex: "^<.+>"
     Priority: 2
-  # Project headers
-  - Regex: "^\".+\""
-    Priority: 4
 IndentAccessModifiers: false
 IndentCaseBlocks: false
 IndentCaseLabels: true

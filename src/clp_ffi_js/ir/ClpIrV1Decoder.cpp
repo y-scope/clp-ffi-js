@@ -19,8 +19,8 @@
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
-#include "ClpJsException.hpp"
-#include "constants.hpp"
+#include <clp_ffi_js/ClpJsException.hpp>
+#include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js {
 using namespace std::literals::string_literals;
