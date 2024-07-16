@@ -3,6 +3,7 @@
 
 #include <array>
 
+namespace clp_ffi_js {
 using namespace std::literals::string_view_literals;
 
 constexpr std::array cLogLevelNames{
@@ -14,5 +15,6 @@ constexpr std::array cLogLevelNames{
         "ERROR"sv,
         "FATAL"sv,
 };
+}  // namespace clp_ffi_js
 
 #endif  // CLP_FFI_JS_CONSTANTS_HPP

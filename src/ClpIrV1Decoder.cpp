@@ -22,6 +22,7 @@
 #include "ClpJsException.hpp"
 #include "constants.hpp"
 
+namespace clp_ffi_js {
 using namespace std::literals::string_literals;
 
 auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder {
@@ -220,3 +221,4 @@ EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
             .function("buildIdx", &ClpIrV1Decoder::build_idx)
             .function("decode", &ClpIrV1Decoder::decode);
 }
+}  // namespace clp_ffi_js

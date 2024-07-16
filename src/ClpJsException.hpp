@@ -7,6 +7,7 @@
 #include <clp/ErrorCode.hpp>
 #include <clp/TraceableException.hpp>
 
+namespace clp_ffi_js {
 class ClpJsException : public clp::TraceableException {
 public:
     // Constructors
@@ -25,4 +26,6 @@ public:
 private:
     std::string m_message;
 };
+}  // namespace clp_ffi_js
+
 #endif  // CLPIRV1DECODER_CLPJSEXCEPTION_HPP
