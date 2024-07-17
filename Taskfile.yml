@@ -61,14 +61,13 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
     vars:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      CMAKE_TOOLCHAIN_FILE: "{{.G_EMSCIPRTEN_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
       OUTPUT_DIR: "{{.G_WSAM_BUILD_DIR}}"
     cmds:
       - task: "clean-wasm"
       - "mkdir '{{.OUTPUT_DIR}}'"
       - |-
         cd "{{.OUTPUT_DIR}}"
-        cmake "{{.ROOT_DIR}}" -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE"={{.CMAKE_TOOLCHAIN_FILE}}"
+        cmake "{{.ROOT_DIR}}" -G "Unix Makefiles"
         make
       # This command must be last
       - task: "utils:compute-checksum"

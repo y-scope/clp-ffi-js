@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 include(FetchContent)
 
+include("${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
+
 project(ClpIrV1Decoder
     LANGUAGES CXX C
 )
