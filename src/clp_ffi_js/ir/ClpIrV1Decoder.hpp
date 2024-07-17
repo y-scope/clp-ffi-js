@@ -13,7 +13,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-namespace clp_ffi_js {
+namespace clp_ffi_js::ir {
 /**
  * Deserializes ZStandard-compressed CLP IR V1 byte streams and formats extracted log events.
  */
@@ -96,6 +96,6 @@ private:
     clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> m_deserializer;
     clp::TimestampPattern m_ts_pattern;
 };
-}  // namespace clp_ffi_js
+}  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_CLPIRV1DECODER_HPP
