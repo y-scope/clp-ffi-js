@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_CLPIRV1DECODER_HPP
-#define CLP_FFI_JS_CLPIRV1DECODER_HPP
+#ifndef CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
+#define CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
 
 #include <cstddef>
 #include <memory>
@@ -98,4 +98,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_CLPIRV1DECODER_HPP
+#endif  // CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
