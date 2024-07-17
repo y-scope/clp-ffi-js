@@ -14,7 +14,6 @@
 #include <emscripten/val.h>
 
 namespace clp_ffi_js {
-
 /**
  * Deserializes ZStandard-compressed CLP IR V1 byte streams and formats extracted log events.
  */
