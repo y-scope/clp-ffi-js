@@ -83,6 +83,6 @@ tasks:
   init:
     internal: true
     run: "once"
-    slient: true
+    silent: true
     cmds:
       - "mkdir -p '{{.G_BUILD_DIR}}'"
