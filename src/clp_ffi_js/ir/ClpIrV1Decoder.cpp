@@ -4,10 +4,12 @@
 #include <cstdint>
 #include <memory>
 #include <span>
+#include <string>
 #include <system_error>
 #include <utility>
 
 #include <clp/ErrorCode.hpp>
+#include <clp/ffi/encoding_methods.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
@@ -138,7 +140,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) const -> emscripte
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
     auto const results{emscripten::val::array()};
-    std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> log_events_span(
+    std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> const log_events_span(
             m_log_events.begin() + static_cast<std::ptrdiff_t>(begin_idx),
             m_log_events.begin() + static_cast<std::ptrdiff_t>(end_idx)
     );
@@ -212,12 +214,20 @@ ClpIrV1Decoder::ClpIrV1Decoder(
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
-
-EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
-    emscripten::class_<ClpIrV1Decoder>("ClpIrV1Decoder")
-            .constructor(&ClpIrV1Decoder::create, emscripten::return_value_policy::take_ownership())
-            .function("estimatedNumEvents", &ClpIrV1Decoder::get_estimated_num_events)
-            .function("buildIdx", &ClpIrV1Decoder::build_idx)
-            .function("decode", &ClpIrV1Decoder::decode);
-}
 }  // namespace clp_ffi_js::ir
+
+namespace {
+EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
+    emscripten::class_<clp_ffi_js::ir::ClpIrV1Decoder>("ClpIrV1Decoder")
+            .constructor(
+                    &clp_ffi_js::ir::ClpIrV1Decoder::create,
+                    emscripten::return_value_policy::take_ownership()
+            )
+            .function(
+                    "estimatedNumEvents",
+                    &clp_ffi_js::ir::ClpIrV1Decoder::get_estimated_num_events
+            )
+            .function("buildIdx", &clp_ffi_js::ir::ClpIrV1Decoder::build_idx)
+            .function("decode", &clp_ffi_js::ir::ClpIrV1Decoder::decode);
+}
+}  // namespace
