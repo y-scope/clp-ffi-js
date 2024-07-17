@@ -99,29 +99,16 @@ target_include_directories(${BIN_NAME}
 
 target_sources(${BIN_NAME}
     PRIVATE
-    src/clp_ffi_js/constants.hpp
-    src/clp_ffi_js/ClpJsException.hpp
     src/clp_ffi_js/ir/ClpIrV1Decoder.cpp
-    src/clp_ffi_js/ir/ClpIrV1Decoder.hpp
 
-    src/submodules/clp/components/core/src/clp/ErrorCode.hpp
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
-    src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.hpp
-    src/submodules/clp/components/core/src/clp/ir/LogEvent.hpp
     src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
-    src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.hpp
-    src/submodules/clp/components/core/src/clp/ir/types.hpp
     src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
-    src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.hpp
     src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
-    src/submodules/clp/components/core/src/clp/TimestampPattern.hpp
-    src/submodules/clp/components/core/src/clp/TraceableException.hpp
 
     src/submodules/fmt/src/format.cc
-
-    src/submodules/spdlog/include/spdlog/spdlog.h
 
     src/submodules/zstd/lib/common/entropy_common.c
     src/submodules/zstd/lib/common/error_private.c
