@@ -1,5 +1,5 @@
-#ifndef CLPIRV1DECODER_CLPJSEXCEPTION_HPP
-#define CLPIRV1DECODER_CLPJSEXCEPTION_HPP
+#ifndef CLP_FFI_JS_CLPJSEXCEPTION_HPP
+#define CLP_FFI_JS_CLPJSEXCEPTION_HPP
 
 #include <string>
 #include <utility>
@@ -28,4 +28,4 @@ private:
 };
 }  // namespace clp_ffi_js
 
-#endif  // CLPIRV1DECODER_CLPJSEXCEPTION_HPP
+#endif  // CLP_FFI_JS_CLPJSEXCEPTION_HPP
