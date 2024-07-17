@@ -44,7 +44,7 @@ tasks:
         cd {{.G_EMSCIPRTEN_DIR}}
         ./emsdk install latest
         ./emsdk activate latest
-      # This comamnd must be last
+      # This command must be last
       - task: "utils:compute-checksum"
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
@@ -70,12 +70,15 @@ tasks:
         cd "{{.OUTPUT_DIR}}"
         cmake "{{.ROOT_DIR}}" -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE"={{.CMAKE_TOOLCHAIN_FILE}}"
         make
-      # This comamnd must be last
+      # This command must be last
       - task: "utils:compute-checksum"
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
-    sources: ["src/**/*"]
+    sources:
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+      - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
 
   init:
