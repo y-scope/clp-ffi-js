@@ -28,15 +28,17 @@ tasks:
       - "rm -rf '{{.G_WSAM_BUILD_DIR}}'"
 
   emscripten:
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_EMSCIPRTEN_DIR}}"
+    sources: ["{{.TASKFILE}}"]
+    generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "init"
       - task: "utils:validate-checksum"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
-    vars:
-      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      OUTPUT_DIR: "{{.G_EMSCIPRTEN_DIR}}"
     cmds:
       - task: "clean-emscripten"
       - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSCIPRTEN_DIR}}'"
@@ -49,19 +51,22 @@ tasks:
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
-    sources: ["{{.TASKFILE}}"]
-    generates: ["{{.CHECKSUM_FILE}}"]
 
   wasm:
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_WSAM_BUILD_DIR}}"
+    sources:
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+      - "src/**/*"
+    generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "emscripten"
       - task: "utils:validate-checksum"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
-    vars:
-      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      OUTPUT_DIR: "{{.G_WSAM_BUILD_DIR}}"
     cmds:
       - task: "clean-wasm"
       - "mkdir '{{.OUTPUT_DIR}}'"
@@ -74,15 +79,10 @@ tasks:
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
-    sources:
-      - "{{.TASKFILE}}"
-      - "CMakeLists.txt"
-      - "src/**/*"
-    generates: ["{{.CHECKSUM_FILE}}"]
 
   init:
     internal: true
-    run: "once"
     silent: true
+    run: "once"
     cmds:
       - "mkdir -p '{{.G_BUILD_DIR}}'"
