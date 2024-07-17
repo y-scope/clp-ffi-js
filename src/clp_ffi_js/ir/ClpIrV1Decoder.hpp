@@ -15,7 +15,8 @@
 
 namespace clp_ffi_js::ir {
 /**
- * Deserializes ZStandard-compressed CLP IR V1 byte streams and formats extracted log events.
+ * Class for deserializing ZStandard-compressed CLP IR V1 byte streams and formating extracted log
+ * events.
  */
 class ClpIrV1Decoder {
 public:
@@ -49,15 +50,17 @@ public:
     /**
      * Retrieves an estimated number of log events.
      *
-     * @return Before `build_idx()` is called, return cFullRangeEndIdx=0, indicating that there is
-     * no event stored in the log.
-     * @return After `build_idx()` is called, return the number of log events that have been
-     * successfully deserialized.
+     * @return The number of log events deserialized if `build_idx()` has been called and returned
+     * successfully.
+     * @return 0 (cFullRangeEndIdx) to indicate there is no event has been deserialized yet by
+     * `build_idx()`.
      */
     [[nodiscard]] auto get_estimated_num_events() const -> size_t;
 
     /**
-     * When applicable, deserializes log events in the range `[beginIdx, endIdx)`.
+     * Deserializes log events in the range `[beginIdx, endIdx)` and buffers the results. Currently,
+     * only full range build is supported, and the buffered bytes of the stream will be released on
+     * success.
      *
      * @param beginIdx
      * @param endIdx
@@ -69,7 +72,7 @@ public:
     [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val;
 
     /**
-     * Decodes the log events in the range `[beginIdx, endIdx)`.
+     * Decodes the deserialized log events in the range `[beginIdx, endIdx)`.
      *
      * @param beginIdx
      * @param endIdx
