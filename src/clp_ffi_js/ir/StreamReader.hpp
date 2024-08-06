@@ -85,7 +85,7 @@ private:
     );
 
     // Variables
-    bool m_full_range_built{false};
+    bool m_read_complete{false};
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_log_events;
 
     std::unique_ptr<char const[]> m_data_buffer;

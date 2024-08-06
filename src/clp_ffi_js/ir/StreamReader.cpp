@@ -99,8 +99,8 @@ auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::va
                 "Partial range index building is not yet supported."
         );
     }
-    if (false == m_full_range_built) {
-        m_full_range_built = true;
+    if (false == m_read_complete) {
+        m_read_complete = true;
         constexpr size_t cDefaultNumLogEvents{500'000};
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
