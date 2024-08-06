@@ -91,7 +91,7 @@ auto StreamReader::get_estimated_num_events() const -> size_t {
 
 auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
     constexpr size_t cFullRangeEndIdx{0};
-    if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
+    if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
