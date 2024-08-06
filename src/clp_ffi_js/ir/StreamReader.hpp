@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
-#define CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
+#ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
+#define CLP_FFI_JS_IR_STREAM_READER_HPP
 
 #include <cstddef>
 #include <memory>
@@ -18,7 +18,7 @@ namespace clp_ffi_js::ir {
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class ClpIrV1Decoder {
+class StreamReader {
 public:
     /**
      * Creates a StreamReader to read from the given array.
@@ -27,19 +27,19 @@ public:
      * @return The created instance.
      * @throw ClpJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder;
+    [[nodiscard]] static auto create(emscripten::val const& data_array) -> StreamReader;
 
     // Destructor
-    ~ClpIrV1Decoder() = default;
+    ~StreamReader() = default;
 
     // Explicitly disable copy constructor and assignment operator
-    ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
-    auto operator=(ClpIrV1Decoder const&) -> ClpIrV1Decoder& = delete;
+    StreamReader(StreamReader const&) = delete;
+    auto operator=(StreamReader const&) -> StreamReader& = delete;
 
     // Define default move constructor
-    ClpIrV1Decoder(ClpIrV1Decoder&&) = default;
+    StreamReader(StreamReader&&) = default;
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
-    auto operator=(ClpIrV1Decoder&&) -> ClpIrV1Decoder& = delete;
+    auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     /**
      * Retrieves an estimated number of log events.
@@ -78,7 +78,7 @@ public:
 
 private:
     // Constructor
-    explicit ClpIrV1Decoder(
+    explicit StreamReader(
             std::unique_ptr<char const[]>&& data_buffer,
             std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
@@ -95,4 +95,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_CLPIRV1DECODER_HPP
+#endif  // CLP_FFI_JS_IR_STREAM_READER_HPP

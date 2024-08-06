@@ -1,4 +1,4 @@
-#include "ClpIrV1Decoder.hpp"
+#include "StreamReader.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -26,9 +26,9 @@
 using namespace std::literals::string_literals;
 
 namespace clp_ffi_js::ir {
-auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder {
+auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     auto const length{data_array["length"].as<size_t>()};
-    SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
+    SPDLOG_INFO("StreamReader::StreamReader() got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
     auto data_buffer{std::make_unique<char const[]>(length)};
@@ -82,14 +82,14 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
         );
     }
 
-    return ClpIrV1Decoder(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
+    return StreamReader(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
 }
 
-auto ClpIrV1Decoder::get_estimated_num_events() const -> size_t {
+auto StreamReader::get_estimated_num_events() const -> size_t {
     return m_log_events.size();
 }
 
-auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
+auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx && cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
@@ -133,7 +133,7 @@ auto ClpIrV1Decoder::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::
     return results;
 }
 
-auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) const -> emscripten::val {
+auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten::val {
     if (m_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
@@ -208,7 +208,7 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) const -> emscripte
     return results;
 }
 
-ClpIrV1Decoder::ClpIrV1Decoder(
+StreamReader::StreamReader(
         std::unique_ptr<char const[]>&& data_buffer,
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
@@ -220,17 +220,17 @@ ClpIrV1Decoder::ClpIrV1Decoder(
 }  // namespace clp_ffi_js::ir
 
 namespace {
-EMSCRIPTEN_BINDINGS(ClpIrV1Decoder) {
-    emscripten::class_<clp_ffi_js::ir::ClpIrV1Decoder>("ClpIrV1Decoder")
+EMSCRIPTEN_BINDINGS(StreamReader) {
+    emscripten::class_<clp_ffi_js::ir::StreamReader>("StreamReader")
             .constructor(
-                    &clp_ffi_js::ir::ClpIrV1Decoder::create,
+                    &clp_ffi_js::ir::StreamReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
             .function(
                     "estimatedNumEvents",
-                    &clp_ffi_js::ir::ClpIrV1Decoder::get_estimated_num_events
+                    &clp_ffi_js::ir::StreamReader::get_estimated_num_events
             )
-            .function("buildIdx", &clp_ffi_js::ir::ClpIrV1Decoder::build_idx)
-            .function("decode", &clp_ffi_js::ir::ClpIrV1Decoder::decode);
+            .function("buildIdx", &clp_ffi_js::ir::StreamReader::build_idx)
+            .function("decode", &clp_ffi_js::ir::StreamReader::decode);
 }
 }  // namespace
