@@ -30,9 +30,12 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("ClpIrV1Decoder::ClpIrV1Decoder() got buffer of length={}", length);
 
+    // Copy array from JavaScript to C++
     auto data_buffer{std::make_unique<char const[]>(length)};
+    // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.get()));
+    // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
     auto const zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()
     };
@@ -52,15 +55,15 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 "Failed to decode encoding type."
         );
     }
-
     if (false == is_four_bytes_encoding) {
         throw ClpJsException(
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
-                "Is not four byte encoding."
+                "IR stream uses unsupported encoding."
         );
     }
+
     auto result{clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>::create(
             *zstd_decompressor
     )};
@@ -72,10 +75,10 @@ auto ClpIrV1Decoder::create(emscripten::val const& data_array) -> ClpIrV1Decoder
                 error_code.message()
         );
         throw ClpJsException(
-                clp::ErrorCode::ErrorCode_MetadataCorrupted,
+                clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
-                "Failed to decompress"
+                "Failed to create deserializer"
         );
     }
 
@@ -140,10 +143,10 @@ auto ClpIrV1Decoder::decode(size_t begin_idx, size_t end_idx) const -> emscripte
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
     auto const results{emscripten::val::array()};
-    std::span<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t> const> const log_events_span(
-            m_log_events.begin() + static_cast<std::ptrdiff_t>(begin_idx),
-            m_log_events.begin() + static_cast<std::ptrdiff_t>(end_idx)
-    );
+    auto log_events_span = std::span{
+            m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(begin_idx),
+            m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(end_idx)
+    };
     for (auto const& log_event : log_events_span) {
         message.clear();
 

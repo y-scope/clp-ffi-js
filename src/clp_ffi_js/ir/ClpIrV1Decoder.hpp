@@ -15,36 +15,30 @@
 
 namespace clp_ffi_js::ir {
 /**
- * Class for deserializing ZStandard-compressed CLP IR V1 byte streams and formating extracted log
- * events.
+ * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
+ * log events.
  */
 class ClpIrV1Decoder {
 public:
     /**
-     * Factory method to create a ClpIrV1Decoder instance by
-     * - Copying an input array into C++ space.
-     * - Constructing a Zstd Decompressor instance.
-     * - Constructing a LogEventDeserializer by decoding the preamble of the IR stream, which
-     * includes the encoding type.
-     * - Passing those to the ClpIrV1Decoder() for their life cycles management.
+     * Creates a StreamReader to read from the given array.
      *
-     * @param data_array JS Uint8Array which contains the Zstd-compressed CLP IR V1 bytes.
-     * @return the created instance.
-     * @throw DecodingException if any error occurs.
+     * @param data_array An array containing a Zstandard-compressed IR stream.
+     * @return The created instance.
+     * @throw ClpJsException if any error occurs.
      */
     [[nodiscard]] static auto create(emscripten::val const& data_array) -> ClpIrV1Decoder;
 
     // Destructor
     ~ClpIrV1Decoder() = default;
 
-    // Explicitly disable copy constructor/assignment
+    // Explicitly disable copy constructor and assignment operator
     ClpIrV1Decoder(ClpIrV1Decoder const&) = delete;
     auto operator=(ClpIrV1Decoder const&) -> ClpIrV1Decoder& = delete;
 
     // Define default move constructor
     ClpIrV1Decoder(ClpIrV1Decoder&&) = default;
-    // Delete assignment operator due to Emscripten (derived from LLVM)
-    // being unable to resolve the move constructor for clp::ir::LogEventDeserializer
+    // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(ClpIrV1Decoder&&) -> ClpIrV1Decoder& = delete;
 
     /**
@@ -62,8 +56,8 @@ public:
      * only full range build is supported, and the buffered bytes of the stream will be released on
      * success.
      *
-     * @param beginIdx
-     * @param endIdx
+     * @param begin_idx
+     * @param end_idx
      * @return Count of the successfully deserialized ("valid") log events and count of any
      * un-deserializable ("invalid") log events within the range
      * @return null if any log event in the range does not exist (e.g., the range exceeds the number
@@ -74,8 +68,8 @@ public:
     /**
      * Decodes the deserialized log events in the range `[beginIdx, endIdx)`.
      *
-     * @param beginIdx
-     * @param endIdx
+     * @param begin_idx
+     * @param end_idx
      * @return The decoded log events on success.
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
