@@ -4,7 +4,7 @@ include(FetchContent)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
 
-project(StreamReader
+project(ClpIrStreamReader
     LANGUAGES CXX C
 )
 
@@ -45,7 +45,7 @@ if (NOT EXISTS ${BOOST_SRC_DIR})
     FetchContent_MakeAvailable(Boost)
 endif ()
 
-set(BIN_NAME "StreamReader" CACHE STRING "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
+set(BIN_NAME "ClpIrStreamReader" CACHE STRING "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
 add_executable(${BIN_NAME})
 
 target_compile_features(${BIN_NAME}

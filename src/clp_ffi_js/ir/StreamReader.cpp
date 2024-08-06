@@ -220,8 +220,8 @@ StreamReader::StreamReader(
 }  // namespace clp_ffi_js::ir
 
 namespace {
-EMSCRIPTEN_BINDINGS(StreamReader) {
-    emscripten::class_<clp_ffi_js::ir::StreamReader>("StreamReader")
+EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
+    emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,
                     emscripten::return_value_policy::take_ownership()
