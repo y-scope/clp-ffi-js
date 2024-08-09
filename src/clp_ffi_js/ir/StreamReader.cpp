@@ -104,9 +104,9 @@ auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::va
         constexpr size_t cDefaultNumLogEvents{500'000};
         m_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
-            auto const result{m_deserializer.deserialize_log_event()};
+            auto result{m_deserializer.deserialize_log_event()};
             if (false == result.has_error()) {
-                m_log_events.emplace_back(result.value());
+                m_log_events.emplace_back(std::move(result.value()));
                 continue;
             }
             auto const error{result.error()};
@@ -150,35 +150,12 @@ auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten:
     for (auto const& log_event : log_events_span) {
         message.clear();
 
-        // TODO: Replace below handlers code by an OSS decoding method once it's added in the future
-        auto const constant_handler = [&](std::string const& value, size_t begin_pos, size_t length
-                                      ) { message.append(value, begin_pos, length); };
-
-        auto const encoded_int_handler = [&](clp::ir::four_byte_encoded_variable_t value) {
-            message.append(clp::ffi::decode_integer_var(value));
-        };
-
-        auto const encoded_float_handler
-                = [&](clp::ir::four_byte_encoded_variable_t encoded_float) {
-                      message.append(clp::ffi::decode_float_var(encoded_float));
-                  };
-
-        auto const dict_var_handler
-                = [&](std::string const& dict_var) { message.append(dict_var); };
-
-        try {
-            clp::ffi::ir_stream::generic_decode_message<true>(
-                    log_event.get_logtype(),
-                    log_event.get_encoded_vars(),
-                    log_event.get_dict_vars(),
-                    constant_handler,
-                    encoded_int_handler,
-                    encoded_float_handler,
-                    dict_var_handler
-            );
-        } catch (clp::ffi::ir_stream::DecodingException const& e) {
-            SPDLOG_ERROR("Failed to decode. Error Code: {}", e.get_error_code());
+        auto const parsed{log_event.get_message().decode_and_unparse()};
+        if (false == parsed.has_value()) {
+            SPDLOG_ERROR("Failed to decode message.");
             break;
+        } else {
+            message.append(parsed.value());
         }
 
         constexpr size_t cLogLevelNone{0};

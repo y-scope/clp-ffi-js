@@ -104,6 +104,7 @@ target_sources(${BIN_NAME}
     src/clp_ffi_js/ir/StreamReader.cpp
 
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ir/EncodedTextAst.cpp
     src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
     src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
