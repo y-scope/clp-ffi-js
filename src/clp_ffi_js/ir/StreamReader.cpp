@@ -158,11 +158,9 @@ auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten:
             message.append(parsed.value());
         }
 
-        constexpr size_t cLogLevelNone{0};
-        constexpr size_t cLogLevelBeginIdx{cLogLevelNone + 1};
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        for (size_t i{cLogLevelBeginIdx}; i < cLogLevelNames.size(); ++i) {
+        for (size_t i{cValidLogLevelsBeginIdx}; i < cLogLevelNames.size(); ++i) {
             if (message.substr(cLogLevelPositionInMessages).starts_with(cLogLevelNames[i])) {
                 log_level = i;
                 break;

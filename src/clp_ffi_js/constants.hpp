@@ -5,6 +5,8 @@
 #include <string_view>
 
 namespace clp_ffi_js {
+constexpr size_t cLogLevelNone{0};
+constexpr size_t cValidLogLevelsBeginIdx{cLogLevelNone + 1};
 constexpr std::array<std::string_view, 7> cLogLevelNames{
         "NONE",  // This should not be used.
         "TRACE",
