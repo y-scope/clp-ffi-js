@@ -131,7 +131,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     return m_log_events.size();
 }
 
-auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten::val {
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscripten::val {
     if (m_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
@@ -206,6 +206,6 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
             .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
-            .function("decode", &clp_ffi_js::ir::StreamReader::decode);
+            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range);
 }
 }  // namespace
