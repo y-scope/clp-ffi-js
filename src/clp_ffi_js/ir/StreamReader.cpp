@@ -89,7 +89,7 @@ auto StreamReader::get_estimated_num_events() const -> size_t {
     return m_log_events.size();
 }
 
-auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val {
+auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> size_t {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
@@ -128,10 +128,7 @@ auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::va
         m_zstd_decompressor->close();
     }
 
-    auto results{emscripten::val::object()};
-    results.set("numValidEvents", m_log_events.size());
-    results.set("numInvalidEvents", 0);
-    return results;
+    return m_log_events.size();
 }
 
 auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten::val {

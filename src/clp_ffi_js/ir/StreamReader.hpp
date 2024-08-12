@@ -58,12 +58,9 @@ public:
      *
      * @param begin_idx
      * @param end_idx
-     * @return Count of the successfully deserialized ("valid") log events and count of any
-     * un-deserializable ("invalid") log events within the range
-     * @return null if any log event in the range does not exist (e.g., the range exceeds the number
-     * of log events in the file).
+     * @return Count of the successfully deserialized ("valid") log events.
      */
-    [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> emscripten::val;
+    [[nodiscard]] auto build_idx(size_t begin_idx, size_t end_idx) -> size_t;
 
     /**
      * Decodes the deserialized log events in the range `[beginIdx, endIdx)`.
