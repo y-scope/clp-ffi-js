@@ -42,14 +42,14 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     /**
-     * Retrieves an estimated number of log events.
+     * Retrieves a number of buffered log events.
      *
      * @return The number of log events deserialized if `build_idx()` has been called and returned
      * successfully.
      * @return 0 (cFullRangeEndIdx) to indicate there is no event has been deserialized yet by
      * `build_idx()`.
      */
-    [[nodiscard]] auto get_estimated_num_events() const -> size_t;
+    [[nodiscard]] auto get_num_events_buffered() const -> size_t;
 
     /**
      * Deserializes log events in the range `[beginIdx, endIdx)` and buffers the results. Currently,

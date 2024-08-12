@@ -85,7 +85,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     return StreamReader(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
 }
 
-auto StreamReader::get_estimated_num_events() const -> size_t {
+auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_log_events.size();
 }
 
@@ -203,7 +203,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             )
             .function(
                     "estimatedNumEvents",
-                    &clp_ffi_js::ir::StreamReader::get_estimated_num_events
+                    &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
             .function("buildIdx", &clp_ffi_js::ir::StreamReader::build_idx)
             .function("decode", &clp_ffi_js::ir::StreamReader::decode);
