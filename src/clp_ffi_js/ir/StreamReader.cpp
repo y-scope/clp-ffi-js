@@ -152,9 +152,8 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
         if (false == parsed.has_value()) {
             SPDLOG_ERROR("Failed to decode message.");
             break;
-        } else {
-            message.append(parsed.value());
         }
+        message.append(parsed.value());
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
