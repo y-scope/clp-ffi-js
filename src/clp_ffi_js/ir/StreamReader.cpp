@@ -205,7 +205,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "estimatedNumEvents",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
-            .function("buildIdx", &clp_ffi_js::ir::StreamReader::deserialize_range)
+            .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
             .function("decode", &clp_ffi_js::ir::StreamReader::decode);
 }
 }  // namespace
