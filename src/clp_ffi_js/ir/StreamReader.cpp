@@ -160,11 +160,13 @@ auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten:
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        for (size_t i{cValidLogLevelsBeginIdx}; i < cLogLevelNames.size(); ++i) {
-            if (message.substr(cLogLevelPositionInMessages).starts_with(cLogLevelNames[i])) {
-                log_level = i;
-                break;
-            }
+        auto const log_level_name_it = std::find_if(
+            cLogLevelNames.begin() + cValidLogLevelsBeginIdx, cLogLevelNames.end(),
+            [&](std::string_view level) {
+                return message.substr(cLogLevelPositionInMessages).starts_with(level);
+            });
+        if (log_level_name_it != cLogLevelNames.end()) {
+            log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
         }
 
         m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
