@@ -138,15 +138,15 @@ auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten:
         return emscripten::val::null();
     }
 
-    size_t log_num{begin_idx + 1};
-    std::string message;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    message.reserve(cDefaultReservedMessageLength);
-    auto const results{emscripten::val::array()};
     auto log_events_span = std::span{
             m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(begin_idx),
             m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(end_idx)
     };
+    std::string message;
+    constexpr size_t cDefaultReservedMessageLength{512};
+    message.reserve(cDefaultReservedMessageLength);
+    size_t log_num{begin_idx + 1};
+    auto const results{emscripten::val::array()};
     for (auto const& log_event : log_events_span) {
         message.clear();
 
