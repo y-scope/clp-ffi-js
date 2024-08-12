@@ -77,7 +77,7 @@ private:
     // Constructor
     explicit StreamReader(
             std::vector<char>&& data_buffer,
-            std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
+            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
     );
 
@@ -86,7 +86,7 @@ private:
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
 
     std::unique_ptr<std::vector<char>> m_data_buffer;
-    std::shared_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
+    std::unique_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
     clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> m_deserializer;
     clp::TimestampPattern m_ts_pattern;
 };

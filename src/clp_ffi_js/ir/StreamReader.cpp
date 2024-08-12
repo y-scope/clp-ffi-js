@@ -37,8 +37,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
-    auto const zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()
-    };
+    auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
     bool is_four_bytes_encoding{true};
@@ -82,7 +81,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         );
     }
 
-    return StreamReader(std::move(data_buffer), zstd_decompressor, std::move(result.value()));
+    return StreamReader(std::move(data_buffer), std::move(zstd_decompressor), std::move(result.value()));
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
@@ -185,7 +184,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 
 StreamReader::StreamReader(
         std::vector<char>&& data_buffer,
-        std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
+        std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
         : m_data_buffer{std::make_unique<std::vector<char>>(std::move(data_buffer))},
