@@ -125,6 +125,7 @@ auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> emscripten::va
             );
         }
         m_data_buffer.reset(nullptr);
+        m_zstd_decompressor->close();
     }
 
     auto results{emscripten::val::object()};
