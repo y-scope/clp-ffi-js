@@ -85,7 +85,11 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         );
     }
 
-    return StreamReader(std::move(data_buffer), std::move(zstd_decompressor), std::move(result.value()));
+    return StreamReader(
+            std::move(data_buffer),
+            std::move(zstd_decompressor),
+            std::move(result.value())
+    );
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
@@ -140,8 +144,10 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
     }
 
     auto log_events_span = std::span{
-            m_encoded_log_events.begin() + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
-            m_encoded_log_events.begin() + static_cast<decltype(m_encoded_log_events)::difference_type>(end_idx)
+            m_encoded_log_events.begin()
+                    + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
+            m_encoded_log_events.begin()
+                    + static_cast<decltype(m_encoded_log_events)::difference_type>(end_idx)
     };
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
@@ -160,11 +166,13 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        auto const *log_level_name_it = std::find_if(
-            cLogLevelNames.begin() + cValidLogLevelsBeginIdx, cLogLevelNames.end(),
-            [&](std::string_view level) {
-                return message.substr(cLogLevelPositionInMessages).starts_with(level);
-            });
+        auto const* log_level_name_it = std::find_if(
+                cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
+                cLogLevelNames.end(),
+                [&](std::string_view level) {
+                    return message.substr(cLogLevelPositionInMessages).starts_with(level);
+                }
+        );
         if (log_level_name_it != cLogLevelNames.end()) {
             log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
         }
