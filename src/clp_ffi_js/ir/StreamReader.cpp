@@ -7,6 +7,7 @@
 #include <string>
 #include <system_error>
 #include <utility>
+#include <vector>
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/encoding_methods.hpp>
