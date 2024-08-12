@@ -86,7 +86,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
-    return m_log_events.size();
+    return m_encoded_log_events.size();
 }
 
 auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
@@ -102,11 +102,11 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     if (false == m_read_complete) {
         m_read_complete = true;
         constexpr size_t cDefaultNumLogEvents{500'000};
-        m_log_events.reserve(cDefaultNumLogEvents);
+        m_encoded_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
             auto result{m_deserializer.deserialize_log_event()};
             if (false == result.has_error()) {
-                m_log_events.emplace_back(std::move(result.value()));
+                m_encoded_log_events.emplace_back(std::move(result.value()));
                 continue;
             }
             auto const error{result.error()};
@@ -128,17 +128,17 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
         m_zstd_decompressor->close();
     }
 
-    return m_log_events.size();
+    return m_encoded_log_events.size();
 }
 
 auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscripten::val {
-    if (m_log_events.size() < end_idx || begin_idx >= end_idx) {
+    if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
         return emscripten::val::null();
     }
 
     auto log_events_span = std::span{
-            m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(begin_idx),
-            m_log_events.begin() + static_cast<decltype(m_log_events)::difference_type>(end_idx)
+            m_encoded_log_events.begin() + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
+            m_encoded_log_events.begin() + static_cast<decltype(m_encoded_log_events)::difference_type>(end_idx)
     };
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};

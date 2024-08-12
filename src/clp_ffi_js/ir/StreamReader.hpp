@@ -83,7 +83,7 @@ private:
 
     // Variables
     bool m_read_complete{false};
-    std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_log_events;
+    std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
 
     std::unique_ptr<std::vector<char>> m_data_buffer;
     std::shared_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
