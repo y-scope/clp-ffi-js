@@ -157,7 +157,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        auto const log_level_name_it = std::find_if(
+        auto const *log_level_name_it = std::find_if(
             cLogLevelNames.begin() + cValidLogLevelsBeginIdx, cLogLevelNames.end(),
             [&](std::string_view level) {
                 return message.substr(cLogLevelPositionInMessages).starts_with(level);
