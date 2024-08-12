@@ -31,15 +31,15 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     SPDLOG_INFO("StreamReader::StreamReader() got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
-    auto data_buffer{std::make_unique<char const[]>(length)};
+    std::vector<char> data_buffer(length);
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
-            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.get()));
+            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
     auto const zstd_decompressor{std::make_shared<clp::streaming_compression::zstd::Decompressor>()
     };
-    zstd_decompressor->open(data_buffer.get(), length);
+    zstd_decompressor->open(data_buffer.data(), length);
 
     bool is_four_bytes_encoding{true};
     if (auto const err{
@@ -184,11 +184,11 @@ auto StreamReader::decode(size_t begin_idx, size_t end_idx) const -> emscripten:
 }
 
 StreamReader::StreamReader(
-        std::unique_ptr<char const[]>&& data_buffer,
+        std::vector<char>&& data_buffer,
         std::shared_ptr<clp::streaming_compression::zstd::Decompressor> zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
-        : m_data_buffer{std::move(data_buffer)},
+        : m_data_buffer{std::make_unique<std::vector<char>>(std::move(data_buffer))},
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
