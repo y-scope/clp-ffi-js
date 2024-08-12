@@ -89,7 +89,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_log_events.size();
 }
 
-auto StreamReader::build_idx(size_t begin_idx, size_t end_idx) -> size_t {
+auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
         throw ClpJsException(
@@ -205,7 +205,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "estimatedNumEvents",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
-            .function("buildIdx", &clp_ffi_js::ir::StreamReader::build_idx)
+            .function("buildIdx", &clp_ffi_js::ir::StreamReader::deserialize_range)
             .function("decode", &clp_ffi_js::ir::StreamReader::decode);
 }
 }  // namespace
