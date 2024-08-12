@@ -202,7 +202,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     emscripten::return_value_policy::take_ownership()
             )
             .function(
-                    "estimatedNumEvents",
+                    "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
             .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
