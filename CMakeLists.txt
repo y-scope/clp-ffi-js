@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.16)
 
 include(FetchContent)
 
@@ -39,8 +39,10 @@ string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
     "Directory containing Boost sources, fetched from official release if non existent.")
 if (NOT EXISTS ${BOOST_SRC_DIR})
-    # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare() for CMake 3.24 and above
-    cmake_policy(SET CMP0135 NEW)
+    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
+        # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare()
+        cmake_policy(SET CMP0135 NEW)
+    endif ()
 
     FetchContent_Declare(
         Boost
