@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 include(FetchContent)
 
 if (NOT CMAKE_TOOLCHAIN_FILE)
-    set(
-            CMAKE_TOOLCHAIN_FILE
-            "${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/\
+    set(CMAKE_TOOLCHAIN_FILE
+        "${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/\
 Emscripten.cmake"
     )
 endif ()
@@ -14,9 +13,11 @@ project(ClpIrStreamReader
     LANGUAGES CXX C
 )
 
-# Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20 sources.
+# Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20
+# sources.
 if (NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
-    message(FATAL_ERROR "This project is intended to be built with Unix Makefiles on a Unix system.")
+    message(FATAL_ERROR
+        "This project is intended to be built with Unix Makefiles on a Unix system.")
 endif ()
 
 # Enable compile commands by default if the generator supports it.
@@ -33,27 +34,30 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 # Download and extract Boost
-set(BOOST_VERSION "1.85.0" CACHE STRING "Version of Boost library to be used when compiling CLP sources.")
+set(BOOST_VERSION "1.85.0" CACHE STRING
+    "Version of Boost library to be used when compiling CLP sources.")
 string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
 
 set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
     "Directory containing Boost sources, fetched from official release if non existent.")
 if (NOT EXISTS ${BOOST_SRC_DIR})
-    if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
+    if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
         # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare()
         cmake_policy(SET CMP0135 NEW)
     endif ()
 
     FetchContent_Declare(
         Boost
-        URL "https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
+        URL "https://archives.boost.io/release/${BOOST_VERSION}/source/\
+boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
         SOURCE_DIR ${BOOST_SRC_DIR}
     )
     message(STATUS "Fetching Boost from official release.")
     FetchContent_MakeAvailable(Boost)
 endif ()
 
-set(BIN_NAME "ClpIrStreamReader" CACHE STRING "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
+set(BIN_NAME "ClpIrStreamReader" CACHE STRING
+    "Binary name for the generated .js file and .wasm file of CLP IR V1 Decoder.")
 add_executable(${BIN_NAME})
 
 target_compile_features(${BIN_NAME}
@@ -70,13 +74,15 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
         -sENVIRONMENT=worker
         CACHE STRING "Extra liner flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" FORCE
     )
-    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling optimization linker flags ${EXTRA_LINKER_FLAGS}")
+    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling optimization linker flags \
+${EXTRA_LINKER_FLAGS}")
 else ()
     set(EXTRA_LINKER_FLAGS
         -sENVIRONMENT=node
         CACHE STRING "Extra liner flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" FORCE
     )
-    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling debug flags linker for ${EXTRA_LINKER_FLAGS}")
+    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling debug flags linker for \
+${EXTRA_LINKER_FLAGS}")
 endif ()
 target_link_options(${BIN_NAME} PRIVATE
     ${EXTRA_LINKER_FLAGS}
