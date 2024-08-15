@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 3.22)
 
 include(FetchContent)
 
-include("${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake")
+if (NOT CMAKE_TOOLCHAIN_FILE)
+    set(
+            CMAKE_TOOLCHAIN_FILE
+            "${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/\
+Emscripten.cmake"
+    )
+endif ()
 
 project(ClpIrStreamReader
     LANGUAGES CXX C
