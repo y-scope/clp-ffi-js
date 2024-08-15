@@ -71,9 +71,8 @@ tasks:
       - task: "clean-wasm"
       - "mkdir '{{.OUTPUT_DIR}}'"
       - |-
-        cd "{{.OUTPUT_DIR}}"
-        cmake "{{.ROOT_DIR}}" -G "Unix Makefiles"
-        make
+        cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
+        cmake --build "{{.OUTPUT_DIR}}" --parallel
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
