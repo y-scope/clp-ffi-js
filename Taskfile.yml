@@ -43,7 +43,7 @@ tasks:
       - task: "clean-emscripten"
       - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSCIPRTEN_DIR}}'"
       - |-
-        cd {{.G_EMSCIPRTEN_DIR}}
+        cd "{{.G_EMSCIPRTEN_DIR}}"
         ./emsdk install latest
         ./emsdk activate latest
       # This command must be last
