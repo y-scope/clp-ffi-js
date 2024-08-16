@@ -1,12 +1,12 @@
 clp-ffi-js a JavaScript FFI library for [CLP]. It currently supports decoding log events from CLP IR
-streams. Other CLP features are being added iteratively.
+streams. Other CLP features are being added incrementally.
 
 You can use GitHub issues to [request features][feature-req] or [report bugs][bug-report].
 
 # Building
 
 ## Requirements
-* CMake 3.16.3 or higher
+* CMake 3.16 or higher
 * GNU Make
 * Python 3
 * [Task]
