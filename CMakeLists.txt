@@ -59,7 +59,7 @@ boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
     FetchContent_MakeAvailable(Boost)
 endif ()
 
-set(BIN_NAME "ClpIrStreamReader" CACHE STRING
+set(BIN_NAME "ClpFfijs" CACHE STRING
     "Binary name for the generated .js and .wasm files.")
 add_executable(${BIN_NAME})
 
