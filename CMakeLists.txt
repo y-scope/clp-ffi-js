@@ -77,16 +77,13 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
         -sENVIRONMENT=worker
         CACHE STRING "Extra linker flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" FORCE
     )
-    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling optimization linker flags \
-${EXTRA_LINKER_FLAGS}")
 else ()
     set(EXTRA_LINKER_FLAGS
         -sENVIRONMENT=node
         CACHE STRING "Extra linker flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" FORCE
     )
-    message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Enabling debug flags linker for \
-${EXTRA_LINKER_FLAGS}")
 endif ()
+message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${EXTRA_LINKER_FLAGS}")
 target_link_options(${BIN_NAME} PRIVATE
     ${EXTRA_LINKER_FLAGS}
     -sALLOW_MEMORY_GROWTH
