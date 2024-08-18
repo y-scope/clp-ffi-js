@@ -36,28 +36,21 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 # Download and extract Boost
-set(BOOST_VERSION "1.85.0" CACHE STRING
-    "Version of Boost library to use.")
+set(BOOST_VERSION "1.85.0" CACHE STRING "Version of Boost library to use.")
 string(REPLACE "." "_" BOOST_ARCHIVE_VERSION_PART ${BOOST_VERSION})
-
-set(BOOST_SRC_DIR "${CMAKE_CURRENT_BINARY_DIR}/boost" CACHE STRING
-    "Directory containing Boost sources, fetched from official release if non existent.")
-if (NOT EXISTS ${BOOST_SRC_DIR})
-    if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
-        # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare()
-        cmake_policy(SET CMP0135 NEW)
-    endif ()
-
-    FetchContent_Declare(
-        Boost
-        URL "https://archives.boost.io/release/${BOOST_VERSION}/source/\
-boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
-        URL_MD5 "53aeccc3167909ee770e34469f8dd592"
-        SOURCE_DIR ${BOOST_SRC_DIR}
-    )
-    message(STATUS "Fetching Boost.")
-    FetchContent_MakeAvailable(Boost)
+if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.24)
+    # Sets DOWNLOAD_EXTRACT_TIMESTAMP=ON in FetchContent_Declare()
+    cmake_policy(SET CMP0135 NEW)
 endif ()
+FetchContent_Declare(
+    Boost
+    URL "https://archives.boost.io/release/${BOOST_VERSION}/source/\
+boost_${BOOST_ARCHIVE_VERSION_PART}.tar.gz"
+    URL_MD5 "53aeccc3167909ee770e34469f8dd592"
+)
+message(STATUS "Fetching Boost.")
+FetchContent_MakeAvailable(Boost)
+message("Boost sources are successfully fetched to ${boost_SOURCE_DIR}")
 
 set(BIN_NAME "ClpFfijs" CACHE STRING
     "Binary name for the generated .js and .wasm files.")
@@ -103,7 +96,7 @@ target_compile_definitions(${BIN_NAME}
 
 target_include_directories(${BIN_NAME}
     PRIVATE
-    ${BOOST_SRC_DIR}
+    ${boost_SOURCE_DIR}
     src/
     src/submodules/clp/components/core/src
     src/submodules/clp/components/core/src/clp
