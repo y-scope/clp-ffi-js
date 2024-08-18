@@ -116,10 +116,11 @@ target_include_directories(${BIN_NAME}
     src/submodules/zstd/lib
 )
 
-target_sources(${BIN_NAME}
-    PRIVATE
+set(SRC_CLP_FFI_JS
     src/clp_ffi_js/ir/StreamReader.cpp
+)
 
+set(SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
     src/submodules/clp/components/core/src/clp/ir/EncodedTextAst.cpp
     src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
@@ -127,9 +128,13 @@ target_sources(${BIN_NAME}
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
     src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
+)
 
+set(SRC_FMT
     src/submodules/fmt/src/format.cc
+)
 
+set(SRC_ZSTD
     src/submodules/zstd/lib/common/entropy_common.c
     src/submodules/zstd/lib/common/error_private.c
     src/submodules/zstd/lib/common/fse_decompress.c
@@ -140,4 +145,12 @@ target_sources(${BIN_NAME}
     src/submodules/zstd/lib/decompress/zstd_ddict.c
     src/submodules/zstd/lib/decompress/zstd_decompress_block.c
     src/submodules/zstd/lib/decompress/zstd_decompress.c
+)
+
+target_sources(${BIN_NAME}
+    PRIVATE
+    ${SRC_CLP_FFI_JS}
+    ${SRC_CLP_CORE}
+    ${SRC_FMT}
+    ${SRC_ZSTD}
 )
