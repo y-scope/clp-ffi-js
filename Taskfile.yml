@@ -6,25 +6,25 @@ includes:
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
-  G_WSAM_BUILD_DIR: "{{.G_BUILD_DIR}}/wasm"
+  G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
 
 tasks:
   default:
-    deps: ["wasm"]
+    deps: ["clp-ffi-js"]
 
   clean:
     cmds:
       - task: "clean-emsdk"
-      - task: "clean-wasm"
+      - task: "clean-clp-ffi-js"
       - "rm -rf '{{.G_BUILD_DIR}}'"
 
   clean-emsdk:
     cmds:
       - "rm -rf '{{.G_EMSDK_DIR}}'"
 
-  clean-wasm:
+  clean-clp-ffi-js:
     cmds:
-      - "rm -rf '{{.G_WSAM_BUILD_DIR}}'"
+      - "rm -rf '{{.G_CLP_FFI_JS_BUILD_DIR}}'"
 
   emsdk:
     vars:
@@ -51,10 +51,10 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
-  wasm:
+  clp-ffi-js:
     vars:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      OUTPUT_DIR: "{{.G_WSAM_BUILD_DIR}}"
+      OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
       - "{{.TASKFILE}}"
       - "CMakeLists.txt"
@@ -67,7 +67,7 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
-      - task: "clean-wasm"
+      - task: "clean-clp-ffi-js"
       - "mkdir '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
