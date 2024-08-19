@@ -6,6 +6,7 @@ includes:
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
 
 tasks:
@@ -28,7 +29,7 @@ tasks:
 
   emsdk:
     vars:
-      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
@@ -57,7 +58,7 @@ tasks:
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
       - "{{.TASKFILE}}"
-      - "{{.G_BUILD_DIR}}/emsdk.md5"
+      - "{{.G_EMSDK_CHECKSUM}}"
       - "CMakeLists.txt"
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
