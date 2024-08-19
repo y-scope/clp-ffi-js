@@ -69,12 +69,10 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
         -flto
         --closure=1
         -sENVIRONMENT=worker
-        STRING "Extra linker flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 else ()
     set(CLP_FFI_JS_EXTRA_LINKER_FLAGS
         -sENVIRONMENT=node
-        STRING "Extra linker flags for CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}"
     )
 endif ()
 message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${EXTRA_LINKER_FLAGS}")
