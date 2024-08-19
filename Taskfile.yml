@@ -5,9 +5,9 @@ includes:
 
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
+  G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
-  G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
 
 tasks:
   default:
@@ -26,6 +26,34 @@ tasks:
   clean-clp-ffi-js:
     cmds:
       - "rm -rf '{{.G_CLP_FFI_JS_BUILD_DIR}}'"
+
+  clp-ffi-js:
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
+    sources:
+      - "{{.G_EMSDK_CHECKSUM}}"
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+      - "src/**/*"
+    generates: ["{{.CHECKSUM_FILE}}"]
+    deps:
+      - "emsdk"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    cmds:
+      - task: "clean-clp-ffi-js"
+      - "mkdir '{{.OUTPUT_DIR}}'"
+      - |-
+        cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
+        cmake --build "{{.OUTPUT_DIR}}" --parallel
+      # This command must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
   emsdk:
     vars:
@@ -46,34 +74,6 @@ tasks:
         cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
         ./emsdk activate latest
-      # This command must be last
-      - task: "utils:compute-checksum"
-        vars:
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
-
-  clp-ffi-js:
-    vars:
-      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
-    sources:
-      - "{{.TASKFILE}}"
-      - "{{.G_EMSDK_CHECKSUM}}"
-      - "CMakeLists.txt"
-      - "src/**/*"
-    generates: ["{{.CHECKSUM_FILE}}"]
-    deps:
-      - "emsdk"
-      - task: "utils:validate-checksum"
-        vars:
-          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-    cmds:
-      - task: "clean-clp-ffi-js"
-      - "mkdir '{{.OUTPUT_DIR}}'"
-      - |-
-        cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
