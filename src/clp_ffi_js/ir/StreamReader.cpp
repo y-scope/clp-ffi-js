@@ -27,8 +27,10 @@
 
 #include <clp_ffi_js/ClpJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
+#include <clp_ffi_js/ir/StreamReaderContext.hpp>
 
 using namespace std::literals::string_literals;
+using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
 auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
@@ -68,7 +70,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         );
     }
 
-    auto result{clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>::create(
+    auto result{clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(
             *zstd_decompressor
     )};
     if (result.has_error()) {
@@ -86,11 +88,11 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         );
     }
 
-    return StreamReader(
+    auto stream_reader_context{StreamReaderContext<four_byte_encoded_variable_t>(
             std::move(data_buffer),
             std::move(zstd_decompressor),
-            std::move(result.value())
-    );
+            std::move(result.value()))};
+    return StreamReader(std::move(stream_reader_context));
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
@@ -107,12 +109,11 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 "Partial range index building is not yet supported."
         );
     }
-    if (false == m_read_complete) {
-        m_read_complete = true;
+    if (nullptr != m_stream_reader_context) {
         constexpr size_t cDefaultNumLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumLogEvents);
         while (true) {
-            auto result{m_deserializer.deserialize_log_event()};
+            auto result{m_stream_reader_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
                 m_encoded_log_events.emplace_back(std::move(result.value()));
                 continue;
@@ -132,8 +133,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                     "Failed to decompress: "s + error.category().name() + ":" + error.message()
             );
         }
-        m_data_buffer.reset(nullptr);
-        m_zstd_decompressor->close();
+        m_stream_reader_context.reset(nullptr);
     }
 
     return m_encoded_log_events.size();
@@ -195,14 +195,11 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 }
 
 StreamReader::StreamReader(
-        clp::Array<char>&& data_buffer,
-        std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
-        clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
+        StreamReaderContext<four_byte_encoded_variable_t>&& stream_reader_context
 )
-        : m_data_buffer{std::make_unique<clp::Array<char>>(std::move(data_buffer))},
-          m_zstd_decompressor{std::move(zstd_decompressor)},
-          m_deserializer{std::move(deserializer)},
-          m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
+        : m_stream_reader_context {std::make_unique<StreamReaderContext<four_byte_encoded_variable_t>>(
+            std::move(stream_reader_context))},
+          m_ts_pattern {stream_reader_context.get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {

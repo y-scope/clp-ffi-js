@@ -14,6 +14,8 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#include <clp_ffi_js/ir/StreamReaderContext.hpp>
+
 namespace clp_ffi_js::ir {
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -76,19 +78,11 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(
-            clp::Array<char>&& data_buffer,
-            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
-            clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
-    );
+    explicit StreamReader(StreamReaderContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_context);
 
     // Variables
-    bool m_read_complete{false};
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-
-    std::unique_ptr<clp::Array<char>> m_data_buffer;
-    std::unique_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
-    clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> m_deserializer;
+    std::unique_ptr<StreamReaderContext<clp::ir::four_byte_encoded_variable_t>> m_stream_reader_context;
     clp::TimestampPattern m_ts_pattern;
 };
 }  // namespace clp_ffi_js::ir
