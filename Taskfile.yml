@@ -48,7 +48,7 @@ tasks:
       - "mkdir '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel
+        cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfijs
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
