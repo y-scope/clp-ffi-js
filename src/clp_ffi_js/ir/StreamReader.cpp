@@ -144,7 +144,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
         return emscripten::val::null();
     }
 
-    auto log_events_span = std::span{
+    std::span log_events_span{
             m_encoded_log_events.begin()
                     + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
             m_encoded_log_events.begin()
