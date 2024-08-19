@@ -57,6 +57,7 @@ tasks:
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
       - "{{.TASKFILE}}"
+      - "{{.G_BUILD_DIR}}/emsdk.md5"
       - "CMakeLists.txt"
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
