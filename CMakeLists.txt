@@ -31,8 +31,9 @@ endif ()
 # Set the default build type to Release if not specified
 if (NOT CMAKE_BUILD_TYPE)
     set(CLP_FFI_JS_DEFAULT_BUILD_TYPE "Release")
-    message(STATUS "No build type specified. Setting to '${DEFAULT_BUILD_TYPE}'.")
-    set(CMAKE_BUILD_TYPE "${DEFAULT_BUILD_TYPE}" CACHE STRING "Choose the type of build." FORCE)
+    message(STATUS "No build type specified. Setting to '${CLP_FFI_JS_DEFAULT_BUILD_TYPE}'.")
+    set(CMAKE_BUILD_TYPE "${CLP_FFI_JS_DEFAULT_BUILD_TYPE}"
+        CACHE STRING "Choose the type of build." FORCE)
 endif ()
 
 # Download and extract Boost
