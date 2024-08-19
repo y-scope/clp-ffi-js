@@ -75,7 +75,7 @@ else ()
         -sENVIRONMENT=node
     )
 endif ()
-message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${EXTRA_LINKER_FLAGS}")
+message("CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${CLP_FFI_JS_EXTRA_LINKER_FLAGS}")
 target_link_options(${CLP_FFI_JS_BIN_NAME} PRIVATE
     ${CLP_FFI_JS_EXTRA_LINKER_FLAGS}
     -sALLOW_MEMORY_GROWTH
