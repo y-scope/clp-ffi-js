@@ -44,8 +44,7 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
-      - task: "clean-clp-ffi-js"
-      - "mkdir '{{.OUTPUT_DIR}}'"
+      - "mkdir -p '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
         cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfijs
