@@ -5,7 +5,7 @@ includes:
 
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
-  G_EMSCIPRTEN_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_WSAM_BUILD_DIR: "{{.G_BUILD_DIR}}/wasm"
 
 tasks:
@@ -14,22 +14,22 @@ tasks:
 
   clean:
     cmds:
-      - task: "clean-emscripten"
+      - task: "clean-emsdk"
       - task: "clean-wasm"
       - "rm -rf '{{.G_BUILD_DIR}}'"
 
-  clean-emscripten:
+  clean-emsdk:
     cmds:
-      - "rm -rf '{{.G_EMSCIPRTEN_DIR}}'"
+      - "rm -rf '{{.G_EMSDK_DIR}}'"
 
   clean-wasm:
     cmds:
       - "rm -rf '{{.G_WSAM_BUILD_DIR}}'"
 
-  emscripten:
+  emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
-      OUTPUT_DIR: "{{.G_EMSCIPRTEN_DIR}}"
+      OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
@@ -39,10 +39,10 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
-      - task: "clean-emscripten"
-      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSCIPRTEN_DIR}}'"
+      - task: "clean-emsdk"
+      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
       - |-
-        cd "{{.G_EMSCIPRTEN_DIR}}"
+        cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
         ./emsdk activate latest
       # This command must be last
@@ -61,7 +61,7 @@ tasks:
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      - "emscripten"
+      - "emsdk"
       - task: "utils:validate-checksum"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
