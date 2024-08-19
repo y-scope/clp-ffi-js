@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/encoding_methods.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
@@ -35,7 +36,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     SPDLOG_INFO("StreamReader::StreamReader() got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
-    std::vector<char> data_buffer(length);
+    clp::Array<char> data_buffer(length);
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
@@ -194,11 +195,11 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 }
 
 StreamReader::StreamReader(
-        std::vector<char>&& data_buffer,
+        clp::Array<char>&& data_buffer,
         std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
         clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
 )
-        : m_data_buffer{std::make_unique<std::vector<char>>(std::move(data_buffer))},
+        : m_data_buffer{std::make_unique<clp::Array<char>>(std::move(data_buffer))},
           m_zstd_decompressor{std::move(zstd_decompressor)},
           m_deserializer{std::move(deserializer)},
           m_ts_pattern{m_deserializer.get_timestamp_pattern()} {}
