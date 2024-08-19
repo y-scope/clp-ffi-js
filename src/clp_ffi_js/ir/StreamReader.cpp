@@ -14,7 +14,6 @@
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
-#include <clp/ffi/encoding_methods.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
@@ -144,7 +143,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
         return emscripten::val::null();
     }
 
-    std::span log_events_span{
+    const std::span log_events_span{
             m_encoded_log_events.begin()
                     + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
             m_encoded_log_events.begin()
@@ -167,13 +166,13 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
-        auto const* log_level_name_it = std::find_if(
+        auto const log_level_name_it{std::find_if(
                 cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
                 cLogLevelNames.end(),
                 [&](std::string_view level) {
                     return message.substr(cLogLevelPositionInMessages).starts_with(level);
                 }
-        );
+        )};
         if (log_level_name_it != cLogLevelNames.end()) {
             log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
         }
@@ -199,7 +198,7 @@ StreamReader::StreamReader(
 )
         : m_stream_reader_context {std::make_unique<StreamReaderContext<four_byte_encoded_variable_t>>(
             std::move(stream_reader_context))},
-          m_ts_pattern {stream_reader_context.get_deserializer().get_timestamp_pattern()} {}
+          m_ts_pattern {m_stream_reader_context->get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {

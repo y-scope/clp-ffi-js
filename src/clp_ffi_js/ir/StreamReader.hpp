@@ -5,11 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include <clp/Array.hpp>
 #include <clp/ir/LogEvent.hpp>
-#include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>

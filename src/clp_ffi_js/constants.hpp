@@ -2,6 +2,7 @@
 #define CLP_FFI_JS_CONSTANTS_HPP
 
 #include <array>
+#include <cstddef>
 #include <string_view>
 
 namespace clp_ffi_js {

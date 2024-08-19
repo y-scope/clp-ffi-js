@@ -1,7 +1,13 @@
 #ifndef CLP_FFI_JS_IR_STREAM_READER_CONTEXT_HPP
 #define CLP_FFI_JS_IR_STREAM_READER_CONTEXT_HPP
 
+#include <memory>
+#include <utility>
+
 #include <clp/Array.hpp>
+#include <clp/ir/LogEventDeserializer.hpp>
+#include <clp/ir/types.hpp>
+#include <clp/streaming_compression/zstd/Decompressor.hpp>
 
 namespace clp_ffi_js::ir {
 template <typename encoded_variable_t>
