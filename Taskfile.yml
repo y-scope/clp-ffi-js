@@ -4,7 +4,6 @@ includes:
   utils: "tools/yscope-dev-utils/taskfiles/utils.yml"
 
 vars:
-  # Paths
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_EMSCIPRTEN_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_WSAM_BUILD_DIR: "{{.G_BUILD_DIR}}/wasm"
