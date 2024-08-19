@@ -84,5 +84,4 @@ tasks:
     internal: true
     silent: true
     run: "once"
-    cmds:
-      - "mkdir -p '{{.G_BUILD_DIR}}'"
+    cmds: ["mkdir -p '{{.G_BUILD_DIR}}'"]
