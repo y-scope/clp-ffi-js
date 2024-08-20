@@ -37,7 +37,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     SPDLOG_INFO("StreamReader::StreamReader() got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
-    clp::Array<char> data_buffer(length);
+    clp::Array<char> data_buffer{length};
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
@@ -91,7 +91,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
             std::move(data_buffer),
             std::move(zstd_decompressor),
             std::move(result.value()))};
-    return StreamReader(std::move(stream_reader_context));
+    return StreamReader{std::move(stream_reader_context)};
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
