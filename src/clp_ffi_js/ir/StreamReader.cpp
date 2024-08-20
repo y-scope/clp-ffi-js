@@ -53,20 +53,20 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
     {
         SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw ClpJsException(
+        throw ClpJsException{
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
                 "Failed to decode encoding type."
-        );
+        };
     }
     if (false == is_four_bytes_encoding) {
-        throw ClpJsException(
+        throw ClpJsException{
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
                 "IR stream uses unsupported encoding."
-        );
+        };
     }
 
     auto result{clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(
@@ -79,18 +79,18 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
                 error_code.category().name(),
                 error_code.message()
         );
-        throw ClpJsException(
+        throw ClpJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
                 "Failed to create deserializer"
-        );
+        };
     }
 
-    auto stream_reader_context{StreamReaderContext<four_byte_encoded_variable_t>(
+    auto stream_reader_context{StreamReaderContext<four_byte_encoded_variable_t>{
             std::move(data_buffer),
             std::move(zstd_decompressor),
-            std::move(result.value()))};
+            std::move(result.value())}};
     return StreamReader{std::move(stream_reader_context)};
 }
 
@@ -101,12 +101,12 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
 auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
-        throw ClpJsException(
+        throw ClpJsException{
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
                 "Partial range index building is not yet supported."
-        );
+        };
     }
     if (nullptr != m_stream_reader_context) {
         constexpr size_t cDefaultNumLogEvents{500'000};
@@ -125,12 +125,12 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 SPDLOG_ERROR("File contains an incomplete IR stream");
                 break;
             }
-            throw ClpJsException(
+            throw ClpJsException{
                     clp::ErrorCode::ErrorCode_Corrupt,
                     __FILENAME__,
                     __LINE__,
                     "Failed to decompress: "s + error.category().name() + ":" + error.message()
-            );
+            };
         }
         m_stream_reader_context.reset(nullptr);
     }
