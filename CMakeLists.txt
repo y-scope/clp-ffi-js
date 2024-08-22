@@ -51,7 +51,7 @@ boost_${CLP_FFI_JS_BOOST_ARCHIVE_VERSION_PART}.tar.gz"
 )
 message(STATUS "Fetching Boost.")
 FetchContent_MakeAvailable(Boost)
-message("Boost sources are successfully fetched to ${boost_SOURCE_DIR}")
+message("Boost sources successfully fetched into ${boost_SOURCE_DIR}")
 
 set(CLP_FFI_JS_BIN_NAME "ClpFfijs" CACHE STRING
     "Binary name for the generated .js and .wasm files.")
