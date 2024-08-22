@@ -87,7 +87,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         };
     }
 
-     StreamReaderContext<four_byte_encoded_variable_t> stream_reader_context{
+    StreamReaderContext<four_byte_encoded_variable_t> stream_reader_context{
             std::move(data_buffer),
             std::move(zstd_decompressor),
             std::move(result.value())
