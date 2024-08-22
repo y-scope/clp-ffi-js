@@ -34,7 +34,7 @@ using clp::ir::four_byte_encoded_variable_t;
 namespace clp_ffi_js::ir {
 auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     auto const length{data_array["length"].as<size_t>()};
-    SPDLOG_INFO("StreamReader::StreamReader() got buffer of length={}", length);
+    SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
     clp::Array<char> data_buffer{length};
@@ -75,7 +75,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     if (result.has_error()) {
         auto const error_code{result.error()};
         SPDLOG_CRITICAL(
-                "Failed to decompress: {}:{}",
+                "Failed to create deserializer: {}:{}",
                 error_code.category().name(),
                 error_code.message()
         );
@@ -105,7 +105,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
-                "Partial range index building is not yet supported."
+                "Partial range deserialization is not yet supported."
         };
     }
     if (nullptr != m_stream_reader_context) {
@@ -129,7 +129,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                     clp::ErrorCode::ErrorCode_Corrupt,
                     __FILENAME__,
                     __LINE__,
-                    "Failed to decompress: "s + error.category().name() + ":" + error.message()
+                    "Failed to deserialize: "s + error.category().name() + ":" + error.message()
             };
         }
         m_stream_reader_context.reset(nullptr);

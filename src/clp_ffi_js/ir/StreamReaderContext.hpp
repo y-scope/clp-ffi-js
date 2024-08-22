@@ -10,6 +10,12 @@
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 
 namespace clp_ffi_js::ir {
+/**
+ * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
+ * A `clp::ir::LogEventDeserializer` that reads from a
+ * `clp::streaming_compression::zstd::Decompressor`, which in turn reads from a `clp::Array`.
+ * @tparam encoded_variable_t Type of encoded variables encoded in the stream.
+ */
 template <typename encoded_variable_t>
 class StreamReaderContext {
 public:

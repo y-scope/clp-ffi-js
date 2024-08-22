@@ -32,7 +32,7 @@ public:
     // Destructor
     ~StreamReader() = default;
 
-    // Explicitly disable copy constructor and assignment operator
+    // Disable copy constructor and assignment operator
     StreamReader(StreamReader const&) = delete;
     auto operator=(StreamReader const&) -> StreamReader& = delete;
 
@@ -42,23 +42,20 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     /**
-     * Retrieves a number of buffered log events.
-     *
-     * @return The number of log events deserialized if `build_idx()` has been called and returned
-     * successfully.
-     * @return 0 (cFullRangeEndIdx) to indicate there is no event has been deserialized yet by
-     * `build_idx()`.
+     * @return The number of events buffered.
      */
     [[nodiscard]] auto get_num_events_buffered() const -> size_t;
 
     /**
-     * Deserializes log events in the range `[beginIdx, endIdx)` and buffers the results. Currently,
-     * only full range build is supported, and the buffered bytes of the stream will be released on
-     * success.
+     * Deserializes and buffers log events in the range `[beginIdx, endIdx)`. After the stream has
+     * been exhausted, it will be deallocated.
+     *
+     * NOTE: Currently, this class only supports deserializing the full range of log events in the
+     * stream.
      *
      * @param begin_idx
      * @param end_idx
-     * @return Count of the successfully deserialized ("valid") log events.
+     * @return The number of successfully deserialized ("valid") log events.
      */
     [[nodiscard]] auto deserialize_range(size_t begin_idx, size_t end_idx) -> size_t;
 
@@ -67,7 +64,11 @@ public:
      *
      * @param begin_idx
      * @param end_idx
-     * @return The decoded log events on success.
+     * @return An array where each element is a decoded log event represented by an array of:
+     * - The log event's message
+     * - The log event's timestamp as milliseconds since the Unix epoch
+     * - The log event's log level as an integer that indexes into `cLogLevelNames`
+     * - The log event's number (1-indexed) in the stream
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
      */
