@@ -76,11 +76,14 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(StreamReaderContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_context);
+    explicit StreamReader(
+            StreamReaderContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_context
+    );
 
     // Variables
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderContext<clp::ir::four_byte_encoded_variable_t>> m_stream_reader_context;
+    std::unique_ptr<StreamReaderContext<clp::ir::four_byte_encoded_variable_t>>
+            m_stream_reader_context;
     clp::TimestampPattern m_ts_pattern;
 };
 }  // namespace clp_ffi_js::ir

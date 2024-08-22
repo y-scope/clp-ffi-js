@@ -69,9 +69,9 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         };
     }
 
-    auto result{clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(
-            *zstd_decompressor
-    )};
+    auto result{
+            clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
+    };
     if (result.has_error()) {
         auto const error_code{result.error()};
         SPDLOG_CRITICAL(
@@ -90,7 +90,8 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
     auto stream_reader_context{StreamReaderContext<four_byte_encoded_variable_t>{
             std::move(data_buffer),
             std::move(zstd_decompressor),
-            std::move(result.value())}};
+            std::move(result.value())
+    }};
     return StreamReader{std::move(stream_reader_context)};
 }
 
@@ -143,7 +144,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
         return emscripten::val::null();
     }
 
-    const std::span log_events_span{
+    std::span const log_events_span{
             m_encoded_log_events.begin()
                     + static_cast<decltype(m_encoded_log_events)::difference_type>(begin_idx),
             m_encoded_log_events.begin()
@@ -193,12 +194,12 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
     return results;
 }
 
-StreamReader::StreamReader(
-        StreamReaderContext<four_byte_encoded_variable_t>&& stream_reader_context
+StreamReader::StreamReader(StreamReaderContext<four_byte_encoded_variable_t>&& stream_reader_context
 )
-        : m_stream_reader_context {std::make_unique<StreamReaderContext<four_byte_encoded_variable_t>>(
-            std::move(stream_reader_context))},
-          m_ts_pattern {m_stream_reader_context->get_deserializer().get_timestamp_pattern()} {}
+        : m_stream_reader_context{std::make_unique<
+                  StreamReaderContext<four_byte_encoded_variable_t>>(std::move(stream_reader_context
+          ))},
+          m_ts_pattern{m_stream_reader_context->get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {
