@@ -35,6 +35,10 @@ if(NOT CMAKE_EXPORT_COMPILE_COMMANDS)
         FORCE
     )
 endif()
+if(CMAKE_EXPORT_COMPILE_COMMANDS)
+    # Disable response files since `clang-tidy` doesn't seem to be able to use them
+    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
+endif()
 
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
@@ -102,11 +106,13 @@ target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE embind)
 
 target_compile_definitions(${CLP_FFI_JS_BIN_NAME} PUBLIC SPDLOG_FMT_EXTERNAL=1)
 
+# NOTE: We mark the include directories below as system headers so that the compiler (including
+# `clang-tidy`) doesn't generate warnings from them.
 target_include_directories(
     ${CLP_FFI_JS_BIN_NAME}
+    SYSTEM
     PRIVATE
         ${boost_SOURCE_DIR}
-        src/
         src/submodules/clp/components/core/src
         src/submodules/clp/components/core/src/clp
         src/submodules/clp/components/core/submodules
@@ -114,6 +120,8 @@ target_include_directories(
         src/submodules/spdlog/include
         src/submodules/zstd/lib
 )
+
+target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
 
 set(CLP_FFI_JS_SRC_MAIN src/clp_ffi_js/ir/StreamReader.cpp)
 

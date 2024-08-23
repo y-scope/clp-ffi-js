@@ -167,6 +167,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
 
         constexpr size_t cLogLevelPositionInMessages{1};
         size_t log_level{cLogLevelNone};
+        // NOLINTNEXTLINE(readability-qualified-auto)
         auto const log_level_name_it{std::find_if(
                 cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
                 cLogLevelNames.end(),
