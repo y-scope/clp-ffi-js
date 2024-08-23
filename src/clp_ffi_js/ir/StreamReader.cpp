@@ -110,8 +110,8 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
         };
     }
     if (nullptr != m_stream_reader_context) {
-        constexpr size_t cDefaultNumLogEvents{500'000};
-        m_encoded_log_events.reserve(cDefaultNumLogEvents);
+        constexpr size_t cDefaultNumReservedLogEvents{500'000};
+        m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
         while (true) {
             auto result{m_stream_reader_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
