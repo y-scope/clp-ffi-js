@@ -1,0 +1,86 @@
+version: "3"
+
+includes:
+  utils: "tools/yscope-dev-utils/taskfiles/utils.yml"
+
+vars:
+  G_BUILD_DIR: "{{.ROOT_DIR}}/build"
+  G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
+  G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
+
+tasks:
+  default:
+    deps: ["clp-ffi-js"]
+
+  clean:
+    cmds:
+      - task: "clean-emsdk"
+      - task: "clean-clp-ffi-js"
+      - "rm -rf '{{.G_BUILD_DIR}}'"
+
+  clean-emsdk:
+    cmds:
+      - "rm -rf '{{.G_EMSDK_DIR}}'"
+
+  clean-clp-ffi-js:
+    cmds:
+      - "rm -rf '{{.G_CLP_FFI_JS_BUILD_DIR}}'"
+
+  clp-ffi-js:
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
+    sources:
+      - "{{.G_EMSDK_CHECKSUM}}"
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+      - "src/**/*"
+    generates: ["{{.CHECKSUM_FILE}}"]
+    deps:
+      - "emsdk"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    cmds:
+      - "mkdir -p '{{.OUTPUT_DIR}}'"
+      - |-
+        cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
+        cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfijs
+      # This command must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+
+  emsdk:
+    vars:
+      CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+    sources: ["{{.TASKFILE}}"]
+    generates: ["{{.CHECKSUM_FILE}}"]
+    deps:
+      - "init"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    cmds:
+      - task: "clean-emsdk"
+      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
+      - |-
+        cd "{{.G_EMSDK_DIR}}"
+        ./emsdk install latest
+        ./emsdk activate latest
+      # This command must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+
+  init:
+    internal: true
+    silent: true
+    run: "once"
+    cmds: ["mkdir -p '{{.G_BUILD_DIR}}'"]
