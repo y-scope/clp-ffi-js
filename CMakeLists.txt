@@ -27,7 +27,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
 endif()
 
 # Enable compile commands by default if the generator supports it.
-if(NOT CMAKE_EXPORT_COMPILE_COMMANDS)
+if(NOT DEFINED CMAKE_EXPORT_COMPILE_COMMANDS)
     set(CMAKE_EXPORT_COMPILE_COMMANDS
         ON
         CACHE BOOL
