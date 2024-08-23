@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_IR_STREAM_READER_CONTEXT_HPP
-#define CLP_FFI_JS_IR_STREAM_READER_CONTEXT_HPP
+#ifndef CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
+#define CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
 
 #include <memory>
 #include <utility>
@@ -17,10 +17,10 @@ namespace clp_ffi_js::ir {
  * @tparam encoded_variable_t Type of encoded variables encoded in the stream.
  */
 template <typename encoded_variable_t>
-class StreamReaderContext {
+class StreamReaderDataContext {
 public:
     // Constructors
-    explicit StreamReaderContext(
+    explicit StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
             std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
@@ -30,15 +30,15 @@ public:
               m_deserializer{std::move(deserializer)} {}
 
     // Disable copy constructor and assignment operator
-    StreamReaderContext(StreamReaderContext const&) = delete;
-    auto operator=(StreamReaderContext const&) -> StreamReaderContext& = delete;
+    StreamReaderDataContext(StreamReaderDataContext const&) = delete;
+    auto operator=(StreamReaderDataContext const&) -> StreamReaderDataContext& = delete;
 
     // Default move constructor and assignment operator
-    StreamReaderContext(StreamReaderContext&&) = default;
-    auto operator=(StreamReaderContext&&) -> StreamReaderContext& = default;
+    StreamReaderDataContext(StreamReaderDataContext&&) = default;
+    auto operator=(StreamReaderDataContext&&) -> StreamReaderDataContext& = default;
 
     // Destructor
-    ~StreamReaderContext() = default;
+    ~StreamReaderDataContext() = default;
 
     // Methods
     /**
@@ -55,4 +55,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_STREAM_READER_CONTEXT_HPP
+#endif  // CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP

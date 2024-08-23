@@ -26,7 +26,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/StreamReaderContext.hpp>
+#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
@@ -87,12 +87,12 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         };
     }
 
-    StreamReaderContext<four_byte_encoded_variable_t> stream_reader_context{
+    StreamReaderDataContext<four_byte_encoded_variable_t> stream_reader_data_context{
             std::move(data_buffer),
             std::move(zstd_decompressor),
             std::move(result.value())
     };
-    return StreamReader{std::move(stream_reader_context)};
+    return StreamReader{std::move(stream_reader_data_context)};
 }
 
 auto StreamReader::get_num_events_buffered() const -> size_t {
@@ -109,11 +109,11 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 "Partial range deserialization is not yet supported."
         };
     }
-    if (nullptr != m_stream_reader_context) {
+    if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
         while (true) {
-            auto result{m_stream_reader_context->get_deserializer().deserialize_log_event()};
+            auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
                 m_encoded_log_events.emplace_back(std::move(result.value()));
                 continue;
@@ -133,7 +133,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                     "Failed to deserialize: "s + error.category().name() + ":" + error.message()
             };
         }
-        m_stream_reader_context.reset(nullptr);
+        m_stream_reader_data_context.reset(nullptr);
     }
 
     return m_encoded_log_events.size();
@@ -194,12 +194,12 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> emscr
     return results;
 }
 
-StreamReader::StreamReader(StreamReaderContext<four_byte_encoded_variable_t>&& stream_reader_context
+StreamReader::StreamReader(StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
 )
-        : m_stream_reader_context{std::make_unique<
-                  StreamReaderContext<four_byte_encoded_variable_t>>(std::move(stream_reader_context
+        : m_stream_reader_data_context{std::make_unique<
+                  StreamReaderDataContext<four_byte_encoded_variable_t>>(std::move(stream_reader_data_context
           ))},
-          m_ts_pattern{m_stream_reader_context->get_deserializer().get_timestamp_pattern()} {}
+          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {

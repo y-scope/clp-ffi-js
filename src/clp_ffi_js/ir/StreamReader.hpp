@@ -11,7 +11,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include <clp_ffi_js/ir/StreamReaderContext.hpp>
+#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
 /**
@@ -77,13 +77,13 @@ public:
 private:
     // Constructor
     explicit StreamReader(
-            StreamReaderContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_context
+            StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_data_context
     );
 
     // Variables
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderContext<clp::ir::four_byte_encoded_variable_t>>
-            m_stream_reader_context;
+    std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
+            m_stream_reader_data_context;
     clp::TimestampPattern m_ts_pattern;
 };
 }  // namespace clp_ffi_js::ir
