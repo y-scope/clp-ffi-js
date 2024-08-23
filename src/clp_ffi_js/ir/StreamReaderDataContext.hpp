@@ -20,7 +20,7 @@ template <typename encoded_variable_t>
 class StreamReaderDataContext {
 public:
     // Constructors
-    explicit StreamReaderDataContext(
+    StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
             std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
             clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t> deserializer
