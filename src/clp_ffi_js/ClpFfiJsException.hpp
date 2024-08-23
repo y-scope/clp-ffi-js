@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_CLPJSEXCEPTION_HPP
-#define CLP_FFI_JS_CLPJSEXCEPTION_HPP
+#ifndef CLP_FFI_JS_ClpFfiJsException_HPP
+#define CLP_FFI_JS_ClpFfiJsException_HPP
 
 #include <string>
 #include <utility>
@@ -8,10 +8,10 @@
 #include <clp/TraceableException.hpp>
 
 namespace clp_ffi_js {
-class ClpJsException : public clp::TraceableException {
+class ClpFfiJsException : public clp::TraceableException {
 public:
     // Constructors
-    ClpJsException(
+    ClpFfiJsException(
             clp::ErrorCode error_code,
             char const* const filename,
             int line_number,
@@ -28,4 +28,4 @@ private:
 };
 }  // namespace clp_ffi_js
 
-#endif  // CLP_FFI_JS_CLPJSEXCEPTION_HPP
+#endif  // CLP_FFI_JS_ClpFfiJsException_HPP

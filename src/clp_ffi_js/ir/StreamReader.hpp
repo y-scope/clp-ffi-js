@@ -25,7 +25,7 @@ public:
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
-     * @throw ClpJsException if any error occurs.
+     * @throw ClpFfiJsException if any error occurs.
      */
     [[nodiscard]] static auto create(emscripten::val const& data_array) -> StreamReader;
 

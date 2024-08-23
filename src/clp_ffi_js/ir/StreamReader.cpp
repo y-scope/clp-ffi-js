@@ -24,7 +24,7 @@
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
-#include <clp_ffi_js/ClpJsException.hpp>
+#include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/StreamReaderContext.hpp>
 
@@ -53,7 +53,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
     {
         SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw ClpJsException{
+        throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
@@ -61,7 +61,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
         };
     }
     if (false == is_four_bytes_encoding) {
-        throw ClpJsException{
+        throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
@@ -79,7 +79,7 @@ auto StreamReader::create(emscripten::val const& data_array) -> StreamReader {
                 error_code.category().name(),
                 error_code.message()
         );
-        throw ClpJsException{
+        throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
@@ -102,7 +102,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
 auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
-        throw ClpJsException{
+        throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Unsupported,
                 __FILENAME__,
                 __LINE__,
@@ -126,7 +126,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 SPDLOG_ERROR("File contains an incomplete IR stream");
                 break;
             }
-            throw ClpJsException{
+            throw ClpFfiJsException{
                     clp::ErrorCode::ErrorCode_Corrupt,
                     __FILENAME__,
                     __LINE__,
