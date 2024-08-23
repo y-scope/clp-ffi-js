@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_ClpFfiJsException_HPP
-#define CLP_FFI_JS_ClpFfiJsException_HPP
+#ifndef CLP_FFI_JS_CLPFFIJSEXCEPTION_HPP
+#define CLP_FFI_JS_CLPFFIJSEXCEPTION_HPP
 
 #include <string>
 #include <utility>
@@ -28,4 +28,4 @@ private:
 };
 }  // namespace clp_ffi_js
 
-#endif  // CLP_FFI_JS_ClpFfiJsException_HPP
+#endif  // CLP_FFI_JS_CLPFFIJSEXCEPTION_HPP
