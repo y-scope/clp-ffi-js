@@ -76,9 +76,8 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(
-            StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&& stream_reader_data_context
-    );
+    explicit StreamReader(StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&&
+                                  stream_reader_data_context);
 
     // Variables
     std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
