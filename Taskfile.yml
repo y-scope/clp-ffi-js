@@ -73,6 +73,9 @@ tasks:
         cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
         ./emsdk activate latest
+      - |-
+        cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
+        PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
