@@ -55,6 +55,7 @@ tasks:
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
   emsdk:
+    run: "once"
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
@@ -66,6 +67,12 @@ tasks:
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
+          EXCLUDE_PATHS: &emsdk_checksum_exclude_paths
+            - "upstream/emscripten/cache/sanity.txt"
+            - "upstream/emscripten/cache/symbol_lists"
+            - "upstream/emscripten/cache/symbol_lists.lock"
+            - "upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/lto"
+            - "upstream/emscripten/tools/__pycache__"
     cmds:
       - task: "clean-emsdk"
       - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
@@ -78,6 +85,7 @@ tasks:
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATHS: *emsdk_checksum_exclude_paths
 
   init:
     internal: true
