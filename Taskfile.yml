@@ -47,7 +47,7 @@ tasks:
       - "mkdir -p '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfijs
+        cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfiJs
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
@@ -73,6 +73,9 @@ tasks:
         cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
         ./emsdk activate latest
+      - |-
+        cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
+        PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
       # This command must be last
       - task: "utils:compute-checksum"
         vars:

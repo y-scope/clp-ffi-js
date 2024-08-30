@@ -71,7 +71,7 @@ FetchContent_MakeAvailable(Boost)
 message("Boost sources successfully fetched into ${boost_SOURCE_DIR}")
 
 set(CLP_FFI_JS_BIN_NAME
-    "ClpFfijs"
+    "ClpFfiJs"
     CACHE STRING
     "Binary name for the generated .js and .wasm files."
 )
@@ -101,6 +101,7 @@ target_link_options(
         -sEXPORT_ES6
         -sMODULARIZE
         -sWASM_BIGINT
+        --emit-tsd ${CLP_FFI_JS_BIN_NAME}.d.ts
 )
 target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE embind)
 
