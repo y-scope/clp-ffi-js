@@ -55,7 +55,6 @@ tasks:
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
   emsdk:
-    run: "once"
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
