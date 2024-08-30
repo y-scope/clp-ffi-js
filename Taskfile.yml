@@ -68,11 +68,15 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
           EXCLUDE_PATHS: &emsdk_checksum_exclude_paths
+            - "upstream/emscripten/__pycache__"
             - "upstream/emscripten/cache/sanity.txt"
             - "upstream/emscripten/cache/symbol_lists"
             - "upstream/emscripten/cache/symbol_lists.lock"
             - "upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/lto"
+            - "upstream/emscripten/third_party/leb128/__pycache__"
             - "upstream/emscripten/tools/__pycache__"
+            - "upstream/emscripten/tools/ports/__pycache__"
+            - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
       - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
