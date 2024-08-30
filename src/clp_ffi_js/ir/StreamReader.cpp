@@ -139,9 +139,9 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodeResultsTsType {
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
-        return DecodeResultsTsType(emscripten::val::null());
+        return DecodedResultsTsType(emscripten::val::null());
     }
 
     std::span const log_events_span{
@@ -192,7 +192,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
         ++log_num;
     }
 
-    return DecodeResultsTsType(results);
+    return DecodedResultsTsType(results);
 }
 
 StreamReader::StreamReader(
@@ -208,7 +208,7 @@ StreamReader::StreamReader(
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
-    emscripten::register_type<clp_ffi_js::ir::DecodeResultsTsType>(
+    emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
