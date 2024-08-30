@@ -32,7 +32,7 @@ using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
-auto StreamReader::create(DataArrayType const& data_array) -> StreamReader {
+auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
@@ -139,9 +139,9 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodeResultsType {
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodeResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
-        return DecodeResultsType(emscripten::val::null());
+        return DecodeResultsTsType(emscripten::val::null());
     }
 
     std::span const log_events_span{
@@ -192,7 +192,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
         ++log_num;
     }
 
-    return DecodeResultsType(results);
+    return DecodeResultsTsType(results);
 }
 
 StreamReader::StreamReader(
@@ -207,8 +207,8 @@ StreamReader::StreamReader(
 
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
-    emscripten::register_type<clp_ffi_js::ir::DataArrayType>("Uint8Array");
-    emscripten::register_type<clp_ffi_js::ir::DecodeResultsType>(
+    emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
+    emscripten::register_type<clp_ffi_js::ir::DecodeResultsTsType>(
             "Array<[string, number, number, number]>"
     );
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")

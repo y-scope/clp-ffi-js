@@ -14,8 +14,8 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
-EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(DecodeResultsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(DecodeResultsTsType);
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -30,7 +30,7 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayType const& data_array) -> StreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> StreamReader;
 
     // Destructor
     ~StreamReader() = default;
@@ -75,7 +75,7 @@ public:
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
      */
-    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) const -> DecodeResultsType;
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) const -> DecodeResultsTsType;
 
 private:
     // Constructor
