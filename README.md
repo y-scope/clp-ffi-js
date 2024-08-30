@@ -9,7 +9,8 @@ You can use GitHub issues to [request features][feature-req] or [report bugs][bu
 * CMake 3.16 or higher
 * GNU Make
 * Python 3
-* [Task]
+* [Task] 3.38.0 or higher, where [References](https://taskfile.dev/usage/#referencing-other-variables) are available as 
+a non-experimental feature.
 
 ## Setup
 Initialize and update submodules:
