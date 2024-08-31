@@ -6,6 +6,9 @@ includes:
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
+  G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
+  G_CLP_FFI_JS_TARGET_NAME: "ClpFfiJs"
+  G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
 
@@ -29,14 +32,14 @@ tasks:
 
   clp-ffi-js:
     vars:
-      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      CHECKSUM_FILE: "{{.G_CLP_FFI_JS_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
       - "CMakeLists.txt"
       - "src/**/*"
-    generates: ["{{.CHECKSUM_FILE}}"]
+    generates: [ "{{.CHECKSUM_FILE}}" ]
     deps:
       - "emsdk"
       - task: "utils:validate-checksum"
@@ -47,7 +50,7 @@ tasks:
       - "mkdir -p '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel --target ClpFfiJs
+        cmake --build "{{.OUTPUT_DIR}}" --parallel --target "{{.G_CLP_FFI_JS_TARGET_NAME}}"
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
@@ -92,6 +95,32 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
           EXCLUDE_PATHS: *emsdk_checksum_exclude_paths
+
+  package:
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
+      OUTPUT_DIR: "{{.G_DIST_DIR}}"
+    sources:
+      - "{{.TASKFILE}}"
+    generates: ["{{.CHECKSUM_FILE}}"]
+    deps:
+      - "clp-ffi-js"
+      - task: "utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    cmds:
+      - "rm -rf {{.OUTPUT_DIR}}"
+      - >-
+        rsync -a
+        "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_NAME}}."{d.ts,js,wasm}
+        "{{.OUTPUT_DIR}}/"
+      - "npm pack"
+      # This command must be last
+      - task: "utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
   init:
     internal: true
