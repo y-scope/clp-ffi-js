@@ -2,6 +2,7 @@
 .task
 build
 cmake-build-*
+dist
 
 # IDEs
 .idea
