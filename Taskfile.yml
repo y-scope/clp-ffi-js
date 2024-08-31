@@ -39,7 +39,7 @@ tasks:
       - "{{.TASKFILE}}"
       - "CMakeLists.txt"
       - "src/**/*"
-    generates: [ "{{.CHECKSUM_FILE}}" ]
+    generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "emsdk"
       - task: "utils:validate-checksum"
