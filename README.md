@@ -1,5 +1,5 @@
-clp-ffi-js is a JavaScript FFI library for [CLP]. It currently supports decoding log events from CLP IR
-streams. Other CLP features are being added incrementally.
+clp-ffi-js is a JavaScript FFI library for [CLP]. It currently supports decoding log events from CLP
+IR streams. Other CLP features are being added incrementally.
 
 You can use GitHub issues to [request features][feature-req] or [report bugs][bug-report].
 
