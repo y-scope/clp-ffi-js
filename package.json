@@ -1,0 +1,27 @@
+{
+  "name": "clp-ffi-js",
+  "version": "0.1.0",
+  "description": "clp-ffi-js a JavaScript FFI library for CLP.",
+  "author": "YScope Inc. <dev@yscope.com>",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/y-scope/clp-ffi-js#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/y-scope/clp-ffi-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/y-scope/clp-ffi-js/issues"
+  },
+  "scripts": {
+    "release": "git diff --exit-code && npm publish"
+  },
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/ClpFfiJs.js",
+      "types": "./dist/ClpFfiJs.d.ts"
+    }
+  }
+}
