@@ -16,7 +16,7 @@
     "release": "git diff --exit-code && npm publish"
   },
   "files": [
-    "dist"
+    "./dist"
   ],
   "exports": {
     ".": {
