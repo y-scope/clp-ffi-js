@@ -210,8 +210,8 @@ void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
     m_filtered_log_event_indices.clear();
 
     // Check if the filter is empty
-    if (logLevelFilter.isNull() || logLevelFilter["length"].as<int>() == 0) {
-        m_filtered_log_event_indices = create_indices_vector(m_encoded_log_events.size());
+    if (logLevelFilter.isNull()) {
+        m_is_filtered = false;
         return;
     }
 
@@ -232,20 +232,20 @@ void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
     }
 }
 
-    auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
-        // Convert C++ vector to JavaScript array using EM_ASM
-        emscripten::val js_array = emscripten::val::array();
-        for (size_t index : m_filtered_log_event_indices) {
-            EM_ASM_(
-                {
-                    Emval.toValue($0).push($1);
-                },
-                js_array.as_handle(),
-                index
-            );
-        }
-        return FilterIndicesType(js_array);
+auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
+    // Convert C++ vector to JavaScript array using EM_ASM
+    emscripten::val js_array = emscripten::val::array();
+    for (size_t index : m_filtered_log_event_indices) {
+        EM_ASM_(
+            {
+                Emval.toValue($0).push($1);
+            },
+            js_array.as_handle(),
+            index
+        );
     }
+    return FilterIndicesType(js_array);
+}
 
 
 auto StreamReader::create_indices_vector(int length) -> std::vector<size_t> {
@@ -262,6 +262,7 @@ StreamReader::StreamReader(
                   std::move(stream_reader_data_context)
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+          m_is_filtered = false;
 }  // namespace clp_ffi_js::ir
 
 
