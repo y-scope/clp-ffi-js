@@ -81,7 +81,13 @@ tasks:
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
-      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
+      - >-
+        git clone
+        https://github.com/emscripten-core/emsdk.git
+        --branch 3.1.68
+        --single-branch
+        --recurse-submodules
+        "{{.G_EMSDK_DIR}}"
       - |-
         cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
