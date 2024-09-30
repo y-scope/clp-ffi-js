@@ -84,9 +84,9 @@ tasks:
       - >-
         git clone
         https://github.com/emscripten-core/emsdk.git
-        --branch 3.1.68
-        --single-branch
-        --recurse-submodules
+        --branch 3.1.67
+        --depth 1
+        --shallow-submodules
         "{{.G_EMSDK_DIR}}"
       - |-
         cd "{{.G_EMSDK_DIR}}"
