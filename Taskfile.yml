@@ -86,7 +86,7 @@ tasks:
       - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
       - |-
         cd "{{.G_EMSDK_DIR}}"
-        ./emsdk install {{.EMSDK_VERSION}} 
+        ./emsdk install {{.EMSDK_VERSION}}
         ./emsdk activate {{.EMSDK_VERSION}}
       - |-
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
