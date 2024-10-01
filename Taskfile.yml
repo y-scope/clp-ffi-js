@@ -60,6 +60,7 @@ tasks:
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      # Lock emsdk to version 3.1.67 to work around issue #6.
       EMSDK_VERSION: "3.1.67"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
@@ -82,7 +83,6 @@ tasks:
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
-      # emsdk is locked to version 3.1.67 to work around issue #6.
       - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
       - |-
         cd "{{.G_EMSDK_DIR}}"
