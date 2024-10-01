@@ -15,8 +15,8 @@
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
+#include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
@@ -46,31 +46,8 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    bool is_four_bytes_encoding{true};
-    if (auto const err{
-                clp::ffi::ir_stream::get_encoding_type(*zstd_decompressor, is_four_bytes_encoding)
-        };
-        clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
-    {
-        SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_MetadataCorrupted,
-                __FILENAME__,
-                __LINE__,
-                "Failed to decode encoding type."
-        };
-    }
-    if (false == is_four_bytes_encoding) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                "IR stream uses unsupported encoding."
-        };
-    }
-
     auto result{
-            clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
+            clp::ffi::ir_stream::Deserializer::create(*zstd_decompressor)
     };
     if (result.has_error()) {
         auto const error_code{result.error()};
@@ -87,7 +64,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
         };
     }
 
-    StreamReaderDataContext<four_byte_encoded_variable_t> stream_reader_data_context{
+    StreamReaderDataContext stream_reader_data_context{
             std::move(data_buffer),
             std::move(zstd_decompressor),
             std::move(result.value())
@@ -112,8 +89,9 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
+        auto &reader{m_stream_reader_data_context->get_reader()};
         while (true) {
-            auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
+            auto result{m_stream_reader_data_context->get_deserializer().deserialize_to_next_log_event(reader)};
             if (false == result.has_error()) {
                 m_encoded_log_events.emplace_back(std::move(result.value()));
                 continue;
@@ -150,43 +128,19 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
             m_encoded_log_events.begin()
                     + static_cast<decltype(m_encoded_log_events)::difference_type>(end_idx)
     };
-    std::string message;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    message.reserve(cDefaultReservedMessageLength);
     size_t log_num{begin_idx + 1};
     auto const results{emscripten::val::array()};
     for (auto const& log_event : log_events_span) {
-        message.clear();
-
-        auto const parsed{log_event.get_message().decode_and_unparse()};
-        if (false == parsed.has_value()) {
+        auto const json{log_event.serialize_to_json()};
+        if (false == json.has_value()) {
             SPDLOG_ERROR("Failed to decode message.");
             break;
         }
-        message.append(parsed.value());
-
-        constexpr size_t cLogLevelPositionInMessages{1};
-        size_t log_level{cLogLevelNone};
-        // NOLINTNEXTLINE(readability-qualified-auto)
-        auto const log_level_name_it{std::find_if(
-                cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
-                cLogLevelNames.end(),
-                [&](std::string_view level) {
-                    return message.substr(cLogLevelPositionInMessages).starts_with(level);
-                }
-        )};
-        if (log_level_name_it != cLogLevelNames.end()) {
-            log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
-        }
-
-        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
 
         EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
+                { Emval.toValue($0).push([UTF8ToString($1), $2]); },
                 results.as_handle(),
-                message.c_str(),
-                log_event.get_timestamp(),
-                log_level,
+                json.value().dump().c_str(),
                 log_num
         );
         ++log_num;
@@ -196,20 +150,18 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
 }
 
 StreamReader::StreamReader(
-        StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
+        StreamReaderDataContext&& stream_reader_data_context
 )
-        : m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<four_byte_encoded_variable_t>>(
+        : m_stream_reader_data_context{std::make_unique<StreamReaderDataContext>(
                   std::move(stream_reader_data_context)
-          )},
-          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+          )} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
-            "Array<[string, number, number, number]>"
+            "Array<[string, number]>"
     );
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(

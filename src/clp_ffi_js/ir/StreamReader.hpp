@@ -6,8 +6,7 @@
 #include <vector>
 
 #include <clp/ir/LogEvent.hpp>
-#include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
+#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
@@ -79,14 +78,11 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&&
-                                  stream_reader_data_context);
+    explicit StreamReader(StreamReaderDataContext&& stream_reader_data_context);
 
     // Variables
-    std::vector<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
-            m_stream_reader_data_context;
-    clp::TimestampPattern m_ts_pattern;
+    std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;
+    std::unique_ptr<StreamReaderDataContext> m_stream_reader_data_context;
 };
 }  // namespace clp_ffi_js::ir
 

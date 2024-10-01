@@ -88,7 +88,10 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
         -sENVIRONMENT=worker
     )
 else()
-    set(CLP_FFI_JS_EXTRA_LINKER_FLAGS -sENVIRONMENT=node)
+    set(CLP_FFI_JS_EXTRA_LINKER_FLAGS
+        -sENVIRONMENT=node
+        -sNO_DISABLE_EXCEPTION_CATCHING
+    )
 endif()
 message(
     "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${CLP_FFI_JS_EXTRA_LINKER_FLAGS}"
@@ -128,12 +131,15 @@ set(CLP_FFI_JS_SRC_MAIN src/clp_ffi_js/ir/StreamReader.cpp)
 
 set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/Deserializer.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/utils.cpp
+    src/submodules/clp/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
+    src/submodules/clp/components/core/src/clp/ffi/SchemaTree.cpp
     src/submodules/clp/components/core/src/clp/ir/EncodedTextAst.cpp
-    src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
     src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
-    src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
 )
 
 set(CLP_FFI_JS_SRC_FMT src/submodules/fmt/src/format.cc)
