@@ -81,7 +81,14 @@ tasks:
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
-      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
+      # emsdk is locked to version 3.1.67 to work around issue #6.
+      - >-
+        git clone
+        https://github.com/emscripten-core/emsdk.git
+        --branch 3.1.67
+        --depth 1
+        --shallow-submodules
+        "{{.G_EMSDK_DIR}}"
       - |-
         cd "{{.G_EMSDK_DIR}}"
         ./emsdk install latest
