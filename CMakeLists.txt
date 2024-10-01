@@ -88,7 +88,10 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
         -sENVIRONMENT=worker
     )
 else()
-    set(CLP_FFI_JS_EXTRA_LINKER_FLAGS -sENVIRONMENT=node)
+    set(CLP_FFI_JS_EXTRA_LINKER_FLAGS
+        -sENVIRONMENT=node
+        -sNO_DISABLE_EXCEPTION_CATCHING
+    )
 endif()
 message(
     "CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}: Extra linker flags: ${CLP_FFI_JS_EXTRA_LINKER_FLAGS}"
