@@ -3,9 +3,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <ir/LogEvent.hpp>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <span>
 #include <string>
 #include <string_view>
@@ -171,7 +171,7 @@ auto StreamReader::build() -> size_t {
 
 auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
 
-    if (use_filter && !m_filtered_log_event_map) {
+    if (use_filter && (std::nullopt == m_filtered_log_event_map)) {
         return DecodedResultsTsType(emscripten::val::null());
     }
 
@@ -217,7 +217,6 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
                 log_event.get_log_level(),
                 log_event_idx +1
         );
-
     }
 
     return DecodedResultsTsType(results);
@@ -229,7 +228,7 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
         return;
     }
 
-    m_filtered_log_event_map = std::vector<size_t>();
+    m_filtered_log_event_map.emplace();
     std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
     // Filter log events based on the provided log levels
     for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
@@ -252,8 +251,6 @@ StreamReader::StreamReader(
           m_filtered_log_event_map(std::nullopt) {}
 }  // namespace clp_ffi_js::ir
 
-
-
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
@@ -261,7 +258,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapType>(
-            "Array<number>"
+            "number[]
     );
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
@@ -273,9 +270,9 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
+            .function("getFilteredLogEventMap", &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map)
             .function("build", &clp_ffi_js::ir::StreamReader::build)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
-            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
-            .function("getFilteredLogEventMap", &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map);
+            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events);
 }
 }  // namespace

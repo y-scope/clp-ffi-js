@@ -98,7 +98,7 @@ private:
 
     // Variables
     std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
-        m_stream_reader_data_context;
+            m_stream_reader_data_context;
     clp::TimestampPattern m_ts_pattern;
     std::vector<LogViewerEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
     std::optional<std::vector<size_t>> m_filtered_log_event_map;
