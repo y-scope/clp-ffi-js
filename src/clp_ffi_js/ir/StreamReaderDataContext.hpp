@@ -19,7 +19,6 @@ namespace clp_ffi_js::ir {
 template <typename encoded_variable_t>
 class StreamReaderDataContext {
 public:
-    using EncodedVariableType = encoded_variable_t;
 
     // Constructors
     StreamReaderDataContext(

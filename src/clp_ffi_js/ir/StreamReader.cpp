@@ -169,7 +169,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
 
     size_t length;
     if (use_filter) {
-        length = m_filtered_log_event_indices.size();
+        length = m_filtered_log_event_map.size();
     } else {
         length = m_encoded_log_events.size();
     }
@@ -180,18 +180,16 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
-    size_t log_num{begin_idx + 1};
     auto const results{emscripten::val::array()};
 
-    for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
-         // Get the log event index from filtered indices
-        size_t filtered_log_event_idx;
+    for (size_t i = begin_idx; i < end_idx; ++i) {
+        size_t log_event_idx;
         if (use_filter) {
-            filtered_log_event_idx = m_filtered_log_event_indices[log_event_idx];
+            log_event_idx = m_filtered_log_event_map[i];
         } else {
-            filtered_log_event_idx = log_event_idx;
+            log_event_idx = i;
         }
-        const auto& log_event = m_encoded_log_events[filtered_log_event_idx];
+        const auto& log_event = m_encoded_log_events[log_event_idx];
         message.clear();
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
@@ -209,7 +207,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
                 message.c_str(),
                 log_event.get_timestamp(),
                 log_event.get_log_level(),
-                filtered_log_event_idx +1
+                log_event_idx +1
         );
 
     }
@@ -217,9 +215,8 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     return DecodedResultsTsType(results);
 }
 
-void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
-    // Clear the previous filtered log indices
-    m_filtered_log_event_indices.clear();
+void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
+    m_filtered_log_event_map.clear();
 
     // Check if the filter is empty
     if (logLevelFilter.isNull()) {
@@ -239,19 +236,19 @@ void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
     for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
         const auto& logEvent = m_encoded_log_events[index];
         if (std::find(filter_levels.begin(), filter_levels.end(), logEvent.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_indices.push_back(index);
+            m_filtered_log_event_map.push_back(index);
         }
     }
     m_is_filtered = true;
 }
 
-auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
+auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
     if (false == m_is_filtered) {
-        return FilterIndicesType(emscripten::val::null());
+        return FilteredLogEventMapType(emscripten::val::null());
     }
 
     emscripten::val results = emscripten::val::array();
-    for (size_t index : m_filtered_log_event_indices) {
+    for (size_t index : m_filtered_log_event_map) {
         EM_ASM_(
             {
                 Emval.toValue($0).push($1);
@@ -260,7 +257,7 @@ auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
             index
         );
     }
-    return FilterIndicesType(results);
+    return FilteredLogEventMapType(results);
 }
 
 StreamReader::StreamReader(
@@ -272,7 +269,7 @@ StreamReader::StreamReader(
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()},
           m_encoded_log_events(),
-          m_filtered_log_event_indices(),
+          m_filtered_log_event_map(),
           m_is_filtered(false) {}
 }  // namespace clp_ffi_js::ir
 
@@ -284,7 +281,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
-    emscripten::register_type<clp_ffi_js::ir::FilterIndicesType>(
+    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapType>(
             "Array<number>"
     );
 
@@ -299,7 +296,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             )
             .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
-            .function("filter_logs", &clp_ffi_js::ir::StreamReader::filter_logs)
-            .function("get_filtered_log_indices", &clp_ffi_js::ir::StreamReader::get_filtered_log_indices);
+            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
+            .function("getFilteredLogEventMap", &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map);
 }
 }  // namespace
