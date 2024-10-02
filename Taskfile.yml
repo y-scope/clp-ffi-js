@@ -60,6 +60,8 @@ tasks:
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      # Lock emsdk to version 3.1.67 to work around issue #6.
+      EMSDK_VERSION: "3.1.67"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
@@ -81,11 +83,11 @@ tasks:
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
-      - "git clone 'https://github.com/emscripten-core/emsdk.git' '{{.G_EMSDK_DIR}}'"
+      - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
       - |-
         cd "{{.G_EMSDK_DIR}}"
-        ./emsdk install latest
-        ./emsdk activate latest
+        ./emsdk install {{.EMSDK_VERSION}}
+        ./emsdk activate {{.EMSDK_VERSION}}
       - |-
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
         PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
