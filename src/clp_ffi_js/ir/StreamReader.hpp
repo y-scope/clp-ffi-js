@@ -67,7 +67,7 @@ public:
      * @param end_idx
      * @return The number of successfully deserialized ("valid") log events.
      */
-    [[nodiscard]] auto deserialize_range(size_t begin_idx, size_t end_idx) -> size_t;
+    [[nodiscard]] auto build() -> size_t;
 
     /**
      * Decodes log events in the range `[beginIdx, endIdx)` of the filtered or unfiltered

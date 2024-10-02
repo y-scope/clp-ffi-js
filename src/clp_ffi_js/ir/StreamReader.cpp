@@ -100,17 +100,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
-     m_is_filtered = false;
-    constexpr size_t cFullRangeEndIdx{0};
-    if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                "Partial range deserialization is not yet supported."
-        };
-    }
+auto StreamReader::build() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
@@ -224,13 +214,7 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
         return;
     }
 
-    // Convert JavaScript array to C++ vector
-    std::vector<int> filter_levels;
-    unsigned int length = logLevelFilter["length"].as<unsigned int>();
-    filter_levels.reserve(length);
-    for (unsigned int i = 0; i < length; ++i) {
-        filter_levels.push_back(logLevelFilter[i].as<int>());
-    }
+    std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
 
     // Filter log events based on the provided log levels
     for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
@@ -247,17 +231,7 @@ auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapTyp
         return FilteredLogEventMapType(emscripten::val::null());
     }
 
-    emscripten::val results = emscripten::val::array();
-    for (size_t index : m_filtered_log_event_map) {
-        EM_ASM_(
-            {
-                Emval.toValue($0).push($1);
-            },
-            results.as_handle(),
-            index
-        );
-    }
-    return FilteredLogEventMapType(results);
+    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map));
 }
 
 StreamReader::StreamReader(
@@ -294,7 +268,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
-            .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
+            .function("build", &clp_ffi_js::ir::StreamReader::build)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
             .function("getFilteredLogEventMap", &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map);
