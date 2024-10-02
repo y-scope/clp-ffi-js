@@ -246,8 +246,6 @@ StreamReader::StreamReader(
                   StreamReaderDataContext<four_byte_encoded_variable_t>>(
                   std::move(stream_reader_data_context)
           )},
-        m_encoded_log_events(),
-        m_filtered_log_event_map(std::nullopt),
         m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
