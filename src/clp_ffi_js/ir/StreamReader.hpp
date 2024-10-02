@@ -81,8 +81,8 @@ public:
      * - The log event's timestamp as milliseconds since the Unix epoch
      * - The log event's log level as an integer that indexes into `cLogLevelNames`
      * - The log event's number (1-indexed) in the stream
-     * @return The decoded log events on success or null if any log event in the range doesn't exist
-     * (e.g., the range exceeds the number of log events in the file).
+     * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
+     * of log events in the file).
      */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
     /**
