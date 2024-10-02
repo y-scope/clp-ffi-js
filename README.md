@@ -28,10 +28,27 @@ To clean the build:
 task clean
 ```
 
-# Development
+# Contributing 
+Follow the steps below to develop and contribute to the project.
+
+## Set up
 Before opening the project in an IDE, you'll first need to download and install [emscripten]:
 ```shell
 task emscripten
+```
+
+## Linting
+Before submitting a pull request, ensure you’ve run the linting commands below and either fixed any
+violations or suppressed the warning.
+
+To run all linting checks:
+```shell
+task lint:check
+```
+
+To run all linting checks AND automatically fix any fixable issues:
+```shell
+task lint:fix
 ```
 
 [bug-report]: https://github.com/y-scope/clp-ffi-js/issues/new?labels=bug&template=bug-report.yml
