@@ -34,7 +34,6 @@ template <typename encoded_variable_t>
 auto LogViewerEvent<encoded_variable_t>::get_log_level() const -> size_t {
     return m_log_level;
 }
-
 }  // namespace clp_ffi_js::ir
 
 #endif   // CLP_FFI_JS_IR_LOG_VIEWER_EVENT_HPP

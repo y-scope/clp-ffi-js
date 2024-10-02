@@ -144,7 +144,12 @@ auto StreamReader::build() -> size_t {
                     log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
                 }
 
-                const auto log_viewer_event = LogViewerEvent<four_byte_encoded_variable_t>(log_event.get_timestamp(), log_event.get_utc_offset(), message, log_level);
+                const auto log_viewer_event = LogViewerEvent<four_byte_encoded_variable_t>(
+                    log_event.get_timestamp(),
+                    log_event.get_utc_offset(),
+                    message,
+                    log_level
+                );
 
                 m_encoded_log_events.emplace_back(std::move(log_viewer_event));
                 continue;
@@ -230,7 +235,7 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
 
     m_filtered_log_event_map.emplace();
     std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
-    // Filter log events based on the provided log levels
+
     for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
         const auto& logEvent = m_encoded_log_events[index];
         if (std::find(filter_levels.begin(), filter_levels.end(), logEvent.get_log_level()) != filter_levels.end()) {
@@ -246,7 +251,7 @@ StreamReader::StreamReader(
                   StreamReaderDataContext<four_byte_encoded_variable_t>>(
                   std::move(stream_reader_data_context)
           )},
-        m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
 }  // namespace clp_ffi_js::ir
 
 namespace {
