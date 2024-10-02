@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <ir/LogEvent.hpp>
 #include <iterator>
 #include <memory>
 #include <span>
@@ -100,7 +101,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
 }
 
 auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
-    if (m_filtered_log_event_map) {
+    if (std::nullopt == m_filtered_log_event_map) {
         return FilteredLogEventMapType(emscripten::val::null());
     }
 
@@ -111,19 +112,25 @@ auto StreamReader::build() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
+
+        std::string logtype;
+        constexpr size_t cDefaultReservedMessageLength{512};
+        logtype.reserve(cDefaultReservedMessageLength);
         while (true) {
             auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
 
-                const auto log_event = result.value();
-                const auto message = log_event.get_message();
+                const clp::ir::LogEvent<four_byte_encoded_variable_t> log_event = result.value();
+                const clp::ir::EncodedTextAst<int> message = log_event.get_message();
 
-                std::string logtype;
-                constexpr size_t cDefaultReservedMessageLength{512};
-                logtype.reserve(cDefaultReservedMessageLength);
+                logtype.clear();
                 logtype = message.get_logtype();
 
                 constexpr size_t cLogLevelPositionInMessages{1};
+                if (logtype.length() < cLogLevelPositionInMessages) {
+                    SPDLOG_ERROR("Failed to extract log type for log level parsing."); break;
+                }
+
                 size_t log_level{cLogLevelNone};
                 // NOLINTNEXTLINE(readability-qualified-auto)
                 auto const log_level_name_it{std::find_if(
