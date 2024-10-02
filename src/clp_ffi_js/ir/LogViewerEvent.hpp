@@ -1,5 +1,5 @@
-#ifndef CLP_IR_LOG_VIEWER_EVENT_HPP
-#define CLP_IR_LOG_VIEWER_EVENT_HPP
+#ifndef CLP_FFI_JS_IR_LOG_VIEWER_EVENT_HPP
+#define CLP_FFI_JS_IR_LOG_VIEWER_EVENT_HPP
 
 #include <clp/ir/LogEvent.hpp>
 #include <utility>
@@ -37,4 +37,4 @@ auto LogViewerEvent<encoded_variable_t>::get_log_level() const -> size_t {
 
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_IR_LOG_VIEWER_EVENT_HPP
+#endif   // CLP_FFI_JS_IR_LOG_VIEWER_EVENT_HPP

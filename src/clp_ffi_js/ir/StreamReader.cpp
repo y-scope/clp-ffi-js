@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <iterator>
 #include <memory>
-#include <numeric>
 #include <span>
 #include <string>
 #include <string_view>
@@ -157,9 +156,13 @@ auto StreamReader::build() -> size_t {
 
 auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
 
+    if (use_filter && !m_filtered_log_event_map) {
+        return DecodedResultsTsType(emscripten::val::null());
+    }
+
     size_t length;
     if (use_filter) {
-        length = m_filtered_log_event_map.size();
+        length = m_filtered_log_event_map->size();
     } else {
         length = m_encoded_log_events.size();
     }
@@ -175,7 +178,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     for (size_t i = begin_idx; i < end_idx; ++i) {
         size_t log_event_idx;
         if (use_filter) {
-            log_event_idx = m_filtered_log_event_map[i];
+            log_event_idx = m_filtered_log_event_map->at(i);
         } else {
             log_event_idx = i;
         }
@@ -206,32 +209,28 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
 }
 
 void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
-    m_filtered_log_event_map.clear();
-
-    // Check if the filter is empty
     if (logLevelFilter.isNull()) {
-        m_is_filtered = false;
+        m_filtered_log_event_map.reset();
         return;
     }
 
+    m_filtered_log_event_map = std::vector<size_t>();
     std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
-
     // Filter log events based on the provided log levels
     for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
         const auto& logEvent = m_encoded_log_events[index];
         if (std::find(filter_levels.begin(), filter_levels.end(), logEvent.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_map.push_back(index);
+            m_filtered_log_event_map->push_back(index);
         }
     }
-    m_is_filtered = true;
 }
 
 auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
-    if (false == m_is_filtered) {
+    if (m_filtered_log_event_map) {
         return FilteredLogEventMapType(emscripten::val::null());
     }
 
-    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map));
+    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map.value()));
 }
 
 StreamReader::StreamReader(
@@ -243,8 +242,7 @@ StreamReader::StreamReader(
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()},
           m_encoded_log_events(),
-          m_filtered_log_event_map(),
-          m_is_filtered(false) {}
+          m_filtered_log_event_map(std::nullopt) {}
 }  // namespace clp_ffi_js::ir
 
 

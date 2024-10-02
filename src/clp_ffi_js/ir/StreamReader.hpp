@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <memory>
+#include <optional>
 #include <vector>
 
 #include <clp/ir/LogEvent.hpp>
@@ -51,10 +52,18 @@ public:
      */
     [[nodiscard]] auto get_num_events_buffered() const -> size_t;
 
-        /**
-     * @return The number of events buffered.
+    /**
+     * @return The filtered log events map.
      */
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapType;
+
+    /**
+     * Filters log events and generates `m_filtered_log_event_map`. If `logLevelFilter` is `null`,
+     * `m_is_filtered` will be set to `false`.
+     *
+     * @param logLevelFilter Array of selected log levels
+     */
+    void filter_log_events(const emscripten::val& logLevelFilter);
 
     /**
      * Deserializes and buffers log events in the range `[beginIdx, endIdx)`. After the stream has
@@ -85,13 +94,7 @@ public:
      * of log events in the file).
      */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
-    /**
-     * Creates an array containing indexes of logs which match the user selected levels. The
-     * previous array is removed and a new one is created on each call.
-     *
-     * @param logLevelFilter Array of selected log levels
-     */
-    void filter_log_events(const emscripten::val& logLevelFilter);
+
 
 private:
     // Constructor
@@ -103,8 +106,7 @@ private:
         m_stream_reader_data_context;
     clp::TimestampPattern m_ts_pattern;
     std::vector<LogViewerEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::vector<size_t> m_filtered_log_event_map;
-    bool m_is_filtered;
+    std::optional<std::vector<size_t>> m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::ir
 
