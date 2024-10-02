@@ -26,9 +26,8 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/LogViewerEvent.hpp>
-
+#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
@@ -102,6 +101,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
 }
 
 auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
+     m_is_filtered = false;
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
         throw ClpFfiJsException{
@@ -126,7 +126,6 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 logtype.reserve(cDefaultReservedMessageLength);
                 logtype = message.get_logtype();
 
-
                 constexpr size_t cLogLevelPositionInMessages{1};
                 size_t log_level{cLogLevelNone};
                 // NOLINTNEXTLINE(readability-qualified-auto)
@@ -140,7 +139,8 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
                 if (log_level_name_it != cLogLevelNames.end()) {
                     log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
                 }
-                const auto log_viewer_event = clp::ffi::js::LogViewerEvent<int>(log_event.get_timestamp(), log_event.get_utc_offset(), log_event.get_message(),log_level);
+
+                const auto log_viewer_event = LogViewerEvent<four_byte_encoded_variable_t>(log_event.get_timestamp(), log_event.get_utc_offset(), message, log_level);
 
                 m_encoded_log_events.emplace_back(std::move(log_viewer_event));
                 continue;
@@ -162,11 +162,10 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
         }
         m_stream_reader_data_context.reset(nullptr);
     }
-    m_is_filtered = false;
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_any_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
 
     size_t length;
     if (use_filter) {
@@ -218,14 +217,6 @@ auto StreamReader::decode_any_range(size_t begin_idx, size_t end_idx, bool use_f
     return DecodedResultsTsType(results);
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
-    return decode_any_range(begin_idx, end_idx, false);
-}
-
-auto StreamReader::decode_filtered_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
-    return decode_any_range(begin_idx, end_idx, m_is_filtered);
-}
-
 void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
     // Clear the previous filtered log indices
     m_filtered_log_event_indices.clear();
@@ -255,18 +246,21 @@ void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
 }
 
 auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
-    // Convert C++ vector to JavaScript array using EM_ASM
-    emscripten::val js_array = emscripten::val::array();
+    if (false == m_is_filtered) {
+        return FilterIndicesType(emscripten::val::null());
+    }
+
+    emscripten::val results = emscripten::val::array();
     for (size_t index : m_filtered_log_event_indices) {
         EM_ASM_(
             {
                 Emval.toValue($0).push($1);
             },
-            js_array.as_handle(),
+            results.as_handle(),
             index
         );
     }
-    return FilterIndicesType(js_array);
+    return FilterIndicesType(results);
 }
 
 StreamReader::StreamReader(
@@ -276,7 +270,10 @@ StreamReader::StreamReader(
                   StreamReaderDataContext<four_byte_encoded_variable_t>>(
                   std::move(stream_reader_data_context)
           )},
-          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()},
+          m_encoded_log_events(),
+          m_filtered_log_event_indices(),
+          m_is_filtered(false) {}
 }  // namespace clp_ffi_js::ir
 
 
@@ -302,7 +299,6 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             )
             .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
-            .function("decodeFilteredRange", &clp_ffi_js::ir::StreamReader::decode_filtered_range)
             .function("filter_logs", &clp_ffi_js::ir::StreamReader::filter_logs)
             .function("get_filtered_log_indices", &clp_ffi_js::ir::StreamReader::get_filtered_log_indices);
 }

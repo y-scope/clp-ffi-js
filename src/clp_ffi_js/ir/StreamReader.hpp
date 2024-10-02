@@ -70,26 +70,6 @@ public:
     [[nodiscard]] auto deserialize_range(size_t begin_idx, size_t end_idx) -> size_t;
 
     /**
-     * Decodes filtered deserialized log events (i.e. only includes events are included in current
-     * filter) in the range `[beginIdx, endIdx)`.
-     *
-     * @param begin_idx
-     * @param end_idx
-     * @return Same as decode_any_range() return values.
-     */
-    [[nodiscard]] auto decode_filtered_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType;
-
-    /**
-     * Decodes all deserialized log events in the range `[beginIdx, endIdx)` irrespective of
-     * filter applied.
-     *
-     * @param begin_idx
-     * @param end_idx
-     * @return Same as decode_any_range() return values.
-     */
-    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType;
-
-    /**
      * Decodes the deserialized log events in the range `[beginIdx, endIdx)` from the
      * filtered log events array or unfiltered based on the value of useFilter.
      *
@@ -104,8 +84,7 @@ public:
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
      */
-    [[nodiscard]] auto decode_any_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
-
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
     /**
      * Creates an array containing indexes of logs which match the user selected levels. The
      * previous array is removed and a new one is created on each call.
@@ -120,11 +99,11 @@ private:
                                   stream_reader_data_context);
 
     // Variables
-    std::vector<clp::ffi::js::LogViewerEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::vector<size_t> m_filtered_log_event_indices;
     std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
-            m_stream_reader_data_context;
+        m_stream_reader_data_context;
     clp::TimestampPattern m_ts_pattern;
+    std::vector<LogViewerEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
+    std::vector<size_t> m_filtered_log_event_indices;
     bool m_is_filtered;
 };
 }  // namespace clp_ffi_js::ir
