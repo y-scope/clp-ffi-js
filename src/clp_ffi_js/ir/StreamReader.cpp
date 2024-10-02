@@ -162,12 +162,20 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
         }
         m_stream_reader_data_context.reset(nullptr);
     }
-    m_filtered_log_event_indices = clp_ffi_js::ir::StreamReader::create_indices_vector(m_encoded_log_events.size());
+    m_is_filtered = false;
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
-    if (m_filtered_log_event_indices.size() < end_idx || 0 > begin_idx) {
+auto StreamReader::decode_any_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
+
+    size_t length;
+    if (use_filter) {
+        length = m_filtered_log_event_indices.size();
+    } else {
+        length = m_encoded_log_events.size();
+    }
+
+    if (length < end_idx || 0 > begin_idx) {
         return DecodedResultsTsType(emscripten::val::null());
     }
     std::string message;
@@ -176,10 +184,15 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
     size_t log_num{begin_idx + 1};
     auto const results{emscripten::val::array()};
 
-    for (size_t filtered_log_event_idx = begin_idx; filtered_log_event_idx < end_idx; ++filtered_log_event_idx) {
+    for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
          // Get the log event index from filtered indices
-        size_t log_event_idx = m_filtered_log_event_indices[filtered_log_event_idx];
-        const auto& log_event = m_encoded_log_events[log_event_idx];
+        size_t filtered_log_event_idx;
+        if (use_filter) {
+            filtered_log_event_idx = m_filtered_log_event_indices[log_event_idx];
+        } else {
+            filtered_log_event_idx = log_event_idx;
+        }
+        const auto& log_event = m_encoded_log_events[filtered_log_event_idx];
         message.clear();
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
@@ -197,12 +210,20 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
                 message.c_str(),
                 log_event.get_timestamp(),
                 log_event.get_log_level(),
-                log_num
+                filtered_log_event_idx +1
         );
-        ++log_num;
+
     }
 
     return DecodedResultsTsType(results);
+}
+
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
+    return decode_any_range(begin_idx, end_idx, false);
+}
+
+auto StreamReader::decode_filtered_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
+    return decode_any_range(begin_idx, end_idx, m_is_filtered);
 }
 
 void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
@@ -230,6 +251,7 @@ void StreamReader::filter_logs(const emscripten::val& logLevelFilter) {
             m_filtered_log_event_indices.push_back(index);
         }
     }
+    m_is_filtered = true;
 }
 
 auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
@@ -247,13 +269,6 @@ auto StreamReader::get_filtered_log_indices() const ->  FilterIndicesType {
     return FilterIndicesType(js_array);
 }
 
-
-auto StreamReader::create_indices_vector(int length) -> std::vector<size_t> {
-    std::vector<size_t> indices(length);
-    std::iota(indices.begin(), indices.end(), 0); // Fill with 0, 1, 2, ...
-    return indices;
-}
-
 StreamReader::StreamReader(
         StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
 )
@@ -262,7 +277,6 @@ StreamReader::StreamReader(
                   std::move(stream_reader_data_context)
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
-          m_is_filtered = false;
 }  // namespace clp_ffi_js::ir
 
 
@@ -274,10 +288,8 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilterIndicesType>(
-            "Array<[number]>"
+            "Array<number>"
     );
-
-    emscripten::register_vector<size_t>("VectorSizeT");
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(
@@ -290,6 +302,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
             )
             .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
+            .function("decodeFilteredRange", &clp_ffi_js::ir::StreamReader::decode_filtered_range)
             .function("filter_logs", &clp_ffi_js::ir::StreamReader::filter_logs)
             .function("get_filtered_log_indices", &clp_ffi_js::ir::StreamReader::get_filtered_log_indices);
 }

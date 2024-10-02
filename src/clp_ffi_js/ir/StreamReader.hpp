@@ -95,6 +95,7 @@ public:
      *
      * @param begin_idx
      * @param end_idx
+     * @param use_filter Whether or not to use filtered log event array.
      * @return An array where each element is a decoded log event represented by an array of:
      * - The log event's message
      * - The log event's timestamp as milliseconds since the Unix epoch
@@ -103,7 +104,7 @@ public:
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
      */
-    [[nodiscard]] auto decode_any_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType;
+    [[nodiscard]] auto decode_any_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
 
     /**
      * Creates an array containing indexes of logs which match the user selected levels. The
