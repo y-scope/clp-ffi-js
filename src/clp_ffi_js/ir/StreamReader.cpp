@@ -120,8 +120,8 @@ auto StreamReader::build() -> size_t {
             auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
 
-                const clp::ir::LogEvent<four_byte_encoded_variable_t> log_event = result.value();
-                const clp::ir::EncodedTextAst<int> message = log_event.get_message();
+                const auto log_event = result.value();
+                const auto message = log_event.get_message();
 
                 logtype.clear();
                 logtype = message.get_logtype();
