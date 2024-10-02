@@ -99,6 +99,14 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
+auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
+    if (m_filtered_log_event_map) {
+        return FilteredLogEventMapType(emscripten::val::null());
+    }
+
+    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map.value()));
+}
+
 auto StreamReader::build() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
@@ -223,14 +231,6 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
             m_filtered_log_event_map->push_back(index);
         }
     }
-}
-
-auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
-    if (m_filtered_log_event_map) {
-        return FilteredLogEventMapType(emscripten::val::null());
-    }
-
-    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map.value()));
 }
 
 StreamReader::StreamReader(

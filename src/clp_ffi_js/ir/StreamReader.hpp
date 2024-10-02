@@ -59,21 +59,16 @@ public:
 
     /**
      * Filters log events and generates `m_filtered_log_event_map`. If `logLevelFilter` is `null`,
-     * `m_is_filtered` will be set to `false`.
+     * `m_filtered_log_event_map` will be set to `std::nullopt`.
      *
      * @param logLevelFilter Array of selected log levels
      */
     void filter_log_events(const emscripten::val& logLevelFilter);
 
     /**
-     * Deserializes and buffers log events in the range `[beginIdx, endIdx)`. After the stream has
-     * been exhausted, it will be deallocated.
+     * Deserializes all log events in the file. After the stream has been exhausted, it will be
+     * deallocated.
      *
-     * NOTE: Currently, this class only supports deserializing the full range of log events in the
-     * stream.
-     *
-     * @param begin_idx
-     * @param end_idx
      * @return The number of successfully deserialized ("valid") log events.
      */
     [[nodiscard]] auto build() -> size_t;
@@ -91,7 +86,7 @@ public:
      * - The log event's log level as an integer that indexes into `cLogLevelNames`
      * - The log event's number (1-indexed) in the stream
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
-     * of log events in the file).
+     * of log events in collection)
      */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
 
