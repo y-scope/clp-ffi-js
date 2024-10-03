@@ -26,7 +26,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
     )
 endif()
 
-# Enable compile commands
+# Enable exporting compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS
     ON
     CACHE BOOL
