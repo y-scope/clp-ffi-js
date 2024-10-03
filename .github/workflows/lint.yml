@@ -40,5 +40,12 @@ jobs:
         name: "Install coreutils (for md5sum)"
         run: "brew install coreutils"
 
+      - name: "Log tool versions"
+        run: |-
+          md5sum --version
+          python --version
+          tar --version
+          task --version
+
       - name: "Run lint task"
         run: "task lint:check"
