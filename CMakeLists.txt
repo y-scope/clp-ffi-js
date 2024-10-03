@@ -26,19 +26,15 @@ if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
     )
 endif()
 
-# Enable compile commands by default if the generator supports it.
-if(NOT DEFINED CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS
-        ON
-        CACHE BOOL
-        "Enable/Disable output of compile commands during generation."
-        FORCE
-    )
-endif()
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    # Disable response files since `clang-tidy` doesn't seem to be able to use them
-    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
-endif()
+# Enable compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS
+    ON
+    CACHE BOOL
+    "Enable/Disable output of compile commands during generation."
+    FORCE
+)
+# Disable response files since `clang-tidy` doesn't seem to be able to use them
+set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)

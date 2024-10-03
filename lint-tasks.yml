@@ -12,6 +12,9 @@ tasks:
     cmds:
       - task: "yml-fix"
 
+  cpp-configs:
+    cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/symlink-cpp-lint-configs.sh"
+
   yml:
     aliases:
       - "yml-check"
