@@ -32,9 +32,16 @@ task clean
 Follow the steps below to develop and contribute to the project.
 
 ## Set up
-Before opening the project in an IDE, you'll first need to download and install [emscripten]:
+Before opening the project in an IDE, run the commands below.
+
+Download and install [emscripten]:
 ```shell
 task emsdk
+```
+
+Set up the config files for our C++ linting tools:
+```shell
+task lint:cpp-configs
 ```
 
 ## Linting
