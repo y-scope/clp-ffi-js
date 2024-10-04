@@ -34,7 +34,7 @@ Follow the steps below to develop and contribute to the project.
 ## Set up
 Before opening the project in an IDE, you'll first need to download and install [emscripten]:
 ```shell
-task emscripten
+task emsdk
 ```
 
 ## Linting
