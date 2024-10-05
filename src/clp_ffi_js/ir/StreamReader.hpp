@@ -12,7 +12,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include <clp_ffi_js/ir/LogViewerEvent.hpp>
+#include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
@@ -97,7 +97,7 @@ private:
                                   stream_reader_data_context);
 
     // Variables
-    std::vector<LogViewerEvent<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
+    std::vector<LogEventWithLevel<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
             m_stream_reader_data_context;
     std::optional<std::vector<size_t>> m_filtered_log_event_map;
