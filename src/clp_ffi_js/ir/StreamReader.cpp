@@ -26,7 +26,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/LogViewerEvent.hpp>
+#include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using namespace std::literals::string_literals;
@@ -144,7 +144,7 @@ auto StreamReader::build() -> size_t {
                     log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
                 }
 
-                const auto log_viewer_event = LogViewerEvent<four_byte_encoded_variable_t>(
+                const auto log_viewer_event = LogEventWithLevel<four_byte_encoded_variable_t>(
                     log_event.get_timestamp(),
                     log_event.get_utc_offset(),
                     message,
