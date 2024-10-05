@@ -148,8 +148,7 @@ auto StreamReader::build() -> size_t {
                         cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
                         cLogLevelNames.end(),
                         [&](std::string_view level) {
-                            return logtype.substr(cLogLevelPositionInMessages)
-                                    .starts_with(level);
+                            return logtype.substr(cLogLevelPositionInMessages).starts_with(level);
                         }
                 )};
                 if (log_level_name_it != cLogLevelNames.end()) {

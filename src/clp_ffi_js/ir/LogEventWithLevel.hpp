@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <clp/ir/LogEvent.hpp>
+
 #include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
