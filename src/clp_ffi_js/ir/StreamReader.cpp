@@ -199,7 +199,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
         } else {
             log_event_idx = i;
         }
-        auto const& log_event = m_encoded_log_events[log_event_idx];
+        auto const& log_event{m_encoded_log_events[log_event_idx]};
         message.clear();
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
