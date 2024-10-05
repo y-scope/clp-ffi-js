@@ -167,7 +167,6 @@ auto StreamReader::build() -> size_t {
             continue;
         }
         m_stream_reader_data_context.reset(nullptr);
-
     }
     return m_encoded_log_events.size();
 }
