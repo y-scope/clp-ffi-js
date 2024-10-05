@@ -4,6 +4,7 @@
 #include <utility>
 
 #include <clp/ir/LogEvent.hpp>
+#include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
 
@@ -19,20 +20,20 @@ public:
             clp::ir::epoch_time_ms_t timestamp,
             clp::UtcOffset utc_offset,
             clp::ir::EncodedTextAst<encoded_variable_t> message,
-            size_t log_level
+            LogLevel log_level
     )
             : clp::ir::LogEvent<encoded_variable_t>(timestamp, utc_offset, std::move(message)),
               m_log_level{log_level} {}
 
     // Methods
-    [[nodiscard]] auto get_log_level() const -> size_t;
+    [[nodiscard]] auto get_log_level() const -> LogLevel;
 
 private:
-    size_t m_log_level;
+    LogLevel m_log_level;
 };
 
 template <typename encoded_variable_t>
-auto LogEventWithLevel<encoded_variable_t>::get_log_level() const -> size_t {
+auto LogEventWithLevel<encoded_variable_t>::get_log_level() const -> LogLevel {
     return m_log_level;
 }
 }  // namespace clp_ffi_js::ir

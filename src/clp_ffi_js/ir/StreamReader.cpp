@@ -118,55 +118,57 @@ auto StreamReader::build() -> size_t {
         logtype.reserve(cDefaultReservedMessageLength);
         while (true) {
             auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
-            if (false == result.has_error()) {
-                auto const log_event = result.value();
-                auto const message = log_event.get_message();
-
-                logtype.clear();
-                logtype = message.get_logtype();
-
-                constexpr size_t cLogLevelPositionInMessages{1};
-                size_t log_level{cLogLevelNone};
-                if (logtype.length() > cLogLevelPositionInMessages) {
-                    // NOLINTNEXTLINE(readability-qualified-auto)
-                    auto const log_level_name_it{std::find_if(
-                            cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
-                            cLogLevelNames.end(),
-                            [&](std::string_view level) {
-                                return logtype.substr(cLogLevelPositionInMessages)
-                                        .starts_with(level);
-                            }
-                    )};
-                    if (log_level_name_it != cLogLevelNames.end()) {
-                        log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
-                    }
-                }
-
-                auto const log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
-                        log_event.get_timestamp(),
-                        log_event.get_utc_offset(),
-                        message,
-                        log_level
-                )};
-                m_encoded_log_events.emplace_back(std::move(log_viewer_event));
-                continue;
-            }
+            if (result.has_error()) {
             auto const error{result.error()};
-            if (std::errc::no_message_available == error) {
-                break;
+                if (std::errc::no_message_available == error) {
+                    break;
+                }
+                if (std::errc::result_out_of_range == error) {
+                    SPDLOG_ERROR("File contains an incomplete IR stream");
+                    break;
+                }
+                throw ClpFfiJsException{
+                        clp::ErrorCode::ErrorCode_Corrupt,
+                        __FILENAME__,
+                        __LINE__,
+                        "Failed to deserialize: "s + error.category().name() + ":" + error.message()
+                };
             }
-            if (std::errc::result_out_of_range == error) {
-                SPDLOG_ERROR("File contains an incomplete IR stream");
-                break;
+            auto const log_event = result.value();
+            auto const message = log_event.get_message();
+
+            logtype.clear();
+            logtype = message.get_logtype();
+
+            constexpr size_t cLogLevelPositionInMessages{1};
+            LogLevel log_level{LogLevel::NONE};
+            if (logtype.length() > cLogLevelPositionInMessages) {
+                // NOLINTNEXTLINE(readability-qualified-auto)
+                auto const log_level_name_it{std::find_if(
+                        cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
+                        cLogLevelNames.end(),
+                        [&](std::string_view level) {
+                            return logtype.substr(cLogLevelPositionInMessages)
+                                    .starts_with(level);
+                        }
+                )};
+                if (log_level_name_it != cLogLevelNames.end()) {
+                    log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
+                }
             }
-            throw ClpFfiJsException{
-                    clp::ErrorCode::ErrorCode_Corrupt,
-                    __FILENAME__,
-                    __LINE__,
-                    "Failed to deserialize: "s + error.category().name() + ":" + error.message()
-            };
+
+            auto const log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
+                    log_event.get_timestamp(),
+                    log_event.get_utc_offset(),
+                    message,
+                    log_level
+            )};
+            m_encoded_log_events.emplace_back(std::move(log_viewer_event));
+            continue;
+            }
         }
         m_stream_reader_data_context.reset(nullptr);
+
     }
     return m_encoded_log_events.size();
 }
@@ -235,7 +237,7 @@ void StreamReader::filter_log_events(emscripten::val const& logLevelFilter) {
 
     for (auto const& [logEventIdx, logEvent] : std::views::enumerate(m_encoded_log_events)) {
         if (std::ranges::find(filter_levels, logEvent.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_map->push_back(logEventIdx);
+            m_filtered_log_event_map->emplace_back(logEventIdx);
         }
     }
 }
