@@ -4,6 +4,10 @@ build
 cmake-build-*
 dist
 
+# Generated lint configs
+.clang-format
+.clang-tidy
+
 # IDEs
 .idea
 .vscode
