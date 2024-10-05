@@ -1,19 +1,42 @@
 version: "3"
 
 vars:
+  G_SRC_CLP_FFI_JS_DIR: "{{.ROOT_DIR}}/src/clp_ffi_js"
   G_LINT_VENV_DIR: "{{.G_BUILD_DIR}}/lint-venv"
 
 tasks:
   check:
     cmds:
+      - task: "cpp-check"
       - task: "yml-check"
 
   fix:
     cmds:
+      - task: "cpp-fix"
       - task: "yml-fix"
 
   cpp-configs:
     cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/symlink-cpp-lint-configs.sh"
+
+  cpp-check:
+    sources: &cpp_source_files
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/.clang-format"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.cpp"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.h"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.hpp"
+      - "{{.TASKFILE}}"
+      - "tools/yscope-dev-utils/lint-configs/.clang-format"
+    cmds:
+      - task: "clang-format"
+        vars:
+          FLAGS: "--dry-run"
+
+  cpp-fix:
+    sources: *cpp_source_files
+    cmds:
+      - task: "clang-format"
+        vars:
+          FLAGS: "-i"
 
   yml:
     aliases:
@@ -29,6 +52,20 @@ tasks:
           .github \
           lint-tasks.yml \
           Taskfile.yml
+
+  clang-format:
+    internal: true
+    requires:
+      vars: ["FLAGS"]
+    deps: ["cpp-configs", "venv"]
+    cmds:
+      - |-
+        . "{{.G_LINT_VENV_DIR}}/bin/activate"
+        find "{{.G_SRC_CLP_FFI_JS_DIR}}" \
+          -type f \
+          \( -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" \) \
+          -print0 | \
+            xargs -0 clang-format {{.FLAGS}} -Werror
 
   venv:
     internal: true
