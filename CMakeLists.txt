@@ -16,15 +16,15 @@ project(
         CXX
     VERSION 0.1.0
 )
-#
-## Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20
-## sources.
-#if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
-#    message(
-#        FATAL_ERROR
-#        "This project is intended to be built with Unix Makefiles on a Unix system."
-#    )
-#endif()
+
+# Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20
+# sources.
+if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
+    message(
+        FATAL_ERROR
+        "This project is intended to be built with Unix Makefiles on a Unix system."
+    )
+endif()
 
 # Enable exporting compile commands
 set(CMAKE_EXPORT_COMPILE_COMMANDS
