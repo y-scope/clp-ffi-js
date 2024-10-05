@@ -17,7 +17,7 @@
   },
   "type": "module",
   "files": [
-    "/dist"
+    "dist"
   ],
   "exports": {
     ".": {
