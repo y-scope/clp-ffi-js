@@ -1,8 +1,9 @@
 #ifndef CLP_FFI_JS_IR_LOG_EVENT_WITH_LEVEL_HPP
 #define CLP_FFI_JS_IR_LOG_EVENT_WITH_LEVEL_HPP
 
-#include <clp/ir/LogEvent.hpp>
 #include <utility>
+
+#include <clp/ir/LogEvent.hpp>
 
 namespace clp_ffi_js::ir {
 
@@ -36,4 +37,4 @@ auto LogEventWithLevel<encoded_variable_t>::get_log_level() const -> size_t {
 }
 }  // namespace clp_ffi_js::ir
 
-#endif   // CLP_FFI_JS_IR_LOG_EVENT_WITH_LEVEL_HPP
+#endif  // CLP_FFI_JS_IR_LOG_EVENT_WITH_LEVEL_HPP

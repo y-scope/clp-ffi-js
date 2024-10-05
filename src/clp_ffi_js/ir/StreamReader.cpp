@@ -100,7 +100,7 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::get_filtered_log_event_map() const ->  FilteredLogEventMapType {
+auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapType {
     if (std::nullopt == m_filtered_log_event_map) {
         return FilteredLogEventMapType(emscripten::val::null());
     }
@@ -119,9 +119,8 @@ auto StreamReader::build() -> size_t {
         while (true) {
             auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
             if (false == result.has_error()) {
-
-                const auto log_event = result.value();
-                const auto message = log_event.get_message();
+                auto const log_event = result.value();
+                auto const message = log_event.get_message();
 
                 logtype.clear();
                 logtype = message.get_logtype();
@@ -145,11 +144,11 @@ auto StreamReader::build() -> size_t {
                     log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
                 }
 
-                const auto log_viewer_event = LogEventWithLevel<four_byte_encoded_variable_t>(
-                    log_event.get_timestamp(),
-                    log_event.get_utc_offset(),
-                    message,
-                    log_level
+                auto const log_viewer_event = LogEventWithLevel<four_byte_encoded_variable_t>(
+                        log_event.get_timestamp(),
+                        log_event.get_utc_offset(),
+                        message,
+                        log_level
                 );
 
                 m_encoded_log_events.emplace_back(std::move(log_viewer_event));
@@ -175,8 +174,8 @@ auto StreamReader::build() -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
-
+auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+        -> DecodedResultsTsType {
     if (use_filter && (std::nullopt == m_filtered_log_event_map)) {
         return DecodedResultsTsType(emscripten::val::null());
     }
@@ -203,7 +202,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
         } else {
             log_event_idx = i;
         }
-        const auto& log_event = m_encoded_log_events[log_event_idx];
+        auto const& log_event = m_encoded_log_events[log_event_idx];
         message.clear();
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
@@ -221,14 +220,14 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
                 message.c_str(),
                 log_event.get_timestamp(),
                 log_event.get_log_level(),
-                log_event_idx +1
+                log_event_idx + 1
         );
     }
 
     return DecodedResultsTsType(results);
 }
 
-void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
+void StreamReader::filter_log_events(emscripten::val const& logLevelFilter) {
     if (logLevelFilter.isNull()) {
         m_filtered_log_event_map.reset();
         return;
@@ -237,7 +236,7 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
     m_filtered_log_event_map.emplace();
     std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
 
-    for (const auto& [logEventIdx, logEvent] : std::views::enumerate(m_encoded_log_events)) {
+    for (auto const& [logEventIdx, logEvent] : std::views::enumerate(m_encoded_log_events)) {
         if (std::ranges::find(filter_levels, logEvent.get_log_level()) != filter_levels.end()) {
             m_filtered_log_event_map->push_back(logEventIdx);
         }
@@ -260,9 +259,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
-    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapType>(
-            "number[]"
-    );
+    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapType>("number[]");
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(
@@ -273,7 +270,10 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
             )
-            .function("getFilteredLogEventMap", &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map)
+            .function(
+                    "getFilteredLogEventMap",
+                    &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map
+            )
             .function("build", &clp_ffi_js::ir::StreamReader::build)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events);
