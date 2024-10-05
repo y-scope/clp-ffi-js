@@ -15,6 +15,7 @@
   "scripts": {
     "release": "git diff --exit-code && npm publish"
   },
+  "type": "module",
   "files": [
     "/dist"
   ],
