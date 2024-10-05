@@ -48,20 +48,24 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
-      - "mkdir -p '{{.OUTPUT_DIR}}'"
-      - |-
-        cmake \
-        -G "Unix Makefiles" \
-        -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
-        Emscripten.cmake" \
-        -S "{{.ROOT_DIR}}" \
-        -B "{{.OUTPUT_DIR}}"
+      - task: "config-cmake-project"
       - "cmake --build '{{.OUTPUT_DIR}}' --parallel --target '{{.G_CLP_FFI_JS_TARGET_NAME}}'"
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+
+  config-cmake-project:
+    internal: true
+    deps: ["emsdk"]
+    cmd: |-
+      cmake \
+      -G "Unix Makefiles" \
+      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
+      Emscripten.cmake" \
+      -S "{{.ROOT_DIR}}" \
+      -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
   emsdk:
     vars:
@@ -71,6 +75,7 @@ tasks:
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - "init"
       - task: "utils:validate-checksum"
