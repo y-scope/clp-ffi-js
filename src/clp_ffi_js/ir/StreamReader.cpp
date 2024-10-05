@@ -126,22 +126,20 @@ auto StreamReader::build() -> size_t {
                 logtype = message.get_logtype();
 
                 constexpr size_t cLogLevelPositionInMessages{1};
-                if (logtype.length() < cLogLevelPositionInMessages) {
-                    SPDLOG_WARN("Message is too short to extract log level.");
-                    break;
-                }
-
                 size_t log_level{cLogLevelNone};
-                // NOLINTNEXTLINE(readability-qualified-auto)
-                auto const log_level_name_it{std::find_if(
-                        cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
-                        cLogLevelNames.end(),
-                        [&](std::string_view level) {
-                            return logtype.substr(cLogLevelPositionInMessages).starts_with(level);
-                        }
-                )};
-                if (log_level_name_it != cLogLevelNames.end()) {
-                    log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
+                if (logtype.length() > cLogLevelPositionInMessages) {
+                    // NOLINTNEXTLINE(readability-qualified-auto)
+                    auto const log_level_name_it{std::find_if(
+                            cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
+                            cLogLevelNames.end(),
+                            [&](std::string_view level) {
+                                return logtype.substr(cLogLevelPositionInMessages)
+                                        .starts_with(level);
+                            }
+                    )};
+                    if (log_level_name_it != cLogLevelNames.end()) {
+                        log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
+                    }
                 }
 
                 auto const log_viewer_event = LogEventWithLevel<four_byte_encoded_variable_t>(
@@ -150,7 +148,6 @@ auto StreamReader::build() -> size_t {
                         message,
                         log_level
                 );
-
                 m_encoded_log_events.emplace_back(std::move(log_viewer_event));
                 continue;
             }
