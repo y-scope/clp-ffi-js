@@ -7,7 +7,7 @@ vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
   G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
-  G_CLP_FFI_JS_TARGET_NAME: "ClpFfiJs"
+  G_CLP_FFI_JS_TARGET_NAMES: "ClpFfiJs-node ClpFfiJs-worker"
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
@@ -41,7 +41,7 @@ tasks:
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      - "emsdk"
+#      - "emsdk"
       - task: "utils:validate-checksum"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -50,7 +50,7 @@ tasks:
       - "mkdir -p '{{.OUTPUT_DIR}}'"
       - |-
         cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel --target "{{.G_CLP_FFI_JS_TARGET_NAME}}"
+        cmake --build "{{.OUTPUT_DIR}}" --parallel --target {{.G_CLP_FFI_JS_TARGET_NAMES}}
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
@@ -114,10 +114,13 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
       - "rm -rf {{.OUTPUT_DIR}}"
-      - >-
-        rsync -a
-        "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_NAME}}."{d.ts,js,wasm}
-        "{{.OUTPUT_DIR}}/"
+      - for:
+          var: "G_CLP_FFI_JS_TARGET_NAMES"
+          split: " "
+        cmd: >-
+          rsync -a
+          "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.ITEM}}."{d.ts,js,wasm}
+          "{{.OUTPUT_DIR}}/"
       - "npm pack"
       # This command must be last
       - task: "utils:compute-checksum"
