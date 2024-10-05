@@ -16,12 +16,20 @@
     "release": "git diff --exit-code && npm publish"
   },
   "files": [
-    "./dist"
+    "/dist"
   ],
   "exports": {
     ".": {
-      "import": "./dist/ClpFfiJs.js",
-      "types": "./dist/ClpFfiJs.d.ts"
+      "import": "./dist/ClpFfiJs-worker.js",
+      "types": "./dist/ClpFfiJs-worker.d.ts"
+    },
+    "./node": {
+      "import": "./dist/ClpFfiJs-node.js",
+      "types": "./dist/ClpFfiJs-node.d.ts"
+    },
+    "./worker": {
+      "import": "./dist/ClpFfiJs-worker.js",
+      "types": "./dist/ClpFfiJs-worker.d.ts"
     }
   }
 }
