@@ -101,6 +101,8 @@ tasks:
         --config-file=.clang-tidy
     deps: [":config-cmake-project", "cpp-configs", "venv"]
     cmd: |-
+      . "{{.G_LINT_VENV_DIR}}/bin/activate"
+
       # Pass emscripten's cflags to clang-tidy by prefixing each one with `--extra-arg`
       EXTRA_ARGS=$("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" --cflags \
         | tr ' ' '\n' \
