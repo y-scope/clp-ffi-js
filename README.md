@@ -60,7 +60,7 @@ task lint:fix
 
 ### Running specific linters
 The commands above run all linting checks, but for performance you may want to run a subset (e.g.,
-if you only changed C+ files, you don't need to run the YAML linting checks) using one of the tasks
+if you only changed C++ files, you don't need to run the YAML linting checks) using one of the tasks
 in the table below.
 
 | Task                    | Description                                              |
