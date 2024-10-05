@@ -165,7 +165,6 @@ auto StreamReader::build() -> size_t {
             )};
             m_encoded_log_events.emplace_back(std::move(log_viewer_event));
             continue;
-            }
         }
         m_stream_reader_data_context.reset(nullptr);
 
