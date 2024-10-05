@@ -58,8 +58,7 @@ public:
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapType;
 
     /**
-     * Filters log events and generates `m_filtered_log_event_map`. If `logLevelFilter` is `null`,
-     * `m_filtered_log_event_map` will be set to `std::nullopt`.
+     * Generates a filtered collection from all log events.
      *
      * @param logLevelFilter Array of selected log levels
      */
@@ -79,14 +78,14 @@ public:
      *
      * @param begin_idx
      * @param end_idx
-     * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
+     * @param use_filter If true, decode from the filtered log events collection; otherwise, decode from the unfiltered one.
      * @return An array where each element is a decoded log event represented by an array of:
      * - The log event's message
      * - The log event's timestamp as milliseconds since the Unix epoch
      * - The log event's log level as an integer that indexes into `cLogLevelNames`
      * - The log event's number (1-indexed) in the stream
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
-     * of log events in collection)
+     * of log events in the collection).
      */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
 

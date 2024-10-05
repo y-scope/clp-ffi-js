@@ -128,7 +128,8 @@ auto StreamReader::build() -> size_t {
 
                 constexpr size_t cLogLevelPositionInMessages{1};
                 if (logtype.length() < cLogLevelPositionInMessages) {
-                    SPDLOG_ERROR("Failed to extract log type for log level parsing."); break;
+                    SPDLOG_WARN("Message is too short to extract log level.");
+                    break;
                 }
 
                 size_t log_level{cLogLevelNone};
@@ -236,10 +237,9 @@ void StreamReader::filter_log_events(const emscripten::val& logLevelFilter) {
     m_filtered_log_event_map.emplace();
     std::vector<int> filter_levels = emscripten::vecFromJSArray<int>(logLevelFilter);
 
-    for (size_t index = 0; index < m_encoded_log_events.size(); ++index) {
-        const auto& logEvent = m_encoded_log_events[index];
-        if (std::find(filter_levels.begin(), filter_levels.end(), logEvent.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_map->push_back(index);
+    for (const auto& [logEventIdx, logEvent] : std::views::enumerate(m_encoded_log_events)) {
+        if (std::ranges::find(filter_levels, logEvent.get_log_level()) != filter_levels.end()) {
+            m_filtered_log_event_map->push_back(logEventIdx);
         }
     }
 }
