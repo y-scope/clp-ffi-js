@@ -6,7 +6,7 @@
 
 namespace clp_ffi_js {
 enum class LogLevel {
-    NONE,   // This should not be used.
+    NONE,
     TRACE,
     DEBUG,
     INFO,

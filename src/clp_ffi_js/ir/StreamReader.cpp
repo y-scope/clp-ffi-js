@@ -119,7 +119,7 @@ auto StreamReader::build() -> size_t {
         while (true) {
             auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
             if (result.has_error()) {
-            auto const error{result.error()};
+                auto const error{result.error()};
                 if (std::errc::no_message_available == error) {
                     break;
                 }
