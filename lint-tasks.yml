@@ -17,7 +17,6 @@ tasks:
       - task: "yml-fix"
 
   cpp-configs:
-    run: "once"
     cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/symlink-cpp-lint-configs.sh"
 
   cpp-check:
@@ -134,7 +133,6 @@ tasks:
       - "{{.TASKFILE}}"
       - "lint-requirements.txt"
     generates: ["{{.CHECKSUM_FILE}}"]
-    run: "once"
     deps:
       - ":init"
       - task: ":utils:validate-checksum"
