@@ -138,7 +138,6 @@ tasks:
     deps: ["emsdk"]
     cmd: |-
       cmake \
-      -G "Unix Makefiles" \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
       Emscripten.cmake" \
       -S "{{.ROOT_DIR}}" \
