@@ -57,24 +57,6 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
 
-  config-cmake-project:
-    internal: true
-    sources:
-      - "{{.G_EMSDK_CHECKSUM}}"
-      - "{{.TASKFILE}}"
-      - "CMakeLists.txt"
-    generates:
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-    deps: ["emsdk"]
-    cmd: |-
-      cmake \
-      -G "Unix Makefiles" \
-      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
-      Emscripten.cmake" \
-      -S "{{.ROOT_DIR}}" \
-      -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
-
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
@@ -143,6 +125,24 @@ tasks:
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+
+  config-cmake-project:
+    internal: true
+    sources:
+      - "{{.G_EMSDK_CHECKSUM}}"
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+    generates:
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+    deps: ["emsdk"]
+    cmd: |-
+      cmake \
+      -G "Unix Makefiles" \
+      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
+      Emscripten.cmake" \
+      -S "{{.ROOT_DIR}}" \
+      -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
   init:
     internal: true
