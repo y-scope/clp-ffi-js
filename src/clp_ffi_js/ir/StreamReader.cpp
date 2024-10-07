@@ -6,7 +6,6 @@
 #include <iterator>
 #include <memory>
 #include <optional>
-#include <span>
 #include <string>
 #include <string_view>
 #include <system_error>
@@ -134,8 +133,8 @@ auto StreamReader::build() -> size_t {
                         "Failed to deserialize: "s + error.category().name() + ":" + error.message()
                 };
             }
-            auto const log_event = result.value();
-            auto const message = log_event.get_message();
+            auto const& log_event = result.value();
+            auto const& message = log_event.get_message();
 
             logtype.clear();
             logtype = message.get_logtype();
@@ -145,14 +144,16 @@ auto StreamReader::build() -> size_t {
             if (logtype.length() > cLogLevelPositionInMessages) {
                 // NOLINTNEXTLINE(readability-qualified-auto)
                 auto const log_level_name_it{std::find_if(
-                        cLogLevelNames.begin() + cValidLogLevelsBeginIdx,
+                        cLogLevelNames.begin() + static_cast<size_t>(cValidLogLevelsBeginIdx),
                         cLogLevelNames.end(),
                         [&](std::string_view level) {
                             return logtype.substr(cLogLevelPositionInMessages).starts_with(level);
                         }
                 )};
                 if (log_level_name_it != cLogLevelNames.end()) {
-                    log_level = std::distance(cLogLevelNames.begin(), log_level_name_it);
+                    log_level = static_cast<LogLevel>(
+                            std::distance(cLogLevelNames.begin(), log_level_name_it)
+                    );
                 }
             }
 
@@ -162,8 +163,7 @@ auto StreamReader::build() -> size_t {
                     message,
                     log_level
             )};
-            m_encoded_log_events.emplace_back(std::move(log_viewer_event));
-            continue;
+            m_encoded_log_events.emplace_back(log_viewer_event);
         }
         m_stream_reader_data_context.reset(nullptr);
     }
@@ -177,7 +177,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
         return DecodedResultsTsType(emscripten::val::null());
     }
 
-    size_t length;
+    size_t length{0};
     if (use_filter) {
         length = m_filtered_log_event_map->size();
     } else {
@@ -193,7 +193,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     auto const results{emscripten::val::array()};
 
     for (size_t i = begin_idx; i < end_idx; ++i) {
-        size_t log_event_idx;
+        size_t log_event_idx = 0;
         if (use_filter) {
             log_event_idx = m_filtered_log_event_map->at(i);
         } else {
@@ -224,18 +224,19 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     return DecodedResultsTsType(results);
 }
 
-void StreamReader::filter_log_events(emscripten::val const& logLevelFilter) {
-    if (logLevelFilter.isNull()) {
+void StreamReader::filter_log_events(emscripten::val const& log_level_filter) {
+    if (log_level_filter.isNull()) {
         m_filtered_log_event_map.reset();
         return;
     }
 
     m_filtered_log_event_map.emplace();
-    auto filter_levels{emscripten::vecFromJSArray<int>(logLevelFilter)};
+    std::vector<LogLevel> filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
 
-    for (auto const& [logEventIdx, logEvent] : std::views::enumerate(m_encoded_log_events)) {
-        if (std::ranges::find(filter_levels, logEvent.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_map->emplace_back(logEventIdx);
+    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
+        auto const& log_event = m_encoded_log_events[log_event_idx];
+        if (std::ranges::find(filter_levels, log_event.get_log_level()) != filter_levels.end()) {
+            m_filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
 }

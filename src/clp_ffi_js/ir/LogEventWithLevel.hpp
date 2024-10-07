@@ -3,7 +3,10 @@
 
 #include <utility>
 
+#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ir/LogEvent.hpp>
+#include <clp/ir/types.hpp>
+#include <clp/time_types.hpp>
 
 #include <clp_ffi_js/constants.hpp>
 

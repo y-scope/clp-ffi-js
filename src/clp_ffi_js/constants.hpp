@@ -2,10 +2,11 @@
 #define CLP_FFI_JS_CONSTANTS_HPP
 
 #include <array>
+#include <cstdint>
 #include <string_view>
 
 namespace clp_ffi_js {
-enum class LogLevel {
+enum class LogLevel : std::uint8_t {
     NONE,
     TRACE,
     DEBUG,

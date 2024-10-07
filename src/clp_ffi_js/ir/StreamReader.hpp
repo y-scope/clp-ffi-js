@@ -6,7 +6,6 @@
 #include <optional>
 #include <vector>
 
-#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/bind.h>
@@ -62,7 +61,7 @@ public:
      *
      * @param logLevelFilter Array of selected log levels
      */
-    void filter_log_events(emscripten::val const& logLevelFilter);
+    void filter_log_events(emscripten::val const& log_level_filter);
 
     /**
      * Deserializes all log events in the file. After the stream has been exhausted, it will be
