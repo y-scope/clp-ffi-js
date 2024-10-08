@@ -99,13 +99,13 @@ set(CLP_FFI_JS_SRC_ZSTD
     src/submodules/zstd/lib/decompress/zstd_decompress.c
 )
 
-# List of supported environments.
-set(CLP_FFI_JS_ENVIRONMENTS
-    "node"
-    "worker"
+set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
+    "node;worker"
+    CACHE INTERNAL
+    "List of supported environments."
 )
 
-foreach(env ${CLP_FFI_JS_ENVIRONMENTS})
+foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
     add_executable(${CLP_FFI_JS_BIN_NAME})
     target_compile_features(${CLP_FFI_JS_BIN_NAME} PRIVATE cxx_std_20)

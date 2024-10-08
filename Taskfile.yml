@@ -8,7 +8,11 @@ vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
   G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
-  G_CLP_FFI_JS_TARGET_NAMES: "ClpFfiJs-node ClpFfiJs-worker"
+  G_CLP_FFI_JS_ENV_NAMES: "node;worker"
+  G_CLP_FFI_JS_TARGET_NAMES: >-
+    {{- range split ";" .G_CLP_FFI_JS_ENV_NAMES -}}
+    ClpFfiJs-{{.}}
+    {{ end -}}
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
@@ -50,7 +54,7 @@ tasks:
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
       - task: "config-cmake-project"
-      - "cmake --build '{{.OUTPUT_DIR}}' --parallel --target '{{.G_CLP_FFI_JS_TARGET_NAME}}'"
+      - "cmake --build '{{.OUTPUT_DIR}}' --parallel --target {{.G_CLP_FFI_JS_TARGET_NAMES}}"
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
@@ -141,6 +145,7 @@ tasks:
     deps: ["emsdk"]
     cmd: |-
       cmake \
+      -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES}}" \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
       Emscripten.cmake" \
       -S "{{.ROOT_DIR}}" \
