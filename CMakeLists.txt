@@ -128,6 +128,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
+        -sENVIRONMENT=${env}
     )
     message(
         "CLP_FFI_JS_BIN_NAME=\"${CLP_FFI_JS_BIN_NAME}\". \
