@@ -157,13 +157,13 @@ auto StreamReader::build() -> size_t {
                 }
             }
 
-            auto const log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
+            auto log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
                     log_event.get_timestamp(),
                     log_event.get_utc_offset(),
                     message,
                     log_level
             )};
-            m_encoded_log_events.emplace_back(log_viewer_event);
+            m_encoded_log_events.emplace_back(std::move(log_viewer_event));
         }
         m_stream_reader_data_context.reset(nullptr);
     }
