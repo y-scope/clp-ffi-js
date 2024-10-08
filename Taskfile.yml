@@ -1,6 +1,7 @@
 version: "3"
 
 includes:
+  lint: "lint-tasks.yml"
   utils: "tools/yscope-dev-utils/taskfiles/utils.yml"
 
 vars:
@@ -35,6 +36,7 @@ tasks:
       CHECKSUM_FILE: "{{.G_CLP_FFI_JS_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
       - "CMakeLists.txt"
@@ -47,10 +49,8 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           DATA_DIR: "{{.OUTPUT_DIR}}"
     cmds:
-      - "mkdir -p '{{.OUTPUT_DIR}}'"
-      - |-
-        cmake -S "{{.ROOT_DIR}}" -B "{{.OUTPUT_DIR}}" -G "Unix Makefiles"
-        cmake --build "{{.OUTPUT_DIR}}" --parallel --target "{{.G_CLP_FFI_JS_TARGET_NAME}}"
+      - task: "config-cmake-project"
+      - "cmake --build '{{.OUTPUT_DIR}}' --parallel --target '{{.G_CLP_FFI_JS_TARGET_NAME}}'"
       # This command must be last
       - task: "utils:compute-checksum"
         vars:
@@ -60,9 +60,12 @@ tasks:
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      # Lock emsdk to version 3.1.67 to work around issue #6.
+      EMSDK_VERSION: "3.1.67"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - "init"
       - task: "utils:validate-checksum"
@@ -81,18 +84,11 @@ tasks:
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
     cmds:
       - task: "clean-emsdk"
-      # emsdk is locked to version 3.1.67 to work around issue #6.
-      - >-
-        git clone
-        https://github.com/emscripten-core/emsdk.git
-        --branch 3.1.67
-        --depth 1
-        --shallow-submodules
-        "{{.G_EMSDK_DIR}}"
+      - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
       - |-
         cd "{{.G_EMSDK_DIR}}"
-        ./emsdk install latest
-        ./emsdk activate latest
+        ./emsdk install {{.EMSDK_VERSION}}
+        ./emsdk activate {{.EMSDK_VERSION}}
       - |-
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
         PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
@@ -129,6 +125,23 @@ tasks:
         vars:
           DATA_DIR: "{{.OUTPUT_DIR}}"
           OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+
+  config-cmake-project:
+    internal: true
+    sources:
+      - "{{.G_EMSDK_CHECKSUM}}"
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+    generates:
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+    deps: ["emsdk"]
+    cmd: |-
+      cmake \
+      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
+      Emscripten.cmake" \
+      -S "{{.ROOT_DIR}}" \
+      -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
   init:
     internal: true

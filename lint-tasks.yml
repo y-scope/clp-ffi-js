@@ -1,0 +1,152 @@
+version: "3"
+
+vars:
+  G_SRC_DIR: "{{.ROOT_DIR}}/src"
+  G_SRC_CLP_FFI_JS_DIR: "{{.G_SRC_DIR}}/clp_ffi_js"
+  G_LINT_VENV_DIR: "{{.G_BUILD_DIR}}/lint-venv"
+
+tasks:
+  check:
+    cmds:
+      - task: "cpp-check"
+      - task: "yml-check"
+
+  fix:
+    cmds:
+      - task: "cpp-fix"
+      - task: "yml-fix"
+
+  cpp-configs:
+    cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/symlink-cpp-lint-configs.sh"
+
+  cpp-check:
+    cmds:
+      - task: "cpp-format-check"
+      - task: "cpp-static-check"
+
+  cpp-fix:
+    cmds:
+      - task: "cpp-format-fix"
+      - task: "cpp-static-fix"
+
+  cpp-format-check:
+    sources: &cpp_format_source_files
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/.clang-format"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.cpp"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.h"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.hpp"
+      - "{{.TASKFILE}}"
+      - "tools/yscope-dev-utils/lint-configs/.clang-format"
+    deps: ["cpp-configs", "venv"]
+    cmds:
+      - task: "clang-format"
+        vars:
+          FLAGS: "--dry-run"
+
+  cpp-format-fix:
+    sources: *cpp_format_source_files
+    deps: ["cpp-configs", "venv"]
+    cmds:
+      - task: "clang-format"
+        vars:
+          FLAGS: "-i"
+
+  cpp-static-check:
+    # Alias task to `cpp-static-fix` since we don't currently support automatic fixes.
+    # NOTE: clang-tidy does have the ability to fix some errors, but the fixes can be inaccurate.
+    # When we eventually determine which errors can be safely fixed, we'll allow clang-tidy to
+    # fix them.
+    aliases: ["cpp-static-fix"]
+    sources:
+      # Dependency sources
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/_deps/*-src/**/*"
+      - "{{.G_SRC_DIR}}/submodules/**/*"
+
+      # clp-ffi-js sources
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.cpp"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.h"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.hpp"
+
+      # Other sources
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+      - "{{.ROOT_DIR}}/Taskfile.yml"
+      - "{{.TASKFILE}}"
+      - "tools/yscope-dev-utils/lint-configs/.clang-tidy"
+    deps: [":config-cmake-project", "cpp-configs", "venv"]
+    cmds:
+      - task: "clang-tidy"
+
+  yml:
+    aliases:
+      - "yml-check"
+      - "yml-fix"
+    deps: ["venv"]
+    cmds:
+      - |-
+        . "{{.G_LINT_VENV_DIR}}/bin/activate"
+        yamllint \
+          --config-file "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/.yamllint.yml" \
+          --strict \
+          .github \
+          lint-tasks.yml \
+          Taskfile.yml
+
+  clang-format:
+    internal: true
+    requires:
+      vars: ["FLAGS"]
+    cmd: |-
+      . "{{.G_LINT_VENV_DIR}}/bin/activate"
+      find "{{.G_SRC_CLP_FFI_JS_DIR}}" \
+        -type f \
+        \( -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" \) \
+        -print0 | \
+          xargs -0 clang-format {{.FLAGS}} -Werror
+
+  clang-tidy:
+    internal: true
+    vars:
+      FLAGS: >-
+        -p {{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json
+        --config-file=.clang-tidy
+    cmd: |-
+      . "{{.G_LINT_VENV_DIR}}/bin/activate"
+
+      # Pass emscripten's cflags to clang-tidy by prefixing each one with `--extra-arg`
+      EXTRA_ARGS=$("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" --cflags \
+        | tr ' ' '\n' \
+        | sed 's/^/--extra-arg /' \
+        | tr '\n' ' ')
+      find "{{.G_SRC_CLP_FFI_JS_DIR}}" \
+        -type f \
+        \( -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" \) \
+        -print0 | \
+          xargs -0 clang-tidy {{.FLAGS}} $EXTRA_ARGS
+
+  venv:
+    internal: true
+    vars:
+      CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK | replace \":\" \"#\"}}.md5"
+      OUTPUT_DIR: "{{.G_LINT_VENV_DIR}}"
+    sources:
+      - "{{.ROOT_DIR}}/Taskfile.yml"
+      - "{{.TASKFILE}}"
+      - "lint-requirements.txt"
+    generates: ["{{.CHECKSUM_FILE}}"]
+    deps:
+      - ":init"
+      - task: ":utils:validate-checksum"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+    cmds:
+      - task: ":utils:create-venv"
+        vars:
+          LABEL: "lint"
+          OUTPUT_DIR: "{{.OUTPUT_DIR}}"
+          REQUIREMENTS_FILE: "lint-requirements.txt"
+      # This command must be last
+      - task: ":utils:compute-checksum"
+        vars:
+          DATA_DIR: "{{.OUTPUT_DIR}}"
+          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"

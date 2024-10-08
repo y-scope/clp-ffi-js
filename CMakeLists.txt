@@ -17,28 +17,16 @@ project(
     VERSION 0.1.0
 )
 
-# Enforce "Unix Makefiles" because "Ninja" does not work with the Emscripten toolchain on CXX_20
-# sources.
-if(NOT CMAKE_GENERATOR MATCHES "Unix Makefiles")
-    message(
-        FATAL_ERROR
-        "This project is intended to be built with Unix Makefiles on a Unix system."
-    )
-endif()
+# Enable exporting compile commands
+set(CMAKE_EXPORT_COMPILE_COMMANDS
+    ON
+    CACHE BOOL
+    "Enable/Disable output of compile commands during generation."
+    FORCE
+)
 
-# Enable compile commands by default if the generator supports it.
-if(NOT DEFINED CMAKE_EXPORT_COMPILE_COMMANDS)
-    set(CMAKE_EXPORT_COMPILE_COMMANDS
-        ON
-        CACHE BOOL
-        "Enable/Disable output of compile commands during generation."
-        FORCE
-    )
-endif()
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-    # Disable response files since `clang-tidy` doesn't seem to be able to use them
-    set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
-endif()
+# Disable response files since `clang-tidy` doesn't seem to be able to use them
+set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
