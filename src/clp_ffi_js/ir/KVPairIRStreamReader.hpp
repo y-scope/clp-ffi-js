@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
-#define CLP_FFI_JS_IR_STREAM_READER_HPP
+#ifndef CLP_FFI_JS_KV_PAIR_IR_STREAM_READER_HPP
+#define CLP_FFI_JS_KV_PAIR_IR_STREAM_READER_HPP
 
 #include <cstddef>
 #include <memory>
@@ -20,7 +20,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class StreamReader {
+class KVPairIRStreamReader {
 public:
     /**
      * Creates a StreamReader to read from the given array.
@@ -29,19 +29,19 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> StreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> KVPairIRStreamReader;
 
     // Destructor
-    ~StreamReader() = default;
+    ~KVPairIRStreamReader() = default;
 
     // Disable copy constructor and assignment operator
-    StreamReader(StreamReader const&) = delete;
-    auto operator=(StreamReader const&) -> StreamReader& = delete;
+    KVPairIRStreamReader(KVPairIRStreamReader const&) = delete;
+    auto operator=(KVPairIRStreamReader const&) -> KVPairIRStreamReader& = delete;
 
     // Define default move constructor
-    StreamReader(StreamReader&&) = default;
+    KVPairIRStreamReader(KVPairIRStreamReader&&) = default;
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
-    auto operator=(StreamReader&&) -> StreamReader& = delete;
+    auto operator=(KVPairIRStreamReader&&) -> KVPairIRStreamReader& = delete;
 
     /**
      * @return The number of events buffered.
@@ -80,7 +80,7 @@ private:
     using deserializer_t = clp::ffi::ir_stream::Deserializer;
 
     // Constructor
-    explicit StreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
+    explicit KVPairIRStreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
 
     // Variables
     std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;
@@ -88,4 +88,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_STREAM_READER_HPP
+#endif  // CLP_FFI_JS_KV_PAIR_IR_STREAM_READER_HPP

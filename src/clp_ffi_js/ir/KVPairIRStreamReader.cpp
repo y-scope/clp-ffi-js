@@ -1,4 +1,4 @@
-#include "StreamReader.hpp"
+#include "KVPairIRStreamReader.hpp"
 
 #include <algorithm>
 #include <cstddef>
@@ -32,9 +32,9 @@ using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
-auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
+auto KVPairIRStreamReader::create(DataArrayTsType const& data_array) -> KVPairIRStreamReader {
     auto const length{data_array["length"].as<size_t>()};
-    SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
+    SPDLOG_INFO("KVPairIRStreamReader::create: got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
     clp::Array<char> data_buffer{length};
@@ -122,14 +122,14 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
             std::move(zstd_decompressor),
             std::move(result.value())
     };
-    return StreamReader{std::move(stream_reader_data_context)};
+    return KVPairIRStreamReader{std::move(stream_reader_data_context)};
 }
 
-auto StreamReader::get_num_events_buffered() const -> size_t {
+auto KVPairIRStreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
+auto KVPairIRStreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
     constexpr size_t cFullRangeEndIdx{0};
     if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
         throw ClpFfiJsException{
@@ -170,7 +170,7 @@ auto StreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
+auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
         return DecodedResultsTsType(emscripten::val::null());
     }
@@ -202,7 +202,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
     return DecodedResultsTsType(results);
 }
 
-StreamReader::StreamReader(
+KVPairIRStreamReader::KVPairIRStreamReader(
         StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
 )
         : m_stream_reader_data_context{std::make_unique<StreamReaderDataContext<deserializer_t>>(
@@ -216,16 +216,16 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number]>"
     );
-    emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
+    emscripten::class_<clp_ffi_js::ir::KVPairIRStreamReader>("ClpKVPairIRStreamReader")
             .constructor(
-                    &clp_ffi_js::ir::StreamReader::create,
+                    &clp_ffi_js::ir::KVPairIRStreamReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
             .function(
                     "getNumEventsBuffered",
-                    &clp_ffi_js::ir::StreamReader::get_num_events_buffered
+                    &clp_ffi_js::ir::KVPairIRStreamReader::get_num_events_buffered
             )
-            .function("deserializeRange", &clp_ffi_js::ir::StreamReader::deserialize_range)
-            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range);
+            .function("deserializeRange", &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_range)
+            .function("decodeRange", &clp_ffi_js::ir::KVPairIRStreamReader::decode_range);
 }
 }  // namespace
