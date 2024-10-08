@@ -77,12 +77,14 @@ public:
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType;
 
 private:
+    using deserializer_t = clp::ffi::ir_stream::Deserializer;
+
     // Constructor
-    explicit StreamReader(StreamReaderDataContext&& stream_reader_data_context);
+    explicit StreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
 
     // Variables
     std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext> m_stream_reader_data_context;
+    std::unique_ptr<StreamReaderDataContext<deserializer_t>> m_stream_reader_data_context;
 };
 }  // namespace clp_ffi_js::ir
 

@@ -203,9 +203,9 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> Decod
 }
 
 StreamReader::StreamReader(
-        StreamReaderDataContext&& stream_reader_data_context
+        StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
 )
-        : m_stream_reader_data_context{std::make_unique<StreamReaderDataContext>(
+        : m_stream_reader_data_context{std::make_unique<StreamReaderDataContext<deserializer_t>>(
                   std::move(stream_reader_data_context)
           )} {}
 }  // namespace clp_ffi_js::ir

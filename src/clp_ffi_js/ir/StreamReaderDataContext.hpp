@@ -11,16 +11,19 @@
 namespace clp_ffi_js::ir {
 /**
  * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
- * A `clp::ir::LogEventDeserializer` that reads from a
+ * A `clp::ir::LogEventDeserializer` / `clp::ffi::ir_stream::Deserializer` that reads from a
  * `clp::streaming_compression::zstd::Decompressor`, which in turn reads from a `clp::Array`.
+ *
+* @tparam deserializer_t Type of deserializer for decoding the stream.
  */
+template <typename deserializer_t>
 class StreamReaderDataContext {
 public:
     // Constructors
     StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
             std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
-            clp::ffi::ir_stream::Deserializer deserializer
+            deserializer_t deserializer
     )
             : m_data_buffer{std::move(data_buffer)},
               m_zstd_decompressor{std::move(zstd_decompressor)},
@@ -48,14 +51,14 @@ public:
     /**
      * @return A reference to the deserializer.
      */
-    [[nodiscard]] auto get_deserializer() -> clp::ffi::ir_stream::Deserializer& {
+    [[nodiscard]] auto get_deserializer() -> deserializer_t& {
         return m_deserializer;
     }
 
 private:
     clp::Array<char> m_data_buffer;
     std::unique_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
-    clp::ffi::ir_stream::Deserializer m_deserializer;
+    deserializer_t m_deserializer;
 };
 }  // namespace clp_ffi_js::ir
 
