@@ -46,6 +46,59 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
+    bool is_four_byte_encoding{};
+    auto const get_encoding_type_result{
+        clp::ffi::ir_stream::get_encoding_type(*zstd_decompressor, is_four_byte_encoding)};
+    if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != get_encoding_type_result) {
+        SPDLOG_CRITICAL(
+            "Failed to get encoding type: {}",
+            get_encoding_type_result
+        );
+        throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_Failure,
+            __FILENAME__,
+            __LINE__,
+            "Failed to get encoding type."
+        };
+    }
+    clp::ffi::ir_stream::encoded_tag_t metadata_type{};
+    std::vector<int8_t> metadata_bytes;
+    auto const deserialize_preamble_result{
+        clp::ffi::ir_stream::deserialize_preamble(*zstd_decompressor,
+        metadata_type,
+        metadata_bytes)};
+    if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
+        SPDLOG_CRITICAL(
+            "Failed to deserialize preamble for version reading: {}",
+            deserialize_preamble_result
+        );
+        throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_Failure,
+            __FILENAME__,
+            __LINE__,
+            "Failed to deserialize preamble for version reading."
+        };
+    }
+    std::string_view const metadata_view{
+        clp::size_checked_pointer_cast<char const>(metadata_bytes.data()),
+        metadata_bytes.size()
+    };
+    nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
+    auto const &version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
+    if (version == "v0.0.0") {
+        SPDLOG_CRITICAL("this is irv1; gg");
+        throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_Failure,
+            __FILENAME__,
+            __LINE__,
+            "this is irv1; gg."
+        };
+    }
+    SPDLOG_INFO("The version is {}", version);
+
+    // Seek from the beginning of the file since the metadata bytes have been consumed but the Deserializer()'s factory
+    // function does not expect so.
+    zstd_decompressor->seek_from_begin(0);
     auto result{
             clp::ffi::ir_stream::Deserializer::create(*zstd_decompressor)
     };
