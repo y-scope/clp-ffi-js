@@ -138,7 +138,6 @@ auto StreamReader::deserialize_stream() -> size_t {
         auto const& log_event = result.value();
         auto const& message = log_event.get_message();
 
-        logtype.clear();
         logtype = message.get_logtype();
         constexpr size_t cLogLevelPositionInMessages{1};
         LogLevel log_level{LogLevel::NONE};
@@ -199,14 +198,13 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
             log_event_idx = i;
         }
         auto const& log_event{m_encoded_log_events[log_event_idx]};
-        message.clear();
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             SPDLOG_ERROR("Failed to decode message.");
             break;
         }
-        message.append(parsed.value());
+        message = parsed.value();
 
         m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
 
