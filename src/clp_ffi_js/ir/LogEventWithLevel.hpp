@@ -32,9 +32,7 @@ public:
             : clp::ir::LogEvent<encoded_variable_t>{timestamp, utc_offset, std::move(message)},
               m_log_level{log_level} {}
 
-    [[nodiscard]] auto get_log_level() const -> LogLevel {
-        return m_log_level;
-    }
+    [[nodiscard]] auto get_log_level() const -> LogLevel { return m_log_level; }
 
 private:
     LogLevel m_log_level;
