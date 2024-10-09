@@ -7,10 +7,10 @@
 
 namespace clp_ffi_js {
 /**
-* Enum of known log levels.
-*/
+ * Enum of known log levels.
+ */
 enum class LogLevel : std::uint8_t {
-    NONE = 0,
+    NONE = 0,  // This should not be used.
     TRACE,
     DEBUG,
     INFO,
@@ -21,12 +21,12 @@ enum class LogLevel : std::uint8_t {
 constexpr LogLevel cValidLogLevelsBeginIdx{LogLevel::TRACE};
 
 /**
-* Strings corresponding to `LogLevel`.
-*
-* NOTE: These must be kept in sync manually.
-*/
+ * Strings corresponding to `LogLevel`.
+ *
+ * NOTE: These must be kept in sync manually.
+ */
 constexpr std::array<std::string_view, 7> cLogLevelNames{
-        "NONE",  // This should not be used.
+        "NONE",
         "TRACE",
         "DEBUG",
         "INFO",

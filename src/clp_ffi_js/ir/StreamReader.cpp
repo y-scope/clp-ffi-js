@@ -99,74 +99,74 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapType {
+auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
     if (std::nullopt == m_filtered_log_event_map) {
-        return FilteredLogEventMapType(emscripten::val::null());
+        return FilteredLogEventMapTsType(emscripten::val::null());
     }
 
-    return FilteredLogEventMapType(emscripten::val::array(m_filtered_log_event_map.value()));
+    return FilteredLogEventMapTsType(emscripten::val::array(m_filtered_log_event_map.value()));
 }
 
 auto StreamReader::build() -> size_t {
-    if (nullptr != m_stream_reader_data_context) {
-        constexpr size_t cDefaultNumReservedLogEvents{500'000};
-        m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
-
-        std::string logtype;
-        constexpr size_t cDefaultReservedMessageLength{512};
-        logtype.reserve(cDefaultReservedMessageLength);
-        while (true) {
-            auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
-            if (result.has_error()) {
-                auto const error{result.error()};
-                if (std::errc::no_message_available == error) {
-                    break;
-                }
-                if (std::errc::result_out_of_range == error) {
-                    SPDLOG_ERROR("File contains an incomplete IR stream");
-                    break;
-                }
-                throw ClpFfiJsException{
-                        clp::ErrorCode::ErrorCode_Corrupt,
-                        __FILENAME__,
-                        __LINE__,
-                        "Failed to deserialize: "s + error.category().name() + ":" + error.message()
-                };
-            }
-            auto const& log_event = result.value();
-            auto const& message = log_event.get_message();
-
-            logtype.clear();
-            logtype = message.get_logtype();
-            constexpr size_t cLogLevelPositionInMessages{1};
-            LogLevel log_level{LogLevel::NONE};
-            if (logtype.length() > cLogLevelPositionInMessages) {
-                // NOLINTNEXTLINE(readability-qualified-auto)
-                auto const log_level_name_it{std::find_if(
-                        cLogLevelNames.begin() + static_cast<size_t>(cValidLogLevelsBeginIdx),
-                        cLogLevelNames.end(),
-                        [&](std::string_view level) {
-                            return logtype.substr(cLogLevelPositionInMessages).starts_with(level);
-                        }
-                )};
-                if (log_level_name_it != cLogLevelNames.end()) {
-                    log_level = static_cast<LogLevel>(
-                            std::distance(cLogLevelNames.begin(), log_level_name_it)
-                    );
-                }
-            }
-
-            auto log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
-                    log_event.get_timestamp(),
-                    log_event.get_utc_offset(),
-                    message,
-                    log_level
-            )};
-            m_encoded_log_events.emplace_back(std::move(log_viewer_event));
-        }
-        m_stream_reader_data_context.reset(nullptr);
+    if (nullptr == m_stream_reader_data_context) {
+        return m_encoded_log_events.size();
     }
+    constexpr size_t cDefaultNumReservedLogEvents{500'000};
+    m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
 
+    std::string logtype;
+    constexpr size_t cDefaultReservedMessageLength{512};
+    logtype.reserve(cDefaultReservedMessageLength);
+    while (true) {
+        auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
+        if (result.has_error()) {
+            auto const error{result.error()};
+            if (std::errc::no_message_available == error) {
+                break;
+            }
+            if (std::errc::result_out_of_range == error) {
+                SPDLOG_ERROR("File contains an incomplete IR stream");
+                break;
+            }
+            throw ClpFfiJsException{
+                    clp::ErrorCode::ErrorCode_Corrupt,
+                    __FILENAME__,
+                    __LINE__,
+                    "Failed to deserialize: "s + error.category().name() + ":" + error.message()
+            };
+        }
+        auto const& log_event = result.value();
+        auto const& message = log_event.get_message();
+
+        logtype.clear();
+        logtype = message.get_logtype();
+        constexpr size_t cLogLevelPositionInMessages{1};
+        LogLevel log_level{LogLevel::NONE};
+        if (logtype.length() > cLogLevelPositionInMessages) {
+            // NOLINTNEXTLINE(readability-qualified-auto)
+            auto const log_level_name_it{std::find_if(
+                    cLogLevelNames.begin() + static_cast<size_t>(cValidLogLevelsBeginIdx),
+                    cLogLevelNames.end(),
+                    [&](std::string_view level) {
+                        return logtype.substr(cLogLevelPositionInMessages).starts_with(level);
+                    }
+            )};
+            if (log_level_name_it != cLogLevelNames.end()) {
+                log_level = static_cast<LogLevel>(
+                        std::distance(cLogLevelNames.begin(), log_level_name_it)
+                );
+            }
+        }
+
+        auto log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
+                log_event.get_timestamp(),
+                log_event.get_utc_offset(),
+                message,
+                log_level
+        )};
+        m_encoded_log_events.emplace_back(std::move(log_viewer_event));
+    }
+    m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
 }
 
@@ -256,7 +256,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
-    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapType>("number[]");
+    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[]");
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(

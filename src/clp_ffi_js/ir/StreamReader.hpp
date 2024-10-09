@@ -17,7 +17,7 @@
 namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -54,7 +54,7 @@ public:
     /**
      * @return The filtered log events map.
      */
-    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapType;
+    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType;
 
     /**
      * Generates a filtered collection from all log events.
