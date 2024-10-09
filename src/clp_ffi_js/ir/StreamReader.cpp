@@ -138,7 +138,6 @@ auto StreamReader::build() -> size_t {
 
             logtype.clear();
             logtype = message.get_logtype();
-
             constexpr size_t cLogLevelPositionInMessages{1};
             LogLevel log_level{LogLevel::NONE};
             if (logtype.length() > cLogLevelPositionInMessages) {

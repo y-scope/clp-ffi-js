@@ -59,7 +59,7 @@ public:
     /**
      * Generates a filtered collection from all log events.
      *
-     * @param logLevelFilter Array of selected log levels
+     * @param log_level_filter Array of selected log levels
      */
     void filter_log_events(emscripten::val const& log_level_filter);
 
