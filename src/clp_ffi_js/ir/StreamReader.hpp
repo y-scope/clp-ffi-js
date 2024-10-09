@@ -69,7 +69,7 @@ public:
      *
      * @return The number of successfully deserialized ("valid") log events.
      */
-    [[nodiscard]] auto build() -> size_t;
+    [[nodiscard]] auto deserialize_stream() -> size_t;
 
     /**
      * Decodes log events in the range `[beginIdx, endIdx)` of the filtered or unfiltered

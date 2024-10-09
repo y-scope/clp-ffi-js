@@ -107,7 +107,7 @@ auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsTy
     return FilteredLogEventMapTsType(emscripten::val::array(m_filtered_log_event_map.value()));
 }
 
-auto StreamReader::build() -> size_t {
+auto StreamReader::deserialize_stream() -> size_t {
     if (nullptr == m_stream_reader_data_context) {
         return m_encoded_log_events.size();
     }
@@ -271,7 +271,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getFilteredLogEventMap",
                     &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map
             )
-            .function("build", &clp_ffi_js::ir::StreamReader::build)
+            .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events);
 }
