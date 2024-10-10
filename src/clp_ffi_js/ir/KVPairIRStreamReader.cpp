@@ -27,6 +27,7 @@
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+#include <clp_ffi_js/ir/StreamReader.hpp>
 
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
@@ -46,59 +47,6 @@ auto KVPairIRStreamReader::create(DataArrayTsType const& data_array) -> KVPairIR
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    bool is_four_byte_encoding{};
-    auto const get_encoding_type_result{
-        clp::ffi::ir_stream::get_encoding_type(*zstd_decompressor, is_four_byte_encoding)};
-    if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != get_encoding_type_result) {
-        SPDLOG_CRITICAL(
-            "Failed to get encoding type: {}",
-            get_encoding_type_result
-        );
-        throw ClpFfiJsException{
-            clp::ErrorCode::ErrorCode_Failure,
-            __FILENAME__,
-            __LINE__,
-            "Failed to get encoding type."
-        };
-    }
-    clp::ffi::ir_stream::encoded_tag_t metadata_type{};
-    std::vector<int8_t> metadata_bytes;
-    auto const deserialize_preamble_result{
-        clp::ffi::ir_stream::deserialize_preamble(*zstd_decompressor,
-        metadata_type,
-        metadata_bytes)};
-    if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
-        SPDLOG_CRITICAL(
-            "Failed to deserialize preamble for version reading: {}",
-            deserialize_preamble_result
-        );
-        throw ClpFfiJsException{
-            clp::ErrorCode::ErrorCode_Failure,
-            __FILENAME__,
-            __LINE__,
-            "Failed to deserialize preamble for version reading."
-        };
-    }
-    std::string_view const metadata_view{
-        clp::size_checked_pointer_cast<char const>(metadata_bytes.data()),
-        metadata_bytes.size()
-    };
-    nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
-    auto const &version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
-    if (version == "v0.0.0") {
-        SPDLOG_CRITICAL("this is irv1; gg");
-        throw ClpFfiJsException{
-            clp::ErrorCode::ErrorCode_Failure,
-            __FILENAME__,
-            __LINE__,
-            "this is irv1; gg."
-        };
-    }
-    SPDLOG_INFO("The version is {}", version);
-
-    // Seek from the beginning of the file since the metadata bytes have been consumed but the Deserializer()'s factory
-    // function does not expect so.
-    zstd_decompressor->seek_from_begin(0);
     auto result{
             clp::ffi::ir_stream::Deserializer::create(*zstd_decompressor)
     };
@@ -129,16 +77,15 @@ auto KVPairIRStreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto KVPairIRStreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -> size_t {
-    constexpr size_t cFullRangeEndIdx{0};
-    if (0 != begin_idx || cFullRangeEndIdx != end_idx) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                "Partial range deserialization is not yet supported."
-        };
-    }
+auto KVPairIRStreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
+    return FilteredLogEventMapTsType(emscripten::val::null());
+}
+
+auto KVPairIRStreamReader::filter_log_events(emscripten::val const &log_level_filter) -> void {
+
+}
+
+auto KVPairIRStreamReader::deserialize_stream() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
@@ -170,7 +117,7 @@ auto KVPairIRStreamReader::deserialize_range(size_t begin_idx, size_t end_idx) -
     return m_encoded_log_events.size();
 }
 
-auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx) const -> DecodedResultsTsType {
+auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
         return DecodedResultsTsType(emscripten::val::null());
     }
@@ -216,7 +163,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number]>"
     );
-    emscripten::class_<clp_ffi_js::ir::KVPairIRStreamReader>("ClpKVPairIRStreamReader")
+    emscripten::class_<clp_ffi_js::ir::KVPairIRStreamReader, emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpKVPairIRStreamReader")
             .constructor(
                     &clp_ffi_js::ir::KVPairIRStreamReader::create,
                     emscripten::return_value_policy::take_ownership()
@@ -225,7 +172,13 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::KVPairIRStreamReader::get_num_events_buffered
             )
-            .function("deserializeRange", &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_range)
+            .function("deserializeStream", &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_stream)
             .function("decodeRange", &clp_ffi_js::ir::KVPairIRStreamReader::decode_range);
+
+    emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
+        .constructor(
+                &clp_ffi_js::ir::StreamReader::create,
+                emscripten::return_value_policy::take_ownership()
+        );
 }
 }  // namespace

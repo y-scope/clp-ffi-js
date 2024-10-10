@@ -19,6 +19,7 @@ namespace clp_ffi_js::ir {
 template <typename deserializer_t>
 class StreamReaderDataContext {
 public:
+
     // Constructors
     StreamReaderDataContext(
             clp::Array<char>&& data_buffer,

@@ -112,7 +112,10 @@ target_include_directories(
 
 target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
 
-set(CLP_FFI_JS_SRC_MAIN src/clp_ffi_js/ir/KVPairIRStreamReader.cpp)
+set(CLP_FFI_JS_SRC_MAIN
+        src/clp_ffi_js/ir/KVPairIRStreamReader.cpp
+        src/clp_ffi_js/ir/StreamReader.cpp
+)
 
 set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
