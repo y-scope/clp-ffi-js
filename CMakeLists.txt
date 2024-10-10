@@ -113,7 +113,9 @@ target_include_directories(
 target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
 
 set(CLP_FFI_JS_SRC_MAIN
+        src/clp_ffi_js/bindings.cpp
         src/clp_ffi_js/ir/KVPairIRStreamReader.cpp
+        src/clp_ffi_js/ir/IrStreamReader.cpp
         src/clp_ffi_js/ir/StreamReader.cpp
 )
 
@@ -125,9 +127,11 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
     src/submodules/clp/components/core/src/clp/ffi/SchemaTree.cpp
     src/submodules/clp/components/core/src/clp/ir/EncodedTextAst.cpp
+    src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
     src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
+    src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
 )
 
 set(CLP_FFI_JS_SRC_FMT src/submodules/fmt/src/format.cc)

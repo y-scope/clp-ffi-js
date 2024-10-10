@@ -149,31 +149,3 @@ KVPairIRStreamReader::KVPairIRStreamReader(
           )} {}
 }  // namespace clp_ffi_js::ir
 
-namespace {
-EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
-    emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
-    emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>("Array<[string, number]>");
-    emscripten::class_<
-            clp_ffi_js::ir::KVPairIRStreamReader,
-            emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpKVPairIRStreamReader")
-            .constructor(
-                    &clp_ffi_js::ir::KVPairIRStreamReader::create,
-                    emscripten::return_value_policy::take_ownership()
-            )
-            .function(
-                    "getNumEventsBuffered",
-                    &clp_ffi_js::ir::KVPairIRStreamReader::get_num_events_buffered
-            )
-            .function(
-                    "deserializeStream",
-                    &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_stream
-            )
-            .function("decodeRange", &clp_ffi_js::ir::KVPairIRStreamReader::decode_range);
-
-    emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
-            .constructor(
-                    &clp_ffi_js::ir::StreamReader::create,
-                    emscripten::return_value_policy::take_ownership()
-            );
-}
-}  // namespace
