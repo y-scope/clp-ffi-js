@@ -77,15 +77,11 @@ public:
      */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType override;
 
-
- using deserializer_t = clp::ffi::ir_stream::Deserializer;
-
- // Constructor
- explicit KVPairIRStreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
-
 private:
+    using deserializer_t = clp::ffi::ir_stream::Deserializer;
 
-
+    // Constructor
+    explicit KVPairIRStreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
 
     // Variables
     std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;
