@@ -26,7 +26,7 @@ constexpr LogLevel cValidLogLevelsBeginIdx{LogLevel::TRACE};
  * NOTE: These must be kept in sync manually.
  */
 constexpr std::array<std::string_view, 7> cLogLevelNames{
-        "NONE",
+        "NONE", // This isn't a valid log level.
         "TRACE",
         "DEBUG",
         "INFO",

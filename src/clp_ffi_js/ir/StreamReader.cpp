@@ -107,6 +107,22 @@ auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsTy
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
+void StreamReader::filter_log_events(emscripten::val const& log_level_filter) {
+    if (log_level_filter.isNull()) {
+        m_filtered_log_event_map.reset();
+        return;
+    }
+
+    m_filtered_log_event_map.emplace();
+    auto filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
+    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
+        auto const& log_event = m_encoded_log_events[log_event_idx];
+        if (std::ranges::find(filter_levels, log_event.get_log_level()) != filter_levels.end()) {
+            m_filtered_log_event_map->emplace_back(log_event_idx);
+        }
+    }
+}
+
 auto StreamReader::deserialize_stream() -> size_t {
     if (nullptr == m_stream_reader_data_context) {
         return m_encoded_log_events.size();
@@ -179,7 +195,7 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     } else {
         length = m_encoded_log_events.size();
     }
-    if (length < end_idx || 0 > begin_idx) {
+    if (length < end_idx || begin_idx > end_idx) {
         return DecodedResultsTsType{emscripten::val::null()};
     }
 
@@ -219,22 +235,6 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     return DecodedResultsTsType(results);
 }
 
-void StreamReader::filter_log_events(emscripten::val const& log_level_filter) {
-    if (log_level_filter.isNull()) {
-        m_filtered_log_event_map.reset();
-        return;
-    }
-
-    m_filtered_log_event_map.emplace();
-    auto filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
-    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
-        auto const& log_event = m_encoded_log_events[log_event_idx];
-        if (std::ranges::find(filter_levels, log_event.get_log_level()) != filter_levels.end()) {
-            m_filtered_log_event_map->emplace_back(log_event_idx);
-        }
-    }
-}
-
 StreamReader::StreamReader(
         StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
 )
@@ -266,8 +266,8 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getFilteredLogEventMap",
                     &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map
             )
+            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
             .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
-            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
-            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events);
+            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range);
 }
 }  // namespace
