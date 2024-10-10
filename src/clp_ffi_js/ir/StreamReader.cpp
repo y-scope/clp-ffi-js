@@ -114,10 +114,10 @@ void StreamReader::filter_log_events(emscripten::val const& log_level_filter) {
     }
 
     m_filtered_log_event_map.emplace();
-    auto filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
+    auto filter_levels{emscripten::vecFromJSArray<std::uint8_t>(log_level_filter)};
     for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
         auto const& log_event = m_encoded_log_events[log_event_idx];
-        if (std::ranges::find(filter_levels, log_event.get_log_level()) != filter_levels.end()) {
+        if (std::ranges::find(filter_levels, static_cast<std::uint8_t>(log_event.get_log_level())) != filter_levels.end()) {
             m_filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
