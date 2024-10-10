@@ -3,15 +3,9 @@
 
 #include <cstddef>
 #include <memory>
-#include <optional>
-#include <vector>
 
-#include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);

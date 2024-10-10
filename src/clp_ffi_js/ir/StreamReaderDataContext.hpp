@@ -1,7 +1,6 @@
 #ifndef CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
 #define CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
 
-#include <ffi/ir_stream/Deserializer.hpp>
 #include <memory>
 #include <utility>
 

@@ -2,11 +2,11 @@
 #define CLP_FFI_JS_KV_PAIR_IR_STREAM_READER_HPP
 
 #include <cstddef>
+#include <ffi/ir_stream/Deserializer.hpp>
 #include <memory>
 #include <vector>
 
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
-#include <clp/ir/LogEvent.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 

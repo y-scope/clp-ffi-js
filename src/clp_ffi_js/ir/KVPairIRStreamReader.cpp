@@ -1,8 +1,12 @@
 #include "KVPairIRStreamReader.hpp"
 
+#include <cstddef>
 #include <cstdint>
+#include <ffi/ir_stream/Deserializer.hpp>
+#include <memory>
 #include <span>
 #include <string>
+#include <system_error>
 #include <utility>
 #include <vector>
 
@@ -104,7 +108,7 @@ auto KVPairIRStreamReader::deserialize_stream() -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool /*use_filter*/) const
         -> DecodedResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
         return DecodedResultsTsType(emscripten::val::null());

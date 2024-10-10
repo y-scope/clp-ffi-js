@@ -1,32 +1,25 @@
 #include "StreamReader.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
-#include <iterator>
+#include <ffi/ir_stream/protocol_constants.hpp>
+#include <json/single_include/nlohmann/json.hpp>
 #include <memory>
-#include <span>
 #include <string>
 #include <string_view>
-#include <system_error>
+#include <type_utils.hpp>
 #include <utility>
 #include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ffi/ir_stream/Deserializer.hpp>
-#include <clp/ir/LogEventDeserializer.hpp>
-#include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
-#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
-#include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 #include "KVPairIRStreamReader.hpp"
 
@@ -94,7 +87,6 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     }
     SPDLOG_INFO("The version is {}", version);
 
-    return std::make_unique<KVPairIRStreamReader>(KVPairIRStreamReader::create(std::move(data_array)
-    ));
+    return std::make_unique<KVPairIRStreamReader>(KVPairIRStreamReader::create(data_array));
 }
 }  // namespace clp_ffi_js::ir
