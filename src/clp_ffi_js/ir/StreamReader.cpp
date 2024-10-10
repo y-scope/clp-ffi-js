@@ -100,23 +100,21 @@ auto StreamReader::get_num_events_buffered() const -> size_t {
 }
 
 auto StreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
-    if (std::nullopt == m_filtered_log_event_map) {
-        return FilteredLogEventMapTsType(emscripten::val::null());
+    if (false == m_filtered_log_event_map.has_value()) {
+        return FilteredLogEventMapTsType{emscripten::val::null()};
     }
 
-    return FilteredLogEventMapTsType(emscripten::val::array(m_filtered_log_event_map.value()));
+    return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
 auto StreamReader::deserialize_stream() -> size_t {
     if (nullptr == m_stream_reader_data_context) {
         return m_encoded_log_events.size();
     }
+
     constexpr size_t cDefaultNumReservedLogEvents{500'000};
     m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
 
-    std::string logtype;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    logtype.reserve(cDefaultReservedMessageLength);
     while (true) {
         auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
         if (result.has_error()) {
@@ -138,7 +136,7 @@ auto StreamReader::deserialize_stream() -> size_t {
         auto const& log_event = result.value();
         auto const& message = log_event.get_message();
 
-        logtype = message.get_logtype();
+        auto const& logtype = message.get_logtype();
         constexpr size_t cLogLevelPositionInMessages{1};
         LogLevel log_level{LogLevel::NONE};
         if (logtype.length() > cLogLevelPositionInMessages) {
@@ -171,8 +169,8 @@ auto StreamReader::deserialize_stream() -> size_t {
 
 auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
-    if (use_filter && (std::nullopt == m_filtered_log_event_map)) {
-        return DecodedResultsTsType(emscripten::val::null());
+    if (use_filter && false == m_filtered_log_event_map.has_value()) {
+        return DecodedResultsTsType{emscripten::val::null()};
     }
 
     size_t length{0};
@@ -181,17 +179,17 @@ auto StreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filte
     } else {
         length = m_encoded_log_events.size();
     }
-
     if (length < end_idx || 0 > begin_idx) {
-        return DecodedResultsTsType(emscripten::val::null());
+        return DecodedResultsTsType{emscripten::val::null()};
     }
+
     std::string message;
     constexpr size_t cDefaultReservedMessageLength{512};
     message.reserve(cDefaultReservedMessageLength);
     auto const results{emscripten::val::array()};
 
     for (size_t i = begin_idx; i < end_idx; ++i) {
-        size_t log_event_idx = 0;
+        size_t log_event_idx{0};
         if (use_filter) {
             log_event_idx = m_filtered_log_event_map->at(i);
         } else {
@@ -228,8 +226,7 @@ void StreamReader::filter_log_events(emscripten::val const& log_level_filter) {
     }
 
     m_filtered_log_event_map.emplace();
-    std::vector<LogLevel> filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
-
+    auto filter_levels{emscripten::vecFromJSArray<LogLevel>(log_level_filter)};
     for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
         auto const& log_event = m_encoded_log_events[log_event_idx];
         if (std::ranges::find(filter_levels, log_event.get_log_level()) != filter_levels.end()) {
@@ -254,7 +251,7 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
-    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[]");
+    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpIrStreamReader")
             .constructor(

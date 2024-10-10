@@ -11,7 +11,6 @@
 #include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
-
 /**
  * A class derived from `clp::ir::LogEvent` with an additional member for the log level.
  *

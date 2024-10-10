@@ -64,7 +64,7 @@ public:
     void filter_log_events(emscripten::val const& log_level_filter);
 
     /**
-     * Deserializes all log events in the file. After the stream has been exhausted, it will be
+     * Deserializes all log events in the stream. After the stream has been exhausted, it will be
      * deallocated.
      *
      * @return The number of successfully deserialized ("valid") log events.
@@ -77,8 +77,7 @@ public:
      *
      * @param begin_idx
      * @param end_idx
-     * @param use_filter If true, decode from the filtered log events collection; otherwise, decode
-     * from the unfiltered one.
+     * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
      * @return An array where each element is a decoded log event represented by an array of:
      * - The log event's message
      * - The log event's timestamp as milliseconds since the Unix epoch
