@@ -10,7 +10,7 @@ namespace clp_ffi_js {
  * Enum of known log levels.
  */
 enum class LogLevel : std::uint8_t {
-    NONE = 0,  // This should not be used.
+    NONE = 0,  // This isn't a valid log level.
     TRACE,
     DEBUG,
     INFO,
