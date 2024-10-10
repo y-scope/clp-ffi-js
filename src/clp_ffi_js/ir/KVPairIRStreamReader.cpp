@@ -1,22 +1,13 @@
 #include "KVPairIRStreamReader.hpp"
 
-#include <algorithm>
-#include <cstddef>
 #include <cstdint>
-#include <iterator>
-#include <memory>
 #include <span>
 #include <string>
-#include <string_view>
-#include <system_error>
 #include <utility>
 #include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ir/LogEventDeserializer.hpp>
-#include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
@@ -25,9 +16,8 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
-#include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
+#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
@@ -47,9 +37,7 @@ auto KVPairIRStreamReader::create(DataArrayTsType const& data_array) -> KVPairIR
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    auto result{
-            clp::ffi::ir_stream::Deserializer::create(*zstd_decompressor)
-    };
+    auto result{clp::ffi::ir_stream::Deserializer::create(*zstd_decompressor)};
     if (result.has_error()) {
         auto const error_code{result.error()};
         SPDLOG_CRITICAL(
@@ -81,17 +69,16 @@ auto KVPairIRStreamReader::get_filtered_log_event_map() const -> FilteredLogEven
     return FilteredLogEventMapTsType(emscripten::val::null());
 }
 
-auto KVPairIRStreamReader::filter_log_events(emscripten::val const &log_level_filter) -> void {
-
-}
+auto KVPairIRStreamReader::filter_log_events(emscripten::val const& log_level_filter) -> void {}
 
 auto KVPairIRStreamReader::deserialize_stream() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
         m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
-        auto &reader{m_stream_reader_data_context->get_reader()};
+        auto& reader{m_stream_reader_data_context->get_reader()};
         while (true) {
-            auto result{m_stream_reader_data_context->get_deserializer().deserialize_to_next_log_event(reader)};
+            auto result{m_stream_reader_data_context->get_deserializer()
+                                .deserialize_to_next_log_event(reader)};
             if (false == result.has_error()) {
                 m_encoded_log_events.emplace_back(std::move(result.value()));
                 continue;
@@ -117,7 +104,8 @@ auto KVPairIRStreamReader::deserialize_stream() -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType {
+auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+        -> DecodedResultsTsType {
     if (m_encoded_log_events.size() < end_idx || begin_idx >= end_idx) {
         return DecodedResultsTsType(emscripten::val::null());
     }
@@ -160,10 +148,10 @@ KVPairIRStreamReader::KVPairIRStreamReader(
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
-    emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
-            "Array<[string, number]>"
-    );
-    emscripten::class_<clp_ffi_js::ir::KVPairIRStreamReader, emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpKVPairIRStreamReader")
+    emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>("Array<[string, number]>");
+    emscripten::class_<
+            clp_ffi_js::ir::KVPairIRStreamReader,
+            emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpKVPairIRStreamReader")
             .constructor(
                     &clp_ffi_js::ir::KVPairIRStreamReader::create,
                     emscripten::return_value_policy::take_ownership()
@@ -172,13 +160,16 @@ EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::KVPairIRStreamReader::get_num_events_buffered
             )
-            .function("deserializeStream", &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_stream)
+            .function(
+                    "deserializeStream",
+                    &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_stream
+            )
             .function("decodeRange", &clp_ffi_js::ir::KVPairIRStreamReader::decode_range);
 
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
-        .constructor(
-                &clp_ffi_js::ir::StreamReader::create,
-                emscripten::return_value_policy::take_ownership()
-        );
+            .constructor(
+                    &clp_ffi_js::ir::StreamReader::create,
+                    emscripten::return_value_policy::take_ownership()
+            );
 }
 }  // namespace

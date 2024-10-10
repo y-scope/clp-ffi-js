@@ -5,20 +5,20 @@
 #include <memory>
 #include <vector>
 
-#include <clp/ir/LogEvent.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
+#include <clp/ir/LogEvent.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
+#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class KVPairIRStreamReader: public StreamReader {
+class KVPairIRStreamReader : public StreamReader {
 public:
     /**
      * Creates a StreamReader to read from the given array.
@@ -44,11 +44,11 @@ public:
     /**
      * @return The number of events buffered.
      */
-    [[nodiscard]] auto get_num_events_buffered() const  -> size_t override;
+    [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
 
-    [[nodiscard]] auto get_filtered_log_event_map() const  -> FilteredLogEventMapTsType override;
+    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType override;
 
-    auto filter_log_events(emscripten::val const &log_level_filter) -> void override;
+    auto filter_log_events(emscripten::val const& log_level_filter) -> void override;
     /**
      * Deserializes and buffers log events in the range `[beginIdx, endIdx)`. After the stream has
      * been exhausted, it will be deallocated.
@@ -75,13 +75,16 @@ public:
      * @return null if any log event in the range doesn't exist (e.g., the range exceeds the number
      * of log events in the file).
      */
-    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType override;
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+            -> DecodedResultsTsType override;
 
 private:
     using deserializer_t = clp::ffi::ir_stream::Deserializer;
 
     // Constructor
-    explicit KVPairIRStreamReader(StreamReaderDataContext<deserializer_t>&& stream_reader_data_context);
+    explicit KVPairIRStreamReader(
+            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
+    );
 
     // Variables
     std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;

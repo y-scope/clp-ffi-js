@@ -1,12 +1,12 @@
 #ifndef CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
 #define CLP_FFI_JS_IR_STREAMREADERDATACONTEXT_HPP
 
+#include <ffi/ir_stream/Deserializer.hpp>
 #include <memory>
 #include <utility>
 
 #include <clp/Array.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
-#include <ffi/ir_stream/Deserializer.hpp>
 
 namespace clp_ffi_js::ir {
 /**
@@ -14,12 +14,11 @@ namespace clp_ffi_js::ir {
  * A `clp::ir::LogEventDeserializer` / `clp::ffi::ir_stream::Deserializer` that reads from a
  * `clp::streaming_compression::zstd::Decompressor`, which in turn reads from a `clp::Array`.
  *
-* @tparam deserializer_t Type of deserializer for decoding the stream.
+ * @tparam deserializer_t Type of deserializer for decoding the stream.
  */
 template <typename deserializer_t>
 class StreamReaderDataContext {
 public:
-
     // Constructors
     StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
@@ -52,9 +51,7 @@ public:
     /**
      * @return A reference to the deserializer.
      */
-    [[nodiscard]] auto get_deserializer() -> deserializer_t& {
-        return m_deserializer;
-    }
+    [[nodiscard]] auto get_deserializer() -> deserializer_t& { return m_deserializer; }
 
 private:
     clp::Array<char> m_data_buffer;
