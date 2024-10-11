@@ -18,22 +18,19 @@ namespace clp_ffi_js::ir {
  * IR log event will contain a set of key-value pairs, one of which should be the log level.
  * @tparam encoded_variable_t The type of encoded variables in the event
  */
-template <typename encoded_variable_t>
-class LogEventWithLevel : public clp::ir::LogEvent<encoded_variable_t> {
+template <typename log_event_t>
+class LogEventWithLevel {
 public:
     // Constructors
-    LogEventWithLevel(
-            clp::ir::epoch_time_ms_t timestamp,
-            clp::UtcOffset utc_offset,
-            clp::ir::EncodedTextAst<encoded_variable_t> message,
-            LogLevel log_level
-    )
-            : clp::ir::LogEvent<encoded_variable_t>{timestamp, utc_offset, std::move(message)},
+    explicit LogEventWithLevel(log_event_t log_event, LogLevel log_level)
+            : m_log_event{std::move(log_event)},
               m_log_level{log_level} {}
 
+    [[nodiscard]] auto get_log_event() const -> const log_event_t& { return m_log_event; }
     [[nodiscard]] auto get_log_level() const -> LogLevel { return m_log_level; }
 
 private:
+    log_event_t m_log_event;
     LogLevel m_log_level;
 };
 }  // namespace clp_ffi_js::ir

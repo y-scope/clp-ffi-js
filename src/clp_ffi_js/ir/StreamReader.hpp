@@ -11,6 +11,7 @@ namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -18,9 +19,15 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
  */
 class StreamReader {
 public:
+    /**
+     * Mapping between an index in the filtered log events collection to an index in the unfiltered
+     * log events collection.
+     */
+    using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+
     virtual ~StreamReader() = default;
 
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options
     ) -> std::unique_ptr<StreamReader>;
 
     /**

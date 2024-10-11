@@ -24,7 +24,7 @@
 #include <clp_ffi_js/ir/KVPairIRStreamReader.hpp>
 
 namespace clp_ffi_js::ir {
-auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<StreamReader> {
+auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> std::unique_ptr<StreamReader> {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("KVPairIRStreamReader::create: got buffer of length={}", length);
 
@@ -78,9 +78,9 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     auto const& version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
     SPDLOG_INFO("The version is {}", version);
     if (version == "v0.0.0") {
-        return std::make_unique<IrStreamReader>(IrStreamReader::create(data_array));
+        return std::make_unique<IrStreamReader>(IrStreamReader::create(data_array, std::move(reader_options)));
     }
 
-    return std::make_unique<KVPairIRStreamReader>(KVPairIRStreamReader::create(data_array));
+    return std::make_unique<KVPairIRStreamReader>(KVPairIRStreamReader::create(data_array, std::move(reader_options)));
 }
 }  // namespace clp_ffi_js::ir

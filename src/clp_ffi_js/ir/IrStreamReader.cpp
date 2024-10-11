@@ -34,7 +34,7 @@ using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
-auto IrStreamReader::create(DataArrayTsType const& data_array) -> IrStreamReader {
+auto IrStreamReader::create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> IrStreamReader {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("IrStreamReader::create: got buffer of length={}", length);
 
@@ -94,7 +94,7 @@ auto IrStreamReader::create(DataArrayTsType const& data_array) -> IrStreamReader
             std::move(zstd_decompressor),
             std::move(result.value())
     };
-    return IrStreamReader{std::move(stream_reader_data_context)};
+    return IrStreamReader{std::move(stream_reader_data_context), std::move(reader_options)};
 }
 
 auto IrStreamReader::get_num_events_buffered() const -> size_t {
@@ -179,10 +179,8 @@ auto IrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        auto log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
-                log_event.get_timestamp(),
-                log_event.get_utc_offset(),
-                message,
+        auto log_viewer_event{LogEventWithLevel<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>>(
+                std::move(log_event),
                 log_level
         )};
         m_encoded_log_events.emplace_back(std::move(log_viewer_event));
@@ -219,7 +217,8 @@ auto IrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_fil
         } else {
             log_event_idx = i;
         }
-        auto const& log_event{m_encoded_log_events[log_event_idx]};
+        auto const& log_event_with_level{m_encoded_log_events[log_event_idx]};
+        auto const& log_event{log_event_with_level.get_log_event()};
 
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
@@ -235,7 +234,7 @@ auto IrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_fil
                 results.as_handle(),
                 message.c_str(),
                 log_event.get_timestamp(),
-                log_event.get_log_level(),
+                log_event_with_level.get_log_level(),
                 log_event_idx + 1
         );
     }
@@ -244,7 +243,7 @@ auto IrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_fil
 }
 
     IrStreamReader::IrStreamReader(
-        StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>&& stream_reader_data_context
+        StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>&& stream_reader_data_context, ReaderOptions const& reader_options
 )
         : m_stream_reader_data_context{std::make_unique<
                   StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>>(

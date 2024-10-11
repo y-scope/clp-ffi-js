@@ -10,6 +10,7 @@
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
+#include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
@@ -27,7 +28,7 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> KVPairIRStreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> KVPairIRStreamReader;
 
     // Destructor
     ~KVPairIRStreamReader() override = default;
@@ -83,12 +84,16 @@ private:
 
     // Constructor
     explicit KVPairIRStreamReader(
-            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
+            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context, ReaderOptions const& reader_options
     );
 
     // Variables
-    std::vector<clp::ffi::KeyValuePairLogEvent> m_encoded_log_events;
+    std::vector<LogEventWithLevel<clp::ffi::KeyValuePairLogEvent>> m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<deserializer_t>> m_stream_reader_data_context;
+
+    std::string m_log_level_key;
+    std::string m_timestamp_key;
+    FilteredLogEventsMap m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::ir
 

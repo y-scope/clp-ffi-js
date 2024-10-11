@@ -10,6 +10,7 @@ namespace {
                 "Array<[string, number, number, number]>"
         );
         emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
+        emscripten::register_type<clp_ffi_js::ir::ReaderOptions>("interface{logLevelKey?: string, timestampKey?: string}");
 
         emscripten::class_<clp_ffi_js::ir::IrStreamReader,
                 emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpIrStreamReader")
@@ -39,6 +40,11 @@ namespace {
                         "getNumEventsBuffered",
                         &clp_ffi_js::ir::KVPairIRStreamReader::get_num_events_buffered
                 )
+                .function(
+                        "getFilteredLogEventMap",
+                        &clp_ffi_js::ir::KVPairIRStreamReader::get_filtered_log_event_map
+                )
+                .function("filterLogEvents", &clp_ffi_js::ir::KVPairIRStreamReader::filter_log_events)
                 .function(
                         "deserializeStream",
                         &clp_ffi_js::ir::KVPairIRStreamReader::deserialize_stream

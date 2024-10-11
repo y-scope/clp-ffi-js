@@ -24,19 +24,13 @@ namespace clp_ffi_js::ir {
 class IrStreamReader: public StreamReader {
 public:
     /**
-     * Mapping between an index in the filtered log events collection to an index in the unfiltered
-     * log events collection.
-     */
-    using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
-
-    /**
      * Creates a IrStreamReader to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> IrStreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> IrStreamReader;
 
     // Destructor
     ~IrStreamReader() = default;
@@ -96,10 +90,10 @@ public:
 private:
     // Constructor
     explicit IrStreamReader(StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>&&
-                                  stream_reader_data_context);
+                                  stream_reader_data_context, ReaderOptions const& reader_options);
 
     // Variables
-    std::vector<LogEventWithLevel<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
+    std::vector<LogEventWithLevel<clp::ir::LogEvent<clp::ir::four_byte_encoded_variable_t>>> m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
