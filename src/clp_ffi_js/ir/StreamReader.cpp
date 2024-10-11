@@ -20,7 +20,7 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
-#include <clp_ffi_js/ir/IrStreamReader.hpp>
+#include <clp_ffi_js/ir/IRStreamReader.hpp>
 #include <clp_ffi_js/ir/KVPairIRStreamReader.hpp>
 
 namespace clp_ffi_js::ir {
@@ -78,7 +78,7 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     auto const& version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
     SPDLOG_INFO("The version is {}", version);
     if (version == "v0.0.0") {
-        return std::make_unique<IrStreamReader>(IrStreamReader::create(data_array, std::move(reader_options)));
+        return std::make_unique<IRStreamReader>(IRStreamReader::create(data_array, std::move(reader_options)));
     }
 
     return std::make_unique<KVPairIRStreamReader>(KVPairIRStreamReader::create(data_array, std::move(reader_options)));

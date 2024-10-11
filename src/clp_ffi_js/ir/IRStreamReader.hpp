@@ -21,28 +21,28 @@ namespace clp_ffi_js::ir {
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class IrStreamReader: public StreamReader {
+class IRStreamReader: public StreamReader {
 public:
     /**
-     * Creates a IrStreamReader to read from the given array.
+     * Creates a IRStreamReader to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> IrStreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> IRStreamReader;
 
     // Destructor
-    ~IrStreamReader() = default;
+    ~IRStreamReader() = default;
 
     // Disable copy constructor and assignment operator
-    IrStreamReader(IrStreamReader const&) = delete;
-    auto operator=(IrStreamReader const&) -> IrStreamReader& = delete;
+    IRStreamReader(IRStreamReader const&) = delete;
+    auto operator=(IRStreamReader const&) -> IRStreamReader& = delete;
 
     // Define default move constructor
-    IrStreamReader(IrStreamReader&&) = default;
+    IRStreamReader(IRStreamReader&&) = default;
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
-    auto operator=(IrStreamReader&&) -> IrStreamReader& = delete;
+    auto operator=(IRStreamReader&&) -> IRStreamReader& = delete;
 
     /**
      * @return The number of events buffered.
@@ -89,7 +89,7 @@ public:
 
 private:
     // Constructor
-    explicit IrStreamReader(StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>&&
+    explicit IRStreamReader(StreamReaderDataContext<clp::ir::LogEventDeserializer<clp::ir::four_byte_encoded_variable_t>>&&
                                   stream_reader_data_context, ReaderOptions const& reader_options);
 
     // Variables
