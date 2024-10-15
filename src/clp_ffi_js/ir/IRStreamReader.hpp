@@ -13,20 +13,19 @@
 #include <emscripten/val.h>
 
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
+#include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
-EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
-
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class IRStreamReader {
+class IRStreamReader : public StreamReader {
+    friend StreamReader;
+
 public:
     /**
      * Mapping between an index in the filtered log events collection to an index in the unfiltered
@@ -44,7 +43,7 @@ public:
     [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> IRStreamReader;
 
     // Destructor
-    ~IRStreamReader() = default;
+    ~IRStreamReader() override = default;
 
     // Disable copy constructor and assignment operator
     IRStreamReader(IRStreamReader const&) = delete;
@@ -59,19 +58,19 @@ public:
     /**
      * @return The number of events buffered.
      */
-    [[nodiscard]] auto get_num_events_buffered() const -> size_t;
+    [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
 
     /**
      * @return The filtered log events map.
      */
-    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType;
+    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType override;
 
     /**
      * Generates a filtered collection from all log events.
      *
      * @param log_level_filter Array of selected log levels
      */
-    void filter_log_events(emscripten::val const& log_level_filter);
+    void filter_log_events(emscripten::val const& log_level_filter) override;
 
     /**
      * Deserializes all log events in the stream. After the stream has been exhausted, it will be
@@ -79,7 +78,7 @@ public:
      *
      * @return The number of successfully deserialized ("valid") log events.
      */
-    [[nodiscard]] auto deserialize_stream() -> size_t;
+    [[nodiscard]] auto deserialize_stream() -> size_t override;
 
     /**
      * Decodes log events in the range `[beginIdx, endIdx)` of the filtered or unfiltered
@@ -96,8 +95,8 @@ public:
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      */
-    [[nodiscard]] auto
-    decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+            -> DecodedResultsTsType override;
 
 private:
     // Constructor

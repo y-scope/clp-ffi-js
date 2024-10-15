@@ -29,6 +29,7 @@
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
+#include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 using namespace std::literals::string_literals;
@@ -241,13 +242,9 @@ auto IRStreamReader::create_deserializer_and_data_context(
 
 namespace {
 EMSCRIPTEN_BINDINGS(ClpIRStreamReader) {
-    emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
-    emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
-            "Array<[string, number, number, number]>"
-    );
-    emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
-
-    emscripten::class_<clp_ffi_js::ir::IRStreamReader>("ClpIRStreamReader")
+    emscripten::class_<
+            clp_ffi_js::ir::IRStreamReader,
+            emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpIRStreamReader")
             .constructor(
                     &clp_ffi_js::ir::IRStreamReader::create,
                     emscripten::return_value_policy::take_ownership()
