@@ -40,6 +40,11 @@ public:
 
     // Methods
     /**
+     * @return A reference to the reader.
+     */
+    [[nodiscard]] auto get_reader() -> clp::ReaderInterface& { return *m_reader; }
+
+    /**
      * @return A reference to the deserializer.
      */
     [[nodiscard]] auto get_deserializer() -> deserializer_t& { return m_deserializer; }
