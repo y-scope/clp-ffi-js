@@ -240,14 +240,14 @@ auto IRStreamReader::create_deserializer_and_data_context(
 }  // namespace clp_ffi_js::ir
 
 namespace {
-EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
+EMSCRIPTEN_BINDINGS(ClpIRStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
 
-    emscripten::class_<clp_ffi_js::ir::IRStreamReader>("ClpIrStreamReader")
+    emscripten::class_<clp_ffi_js::ir::IRStreamReader>("ClpIRStreamReader")
             .constructor(
                     &clp_ffi_js::ir::IRStreamReader::create,
                     emscripten::return_value_policy::take_ownership()
