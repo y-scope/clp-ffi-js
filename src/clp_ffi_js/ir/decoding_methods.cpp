@@ -1,14 +1,59 @@
 #include "decoding_methods.hpp"
 
+#include <cstdint>
+#include <json/single_include/nlohmann/json.hpp>
+#include <string>
+#include <string_view>
+#include <vector>
+
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
+#include <clp/ffi/ir_stream/protocol_constants.hpp>
 #include <clp/ReaderInterface.hpp>
 #include <clp/TraceableException.hpp>
+#include <clp/type_utils.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::ir {
+auto get_version(clp::ReaderInterface& reader) -> std::string {
+    // The encoding type bytes must be consumed before the metadata can be read.
+    rewind_reader_and_verify_encoding_type(reader);
+
+    // Deserialize metadata bytes from preamble.
+    clp::ffi::ir_stream::encoded_tag_t metadata_type{};
+    std::vector<int8_t> metadata_bytes;
+    auto const deserialize_preamble_result{
+            clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
+    };
+    if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
+        SPDLOG_CRITICAL(
+                "Failed to deserialize preamble for version reading: {}",
+                deserialize_preamble_result
+        );
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                "Failed to deserialize preamble for version reading."
+        };
+    }
+
+    // Deserialize metadata bytes which is encoded in JSON.
+    std::string_view const metadata_view{
+            clp::size_checked_pointer_cast<char const>(metadata_bytes.data()),
+            metadata_bytes.size()
+    };
+    nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
+
+    // Retrieve version from metadata.
+    auto const& version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
+    SPDLOG_INFO("The version is {}", version);
+
+    return version;
+}
+
 auto rewind_reader_and_verify_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 
