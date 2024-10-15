@@ -5,13 +5,13 @@
 #include <utility>
 
 #include <clp/Array.hpp>
-#include <clp/streaming_compression/zstd/Decompressor.hpp>
+#include <clp/ReaderInterface.hpp>
 
 namespace clp_ffi_js::ir {
 /**
  * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
- * A CLP deserializer class that reads from a `clp::streaming_compression::zstd::Decompressor`,
- * which in turn reads from a `clp::Array`.
+ * A CLP deserializer class that reads from a `clp::ReaderInterface`, which in turn reads from a
+ * `clp::Array`.
  * @tparam deserializer_t Type of deserializer.
  */
 template <typename deserializer_t>
@@ -20,11 +20,11 @@ public:
     // Constructors
     StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
-            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
+            std::unique_ptr<clp::ReaderInterface>&& reader,
             deserializer_t deserializer
     )
             : m_data_buffer{std::move(data_buffer)},
-              m_zstd_decompressor{std::move(zstd_decompressor)},
+              m_reader{std::move(reader)},
               m_deserializer{std::move(deserializer)} {}
 
     // Disable copy constructor and assignment operator
@@ -46,7 +46,7 @@ public:
 
 private:
     clp::Array<char> m_data_buffer;
-    std::unique_ptr<clp::streaming_compression::zstd::Decompressor> m_zstd_decompressor;
+    std::unique_ptr<clp::ReaderInterface> m_reader;
     deserializer_t m_deserializer;
 };
 }  // namespace clp_ffi_js::ir
