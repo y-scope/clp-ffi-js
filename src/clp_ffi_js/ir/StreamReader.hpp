@@ -7,12 +7,15 @@
 #include <vector>
 
 #include <clp/ir/types.hpp>
+#include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+using clp::ir::four_byte_encoded_variable_t;
+using clp::ir::LogEventDeserializer;
 
 namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
@@ -97,12 +100,14 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&&
-                                  stream_reader_data_context);
+    explicit StreamReader(
+            StreamReaderDataContext<LogEventDeserializer<four_byte_encoded_variable_t>>&&
+                    stream_reader_data_context
+    );
 
     // Variables
-    std::vector<LogEventWithLevel<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
+    std::vector<LogEventWithLevel<four_byte_encoded_variable_t>> m_encoded_log_events;
+    std::unique_ptr<StreamReaderDataContext<LogEventDeserializer<four_byte_encoded_variable_t>>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
     clp::TimestampPattern m_ts_pattern;
