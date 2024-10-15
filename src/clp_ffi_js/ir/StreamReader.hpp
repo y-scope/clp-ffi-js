@@ -1,9 +1,11 @@
 #ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
 #define CLP_FFI_JS_IR_STREAM_READER_HPP
 
+#include <Array.hpp>
 #include <cstddef>
 #include <memory>
 #include <optional>
+#include <streaming_compression/zstd/Decompressor.hpp>
 #include <vector>
 
 #include <clp/ir/types.hpp>
@@ -13,6 +15,8 @@
 
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+
+using clp::ir::four_byte_encoded_variable_t;
 
 namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
@@ -97,12 +101,19 @@ public:
 
 private:
     // Constructor
-    explicit StreamReader(StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>&&
-                                  stream_reader_data_context);
+    explicit StreamReader(
+            StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
+    );
+
+    // Methods
+    [[nodiscard]] static auto create_deserializer_and_data_context(
+            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
+            clp::Array<char>&& data_buffer
+    ) -> StreamReaderDataContext<four_byte_encoded_variable_t>;
 
     // Variables
-    std::vector<LogEventWithLevel<clp::ir::four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext<clp::ir::four_byte_encoded_variable_t>>
+    std::vector<LogEventWithLevel<four_byte_encoded_variable_t>> m_encoded_log_events;
+    std::unique_ptr<StreamReaderDataContext<four_byte_encoded_variable_t>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
     clp::TimestampPattern m_ts_pattern;
