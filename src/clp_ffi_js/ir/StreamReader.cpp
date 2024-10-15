@@ -15,7 +15,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
-#include <clp_ffi_js/ir/IRStreamReader.hpp>
+#include <clp_ffi_js/ir/IrStreamReader.hpp>
 
 namespace clp_ffi_js::ir {
 auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<StreamReader> {
@@ -34,13 +34,13 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
 
     auto const version{get_version(*zstd_decompressor)};
     if (version == "v0.0.0") {
-        auto stream_reader_data_context{IRStreamReader::create_deserializer_and_data_context(
+        auto stream_reader_data_context{IrStreamReader::create_deserializer_and_data_context(
                 std::move(zstd_decompressor),
                 std::move(data_buffer)
         )};
 
-        return std::unique_ptr<IRStreamReader>(
-                new IRStreamReader(std::move(stream_reader_data_context))
+        return std::unique_ptr<IrStreamReader>(
+                new IrStreamReader(std::move(stream_reader_data_context))
         );
     }
 

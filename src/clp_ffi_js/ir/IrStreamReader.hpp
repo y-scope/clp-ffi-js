@@ -23,7 +23,7 @@ namespace clp_ffi_js::ir {
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
-class IRStreamReader : public StreamReader {
+class IrStreamReader : public StreamReader {
     friend StreamReader;
 
 public:
@@ -34,25 +34,25 @@ public:
     using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
     /**
-     * Creates a IRStreamReader to read from the given array.
+     * Creates a IrStreamReader to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> IRStreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> IrStreamReader;
 
     // Destructor
-    ~IRStreamReader() override = default;
+    ~IrStreamReader() override = default;
 
     // Disable copy constructor and assignment operator
-    IRStreamReader(IRStreamReader const&) = delete;
-    auto operator=(IRStreamReader const&) -> IRStreamReader& = delete;
+    IrStreamReader(IrStreamReader const&) = delete;
+    auto operator=(IrStreamReader const&) -> IrStreamReader& = delete;
 
     // Define default move constructor
-    IRStreamReader(IRStreamReader&&) = default;
+    IrStreamReader(IrStreamReader&&) = default;
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
-    auto operator=(IRStreamReader&&) -> IRStreamReader& = delete;
+    auto operator=(IrStreamReader&&) -> IrStreamReader& = delete;
 
     // Methods
     /**
@@ -100,7 +100,7 @@ public:
 
 private:
     // Constructor
-    explicit IRStreamReader(
+    explicit IrStreamReader(
             StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
     );
 
