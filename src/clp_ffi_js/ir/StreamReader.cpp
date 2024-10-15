@@ -20,6 +20,7 @@
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
+#include <emscripten/bind.h>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
