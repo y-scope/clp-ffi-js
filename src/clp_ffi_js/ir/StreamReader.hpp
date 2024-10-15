@@ -56,6 +56,7 @@ public:
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
+    // Methods
     /**
      * @return The number of events buffered.
      */
