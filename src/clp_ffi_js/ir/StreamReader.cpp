@@ -213,7 +213,7 @@ auto StreamReader::create_data_context(
         std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
         clp::Array<char> data_buffer
 ) -> StreamReaderDataContext<four_byte_encoded_variable_t> {
-    rewind_reader_and_verify_encoding_type(*zstd_decompressor);
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
 
     auto result{
             clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)

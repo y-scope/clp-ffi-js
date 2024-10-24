@@ -9,7 +9,7 @@
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::ir {
-auto rewind_reader_and_verify_encoding_type(clp::ReaderInterface& reader) -> void {
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 
     bool is_four_bytes_encoding{true};
