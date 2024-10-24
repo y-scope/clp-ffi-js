@@ -48,10 +48,9 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    auto stream_reader_data_context{create_deserializer_and_data_context(
-            std::move(zstd_decompressor),
-            std::move(data_buffer)
-    )};
+    auto stream_reader_data_context{
+            create_data_context(std::move(zstd_decompressor), std::move(data_buffer))
+    };
     return StreamReader{std::move(stream_reader_data_context)};
 }
 
@@ -210,7 +209,7 @@ StreamReader::StreamReader(
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
 
-auto StreamReader::create_deserializer_and_data_context(
+auto StreamReader::create_data_context(
         std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
         clp::Array<char>&& data_buffer
 ) -> StreamReaderDataContext<four_byte_encoded_variable_t> {
