@@ -109,7 +109,8 @@ set(CLP_FFI_JS_SRC_ZSTD
 )
 
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
-    "node;worker"
+    node
+    worker
     CACHE INTERNAL
     "List of supported environments."
 )
