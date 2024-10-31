@@ -18,6 +18,7 @@
 
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
+
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
