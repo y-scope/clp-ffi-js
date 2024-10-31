@@ -135,7 +135,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         "CLP_FFI_JS_BIN_NAME=\"${CLP_FFI_JS_BIN_NAME}\". \
 CMAKE_BUILD_TYPE=\"${CMAKE_BUILD_TYPE}\". \
 Compile options: ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}. \
-Link options: ${CLP_FFI_JS_LINK_OPTIONS}"
+Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
     )
     target_link_options(
         ${CLP_FFI_JS_BIN_NAME}
