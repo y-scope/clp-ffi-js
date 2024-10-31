@@ -15,7 +15,6 @@
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
@@ -27,6 +26,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
+#include <clp_ffi_js/ir/decoding_methods.hpp>
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
@@ -48,51 +48,8 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    bool is_four_bytes_encoding{true};
-    if (auto const err{
-                clp::ffi::ir_stream::get_encoding_type(*zstd_decompressor, is_four_bytes_encoding)
-        };
-        clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
-    {
-        SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_MetadataCorrupted,
-                __FILENAME__,
-                __LINE__,
-                "Failed to decode encoding type."
-        };
-    }
-    if (false == is_four_bytes_encoding) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                "IR stream uses unsupported encoding."
-        };
-    }
-
-    auto result{
-            clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
-    };
-    if (result.has_error()) {
-        auto const error_code{result.error()};
-        SPDLOG_CRITICAL(
-                "Failed to create deserializer: {}:{}",
-                error_code.category().name(),
-                error_code.message()
-        );
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Failure,
-                __FILENAME__,
-                __LINE__,
-                "Failed to create deserializer"
-        };
-    }
-
-    StreamReaderDataContext<four_byte_encoded_variable_t> stream_reader_data_context{
-            std::move(data_buffer),
-            std::move(zstd_decompressor),
-            std::move(result.value())
+    auto stream_reader_data_context{
+            create_data_context(std::move(zstd_decompressor), std::move(data_buffer))
     };
     return StreamReader{std::move(stream_reader_data_context)};
 }
@@ -251,6 +208,33 @@ StreamReader::StreamReader(
                   std::move(stream_reader_data_context)
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+
+auto StreamReader::create_data_context(
+        std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
+        clp::Array<char> data_buffer
+) -> StreamReaderDataContext<four_byte_encoded_variable_t> {
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
+
+    auto result{
+            clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
+    };
+    if (result.has_error()) {
+        auto const error_code{result.error()};
+        SPDLOG_CRITICAL(
+                "Failed to create deserializer: {}:{}",
+                error_code.category().name(),
+                error_code.message()
+        );
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                "Failed to create deserializer"
+        };
+    }
+
+    return {std::move(data_buffer), std::move(zstd_decompressor), std::move(result.value())};
+}
 }  // namespace clp_ffi_js::ir
 
 namespace {
