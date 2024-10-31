@@ -124,7 +124,7 @@ tasks:
           var: "G_CLP_FFI_JS_ENV_NAMES"
         cmd: >-
           rsync -a
-          "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_PREFIX}}-{{.ITEM}}."{d.ts,js,wasm}
+          "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_PREFIX}}{{.ITEM}}."{d.ts,js,wasm}
           "{{.OUTPUT_DIR}}/"
       - "npm pack"
       # This command must be last
