@@ -131,16 +131,16 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
         -sENVIRONMENT=${env}
     )
-    message(
-        "CLP_FFI_JS_BIN_NAME=\"${CLP_FFI_JS_BIN_NAME}\". \
-CMAKE_BUILD_TYPE=\"${CMAKE_BUILD_TYPE}\". \
-Compile options: ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}. \
-Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
-    )
     target_link_options(
         ${CLP_FFI_JS_BIN_NAME}
         PRIVATE
         ${CLP_FFI_JS_LINK_OPTIONS}
+    )
+    message(
+            "CLP_FFI_JS_BIN_NAME=\"${CLP_FFI_JS_BIN_NAME}\". \
+CMAKE_BUILD_TYPE=\"${CMAKE_BUILD_TYPE}\". \
+Compile options: ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}. \
+Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
     )
 
     # NOTE: We mark the include directories below as system headers so that the compiler (including
