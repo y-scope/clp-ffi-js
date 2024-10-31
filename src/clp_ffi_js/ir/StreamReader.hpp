@@ -14,10 +14,11 @@
 
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+
+namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 using clp::ir::LogEventDeserializer;
 
-namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);

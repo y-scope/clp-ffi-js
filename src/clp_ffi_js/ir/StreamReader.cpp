@@ -30,11 +30,11 @@
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
+namespace clp_ffi_js::ir {
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 using clp::ir::LogEventDeserializer;
 
-namespace clp_ffi_js::ir {
 auto StreamReader::create(DataArrayTsType const& data_array) -> StreamReader {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
