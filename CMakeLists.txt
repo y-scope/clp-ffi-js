@@ -136,6 +136,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         PRIVATE
         ${CLP_FFI_JS_LINK_OPTIONS}
     )
+
     message(
             "CLP_FFI_JS_BIN_NAME=\"${CLP_FFI_JS_BIN_NAME}\". \
 CMAKE_BUILD_TYPE=\"${CMAKE_BUILD_TYPE}\". \
