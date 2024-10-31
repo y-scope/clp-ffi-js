@@ -1,12 +1,15 @@
 #ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
 #define CLP_FFI_JS_IR_STREAM_READER_HPP
 
+#include <Array.hpp>
 #include <cstddef>
 #include <memory>
 
 #include <emscripten/val.h>
 
 namespace clp_ffi_js::ir {
+using clp::ir::four_byte_encoded_variable_t;
+
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
@@ -39,6 +42,7 @@ public:
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
+    // Methods
     /**
      * @return The number of events buffered.
      */

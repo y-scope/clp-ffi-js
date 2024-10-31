@@ -19,7 +19,7 @@
 namespace clp_ffi_js::ir {
 auto get_version(clp::ReaderInterface& reader) -> std::string {
     // The encoding type bytes must be consumed before the metadata can be read.
-    rewind_reader_and_verify_encoding_type(reader);
+    rewind_reader_and_validate_encoding_type(reader);
 
     // Deserialize metadata bytes from preamble.
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
@@ -54,7 +54,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
     return version;
 }
 
-auto rewind_reader_and_verify_encoding_type(clp::ReaderInterface& reader) -> void {
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 
     bool is_four_bytes_encoding{true};
