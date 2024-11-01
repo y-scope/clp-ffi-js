@@ -8,7 +8,6 @@
 #include <streaming_compression/zstd/Decompressor.hpp>
 #include <vector>
 
-#include <clp/Array.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>

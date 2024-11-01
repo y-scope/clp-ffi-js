@@ -17,12 +17,6 @@
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::ir {
-/**
- * Rewinds the reader to the beginning and validates the CLP IR data encoding type.
- * @param reader
- * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
- * unsupported.
- */
 auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 

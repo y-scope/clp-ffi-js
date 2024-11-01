@@ -6,6 +6,13 @@
 #include <clp/ReaderInterface.hpp>
 
 namespace clp_ffi_js::ir {
+/**
+ * Gets the version of the IR stream.
+ * @param reader
+ * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
+ * unsupported.
+ * @throws ClpFfiJsException if the preamble could not be deserialized.
+ */
 auto get_version(clp::ReaderInterface& reader) -> std::string;
 /**
  * Rewinds the reader to the beginning and validates the CLP IR data encoding type.
@@ -13,7 +20,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string;
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
  */
-static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
 }  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_IR_DECODING_METHODS_HPP

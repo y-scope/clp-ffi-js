@@ -22,7 +22,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
-    // Copy array from JavaScript to C++
+    // Copy array from JavaScript to C++.
     clp::Array<char> data_buffer{length};
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
@@ -33,7 +33,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     zstd_decompressor->open(data_buffer.data(), length);
 
     auto const version{get_version(*zstd_decompressor)};
-    if (version == "v0.0.0") {
+    if (version == "v0.0.1" || version == "v0.0.0" || version == "0.0.1" || version == "0.0.0") {
         auto stream_reader_data_context{IrStreamReader::create_data_context(
                 std::move(zstd_decompressor),
                 std::move(data_buffer)
@@ -43,6 +43,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
                 new IrStreamReader(std::move(stream_reader_data_context))
         );
     }
+    SPDLOG_CRITICAL("Unable to create stream reader for IR data with version {}.", version);
 
     throw ClpFfiJsException{
             clp::ErrorCode::ErrorCode_Unsupported,
