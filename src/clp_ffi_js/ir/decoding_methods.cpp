@@ -23,7 +23,7 @@ namespace clp_ffi_js::ir {
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
  */
-static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 
     bool is_four_bytes_encoding{true};
