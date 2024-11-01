@@ -20,7 +20,7 @@
 namespace clp_ffi_js::ir {
 auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<StreamReader> {
     auto const length{data_array["length"].as<size_t>()};
-    SPDLOG_INFO("KVPairIRStreamReader::create: got buffer of length={}", length);
+    SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
     // Copy array from JavaScript to C++
     clp::Array<char> data_buffer{length};
@@ -60,11 +60,21 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
-
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,
                     emscripten::return_value_policy::take_ownership()
-            );
+            )
+            .function(
+                    "getNumEventsBuffered",
+                    &clp_ffi_js::ir::StreamReader::get_num_events_buffered
+            )
+            .function(
+                    "getFilteredLogEventMap",
+                    &clp_ffi_js::ir::StreamReader::get_filtered_log_event_map
+            )
+            .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
+            .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
+            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range);
 }
 }  // namespace

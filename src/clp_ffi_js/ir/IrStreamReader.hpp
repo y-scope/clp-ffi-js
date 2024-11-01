@@ -16,32 +16,23 @@
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
+namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 
-namespace clp_ffi_js::ir {
 /**
- * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
+ * Mapping between an index in the filtered log events collection to an index in the unfiltered
+ * log events collection.
+ */
+using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+
+/**
+ * Class to deserialize and decode Zstandard-compressed CLP IRv1 streams as well as format decoded
  * log events.
  */
 class IrStreamReader : public StreamReader {
     friend StreamReader;
 
 public:
-    /**
-     * Mapping between an index in the filtered log events collection to an index in the unfiltered
-     * log events collection.
-     */
-    using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
-
-    /**
-     * Creates a IrStreamReader to read from the given array.
-     *
-     * @param data_array An array containing a Zstandard-compressed IR stream.
-     * @return The created instance.
-     * @throw ClpFfiJsException if any error occurs.
-     */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> IrStreamReader;
-
     // Destructor
     ~IrStreamReader() override = default;
 
@@ -105,7 +96,7 @@ private:
     );
 
     // Methods
-    [[nodiscard]] static auto create_deserializer_and_data_context(
+    [[nodiscard]] static auto create_data_context(
             std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
             clp::Array<char>&& data_buffer
     ) -> StreamReaderDataContext<four_byte_encoded_variable_t>;

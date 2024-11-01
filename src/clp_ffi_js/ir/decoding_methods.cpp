@@ -17,6 +17,37 @@
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::ir {
+/**
+ * Rewinds the reader to the beginning and validates the CLP IR data encoding type.
+ * @param reader
+ * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
+ * unsupported.
+ */
+static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
+    reader.seek_from_begin(0);
+
+    bool is_four_bytes_encoding{true};
+    if (auto const err{clp::ffi::ir_stream::get_encoding_type(reader, is_four_bytes_encoding)};
+        clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
+    {
+        SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_MetadataCorrupted,
+                __FILENAME__,
+                __LINE__,
+                "Failed to decode encoding type."
+        };
+    }
+    if (false == is_four_bytes_encoding) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Unsupported,
+                __FILENAME__,
+                __LINE__,
+                "IR stream uses unsupported encoding."
+        };
+    }
+}
+
 auto get_version(clp::ReaderInterface& reader) -> std::string {
     // The encoding type bytes must be consumed before the metadata can be read.
     rewind_reader_and_validate_encoding_type(reader);
@@ -52,30 +83,5 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
     SPDLOG_INFO("The version is {}", version);
 
     return version;
-}
-
-auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
-    reader.seek_from_begin(0);
-
-    bool is_four_bytes_encoding{true};
-    if (auto const err{clp::ffi::ir_stream::get_encoding_type(reader, is_four_bytes_encoding)};
-        clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != err)
-    {
-        SPDLOG_CRITICAL("Failed to decode encoding type, err={}", err);
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_MetadataCorrupted,
-                __FILENAME__,
-                __LINE__,
-                "Failed to decode encoding type."
-        };
-    }
-    if (false == is_four_bytes_encoding) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                "IR stream uses unsupported encoding."
-        };
-    }
 }
 }  // namespace clp_ffi_js::ir

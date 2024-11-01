@@ -32,30 +32,10 @@
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
+namespace clp_ffi_js::ir {
+
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
-
-namespace clp_ffi_js::ir {
-auto IrStreamReader::create(DataArrayTsType const& data_array) -> IrStreamReader {
-    auto const length{data_array["length"].as<size_t>()};
-    SPDLOG_INFO("IrStreamReader::create: got buffer of length={}", length);
-
-    // Copy array from JavaScript to C++
-    clp::Array<char> data_buffer{length};
-    // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-    emscripten::val::module_property("HEAPU8")
-            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
-    // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
-
-    auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
-    zstd_decompressor->open(data_buffer.data(), length);
-
-    auto stream_reader_data_context{create_deserializer_and_data_context(
-            std::move(zstd_decompressor),
-            std::move(data_buffer)
-    )};
-    return IrStreamReader{std::move(stream_reader_data_context)};
-}
 
 auto IrStreamReader::get_num_events_buffered() const -> size_t {
     return m_encoded_log_events.size();
@@ -216,8 +196,6 @@ auto IrStreamReader::create_data_context(
         std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
         clp::Array<char>&& data_buffer
 ) -> StreamReaderDataContext<four_byte_encoded_variable_t> {
-    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
-
     auto result{
             clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
     };
@@ -239,26 +217,3 @@ auto IrStreamReader::create_data_context(
     return {std::move(data_buffer), std::move(zstd_decompressor), std::move(result.value())};
 }
 }  // namespace clp_ffi_js::ir
-
-namespace {
-EMSCRIPTEN_BINDINGS(ClpIrStreamReader) {
-    emscripten::class_<
-            clp_ffi_js::ir::IrStreamReader,
-            emscripten::base<clp_ffi_js::ir::StreamReader>>("ClpIrStreamReader")
-            .constructor(
-                    &clp_ffi_js::ir::IrStreamReader::create,
-                    emscripten::return_value_policy::take_ownership()
-            )
-            .function(
-                    "getNumEventsBuffered",
-                    &clp_ffi_js::ir::IrStreamReader::get_num_events_buffered
-            )
-            .function(
-                    "getFilteredLogEventMap",
-                    &clp_ffi_js::ir::IrStreamReader::get_filtered_log_event_map
-            )
-            .function("filterLogEvents", &clp_ffi_js::ir::IrStreamReader::filter_log_events)
-            .function("deserializeStream", &clp_ffi_js::ir::IrStreamReader::deserialize_stream)
-            .function("decodeRange", &clp_ffi_js::ir::IrStreamReader::decode_range);
-}
-}  // namespace

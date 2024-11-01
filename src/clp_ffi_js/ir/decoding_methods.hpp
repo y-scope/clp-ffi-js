@@ -13,7 +13,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string;
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
  */
-auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
+static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
 }  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_IR_DECODING_METHODS_HPP
