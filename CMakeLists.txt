@@ -89,6 +89,7 @@ target_link_options(
         -sEXPORT_ES6
         -sMODULARIZE
         -sWASM_BIGINT
+        -fwasm-exceptions
         --emit-tsd ${CLP_FFI_JS_BIN_NAME}.d.ts
 )
 target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE embind)
@@ -121,7 +122,6 @@ set(CLP_FFI_JS_SRC_MAIN
 
 set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
-    src/submodules/clp/components/core/src/clp/ffi/ir_stream/Deserializer.cpp
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/utils.cpp
     src/submodules/clp/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp

@@ -15,6 +15,39 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
+
+class IrUnitHandler {
+public:
+    // Implements `clp::ffi::ir_stream::IrUnitHandlerInterface` interface
+    [[nodiscard]] auto handle_log_event(clp::ffi::KeyValuePairLogEvent&& log_event) -> clp::ffi::ir_stream::IRErrorCode {
+        m_deserialized_log_events.emplace_back(std::move(log_event));
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+    [[nodiscard]] static auto handle_utc_offset_change(
+            [[maybe_unused]] clp::UtcOffset utc_offset_old,
+            [[maybe_unused]] clp::UtcOffset utc_offset_new
+    ) -> clp::ffi::ir_stream::IRErrorCode {
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+    [[nodiscard]] static auto handle_schema_tree_node_insertion(
+            [[maybe_unused]] clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
+    ) -> clp::ffi::ir_stream::IRErrorCode {
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+    [[nodiscard]] auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
+        m_is_complete = true;
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+    // Methods
+    [[nodiscard]] auto is_complete() const -> bool { return m_is_complete; }
+    [[nodiscard]] auto get_deserialized_log_events() const -> std::vector<clp::ffi::KeyValuePairLogEvent> const & {
+        return m_deserialized_log_events;
+    }
+private:
+    std::vector<clp::ffi::KeyValuePairLogEvent> m_deserialized_log_events;
+    bool m_is_complete{false};
+};
+
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
@@ -80,7 +113,7 @@ public:
             -> DecodedResultsTsType override;
 
 private:
-    using deserializer_t = clp::ffi::ir_stream::Deserializer;
+    using deserializer_t = clp::ffi::ir_stream::Deserializer<IrUnitHandler>;
 
     // Constructor
     explicit KVPairIRStreamReader(
