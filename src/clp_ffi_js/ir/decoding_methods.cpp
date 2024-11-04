@@ -1,6 +1,7 @@
 #include "decoding_methods.hpp"
 
 #include <cstdint>
+#include <format>
 #include <json/single_include/nlohmann/json.hpp>
 #include <string>
 #include <string_view>
@@ -53,15 +54,13 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
             clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
     };
     if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
-        SPDLOG_CRITICAL(
-                "Failed to deserialize preamble for version reading: {}",
-                deserialize_preamble_result
-        );
+        SPDLOG_CRITICAL("Failed to deserialize preamble for version reading");
+
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
-                fmt::format("Failed to deserialize preamble version reading: {}", deserialize_preamble_result)
+                "Failed to deserialize preamble for version reading"
         };
     }
 
@@ -75,13 +74,13 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
     try {
         nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
         version = metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey);
-    } catch (const nlohmann::json::exception& e) {
+    } catch (nlohmann::json::exception const& e) {
         throw ClpFfiJsException{
-            clp::ErrorCode::ErrorCode_MetadataCorrupted,
-            __FILENAME__,
-            __LINE__,
-            fmt::format("Error parsing stream metadata: {}", e.what())
-            };
+                clp::ErrorCode::ErrorCode_MetadataCorrupted,
+                __FILENAME__,
+                __LINE__,
+                std::format("Error parsing stream metadata: {}", e.what())
+        };
     }
 
     SPDLOG_INFO("The version is {}", version);

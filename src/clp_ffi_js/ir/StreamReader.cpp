@@ -1,5 +1,6 @@
 #include "StreamReader.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <format>

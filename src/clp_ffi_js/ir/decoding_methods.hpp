@@ -12,6 +12,7 @@ namespace clp_ffi_js::ir {
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
  * @throws ClpFfiJsException if the preamble could not be deserialized.
+ * @return Stream version.
  */
 auto get_version(clp::ReaderInterface& reader) -> std::string;
 /**
