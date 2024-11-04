@@ -2,6 +2,7 @@
 #define CLP_FFI_JS_IR_STREAM_READER_HPP
 
 #include <cstddef>
+#include <string>
 #include <memory>
 
 #include <emscripten/val.h>
@@ -11,6 +12,10 @@ namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+
+constexpr std::array<std::string_view, 4> cIrV1Versions = {
+    "v0.0.1", "v0.0.0", "0.0.1", "0.0.0"
+};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded

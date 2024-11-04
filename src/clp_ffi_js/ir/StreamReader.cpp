@@ -33,7 +33,8 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     zstd_decompressor->open(data_buffer.data(), length);
 
     auto const version{get_version(*zstd_decompressor)};
-    if (version == "v0.0.1" || version == "v0.0.0" || version == "0.0.1" || version == "0.0.0") {
+
+    if (std::ranges::find(cIrV1Versions, version) != cIrV1Versions.end()) {
         auto stream_reader_data_context{IrStreamReader::create_data_context(
                 std::move(zstd_decompressor),
                 std::move(data_buffer)

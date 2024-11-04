@@ -61,7 +61,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
-                "Failed to deserialize preamble for version reading."
+                fmt::format("Failed to deserialize preamble version reading: {}", deserialize_preamble_result)
         };
     }
 
@@ -70,12 +70,21 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
             clp::size_checked_pointer_cast<char const>(metadata_bytes.data()),
             metadata_bytes.size()
     };
-    nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
 
-    // Retrieve version from metadata.
-    auto const& version{metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey)};
+    std::string version;
+    try {
+        nlohmann::json const metadata = nlohmann::json::parse(metadata_view);
+        version = metadata.at(clp::ffi::ir_stream::cProtocol::Metadata::VersionKey);
+    } catch (const nlohmann::json::exception& e) {
+        throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_MetadataCorrupted,
+            __FILENAME__,
+            __LINE__,
+            fmt::format("Error parsing stream metadata: {}", e.what())
+            };
+    }
+
     SPDLOG_INFO("The version is {}", version);
-
     return version;
 }
 }  // namespace clp_ffi_js::ir
