@@ -167,7 +167,7 @@ auto IrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_fil
                     clp::ErrorCode::ErrorCode_Failure,
                     __FILENAME__,
                     __LINE__,
-                     "Failed to decode message"
+                    "Failed to decode message"
             };
         }
         message = parsed.value();
