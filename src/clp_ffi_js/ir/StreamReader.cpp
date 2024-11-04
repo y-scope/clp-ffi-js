@@ -2,12 +2,12 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <ErrorCode.hpp>
 #include <format>
 #include <memory>
 #include <utility>
 
 #include <clp/Array.hpp>
+#include <clp/ErrorCode.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
@@ -43,7 +43,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
                 new IrStreamReader(std::move(stream_reader_data_context))
         );
     }
-    SPDLOG_CRITICAL("Unable to create stream reader for IR data with version {}.", version);
+    SPDLOG_CRITICAL("Unable to create reader for CLP stream with version {}.", version);
 
     throw ClpFfiJsException{
             clp::ErrorCode::ErrorCode_Unsupported,

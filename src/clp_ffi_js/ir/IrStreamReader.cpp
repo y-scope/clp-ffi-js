@@ -163,7 +163,12 @@ auto IrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_fil
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             SPDLOG_ERROR("Failed to decode message.");
-            break;
+            throw ClpFfiJsException{
+                    clp::ErrorCode::ErrorCode_Failure,
+                    __FILENAME__,
+                    __LINE__,
+                     "Failed to decode message"
+            };
         }
         message = parsed.value();
 

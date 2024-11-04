@@ -11,7 +11,7 @@
 
 namespace clp_ffi_js::ir {
 /**
- * The data context for a `IrStreamReader`. It encapsulates a chain of the following resources:
+ * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
  * A `clp::ir::LogEventDeserializer` that reads from a
  * `clp::streaming_compression::zstd::Decompressor`, which in turn reads from a `clp::Array`.
  * @tparam encoded_variable_t Type of encoded variables encoded in the stream.

@@ -91,7 +91,7 @@ public:
 
 private:
     // Constructor
-    explicit IrStreamReader(
+    IrStreamReader(
             StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
     );
 
