@@ -7,7 +7,7 @@
 
 namespace clp_ffi_js::ir {
 /**
- * Gets the version of the IR stream.
+ * Gets the version of the IR stream from the specified reader.
  * @param reader
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
