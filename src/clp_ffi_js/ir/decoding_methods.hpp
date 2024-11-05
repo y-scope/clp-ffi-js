@@ -13,7 +13,6 @@ namespace clp_ffi_js::ir {
  * unsupported.
  */
 auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
-}  // namespace clp_ffi_js::ir
 
 /**
  * Gets the version of the IR stream from the specified reader.
@@ -24,5 +23,5 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
  * @return Stream version.
  */
 auto get_version(clp::ReaderInterface& reader) -> std::string;
-
+}  // namespace clp_ffi_js::ir
 #endif  // CLP_FFI_JS_IR_DECODING_METHODS_HPP
