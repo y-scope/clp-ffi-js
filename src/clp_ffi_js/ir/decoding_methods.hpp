@@ -15,6 +15,7 @@ namespace clp_ffi_js::ir {
  * @return Stream version.
  */
 auto get_version(clp::ReaderInterface& reader) -> std::string;
+
 /**
  * Rewinds the reader to the beginning and validates the CLP IR data encoding type.
  * @param reader
