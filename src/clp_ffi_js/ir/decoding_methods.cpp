@@ -54,13 +54,19 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
             clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
     };
     if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
-        SPDLOG_CRITICAL("Failed to deserialize preamble for version reading: {}", clp::enum_to_underlying_type(deserialize_preamble_result));
+        SPDLOG_CRITICAL(
+                "Failed to deserialize preamble for version reading: {}",
+                clp::enum_to_underlying_type(deserialize_preamble_result)
+        );
 
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
-                std::format("Failed to deserialize preamble for version reading: {}", clp::enum_to_underlying_type(deserialize_preamble_result))
+                std::format(
+                        "Failed to deserialize preamble for version reading: {}",
+                        clp::enum_to_underlying_type(deserialize_preamble_result)
+                )
         };
     }
 
