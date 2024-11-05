@@ -61,7 +61,7 @@ public:
      *
      * @param log_level_filter Array of selected log levels
      */
-    void filter_log_events(emscripten::val const& log_level_filter) override;
+    void filter_log_events(LogLevelFilterTsType const& log_level_filter) override;
 
     /**
      * Deserializes all log events in the stream. After the stream has been exhausted, it will be

@@ -48,7 +48,7 @@ auto IrStreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTs
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
-void IrStreamReader::filter_log_events(emscripten::val const& log_level_filter) {
+void IrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
     if (log_level_filter.isNull()) {
         m_filtered_log_event_map.reset();
         return;

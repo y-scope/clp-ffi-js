@@ -58,11 +58,14 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
 
 namespace {
 EMSCRIPTEN_BINDINGS(ClpStreamReader) {
+    // Output to JS types
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
+    // Input from JS types
+    emscripten::register_type<clp_ffi_js::ir::LogLevelFilterTsType>("number[] | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,

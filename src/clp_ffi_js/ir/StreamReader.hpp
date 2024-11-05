@@ -13,6 +13,7 @@ namespace clp_ffi_js::ir {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 
 constexpr std::array<std::string_view, 4> cIrV1Versions = {"v0.0.1", "v0.0.0", "0.0.1", "0.0.0"};
 
@@ -60,7 +61,7 @@ public:
      *
      * @param log_level_filter Array of selected log levels
      */
-    virtual void filter_log_events(emscripten::val const& log_level_filter) = 0;
+    virtual void filter_log_events(LogLevelFilterTsType const& log_level_filter) = 0;
 
     /**
      * Deserializes all log events in the stream. After the stream has been exhausted, it will be
