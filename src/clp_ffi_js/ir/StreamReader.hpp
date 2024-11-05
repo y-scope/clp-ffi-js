@@ -15,7 +15,8 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 
-constexpr std::array<std::string_view, 4> cIrV1Versions = {"v0.0.1", "v0.0.0", "0.0.1", "0.0.0"};
+constexpr std::array<std::string_view, 6> cIrV1Versions
+        = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
