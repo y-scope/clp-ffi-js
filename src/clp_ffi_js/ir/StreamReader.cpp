@@ -51,7 +51,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
             clp::ErrorCode::ErrorCode_Unsupported,
             __FILENAME__,
             __LINE__,
-            std::format("Unable to create stream reader for IR data with version {}.", version)
+            std::format("Unable to create reader for CLP stream with version {}.", version)
     };
 }
 }  // namespace clp_ffi_js::ir
