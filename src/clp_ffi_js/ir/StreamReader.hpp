@@ -98,4 +98,5 @@ protected:
     explicit StreamReader() = default;
 };
 }  // namespace clp_ffi_js::ir
+
 #endif  // CLP_FFI_JS_IR_STREAMREADER_HPP

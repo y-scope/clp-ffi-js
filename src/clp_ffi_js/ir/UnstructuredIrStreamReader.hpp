@@ -43,11 +43,9 @@ public:
     auto operator=(UnstructuredIrStreamReader&&) -> UnstructuredIrStreamReader& = delete;
 
     /**
-     * First packages a `StreamReaderDataContext` using inputs and a unstructured IR deserializer,
-     * then creates a `UnstructuredIrStreamReader`.
-     *
-     * @param zstd_decompressor
-     * @param data_array An array containing a Zstandard-compressed IR stream.
+     * @param zstd_decompressor A decompressor for an IR stream, where the read head of the stream
+     * is just after the stream's encoding type.
+     * @param data_array The array backing `zstd_decompressor`.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
