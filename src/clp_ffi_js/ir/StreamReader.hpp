@@ -10,7 +10,6 @@
 #include <emscripten/val.h>
 
 namespace clp_ffi_js::ir {
-
 // JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
