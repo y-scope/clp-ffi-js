@@ -21,8 +21,13 @@ using parsed_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 class IrUnitHandler {
 public:
-    IrUnitHandler(std::string log_level_key, std::string timestamp_key)
-            : m_log_level_key{std::move(log_level_key)},
+    IrUnitHandler(
+            std::vector<clp::ffi::KeyValuePairLogEvent>& deserialized_log_events,
+            std::string log_level_key,
+            std::string timestamp_key
+    )
+            : m_deserialized_log_events{deserialized_log_events},
+              m_log_level_key{std::move(log_level_key)},
               m_timestamp_key{std::move(timestamp_key)} {}
 
     // Implements `clp::ffi::ir_stream::IrUnitHandlerInterface` interface
@@ -85,7 +90,7 @@ private:
     parsed_tree_node_id_t m_level_node_id;
     parsed_tree_node_id_t m_timestamp_node_id;
 
-    std::vector<clp::ffi::KeyValuePairLogEvent> m_deserialized_log_events;
+    std::vector<clp::ffi::KeyValuePairLogEvent>& m_deserialized_log_events;
     bool m_is_complete{false};
 };
 
@@ -160,14 +165,17 @@ private:
     using deserializer_t = clp::ffi::ir_stream::Deserializer<IrUnitHandler>;
 
     // Constructor
-    explicit KVPairIRStreamReader(
-            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
+    KVPairIRStreamReader(
+            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context,
+            std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events
     );
 
     // Variables
-    std::vector<LogEventWithLevel<clp::ffi::KeyValuePairLogEvent>> m_encoded_log_events;
+    std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<deserializer_t>> m_stream_reader_data_context;
 
+    parsed_tree_node_id_t m_level_node_id;
+    parsed_tree_node_id_t m_timestamp_node_id;
     FilteredLogEventsMap m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::ir

@@ -44,14 +44,12 @@ auto KVPairIRStreamReader::create(
     auto zstd_decompressor{std::make_unique<clp::streaming_compression::zstd::Decompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    // FIXME: Note we create a vector to store log events in IrUnitHandler at the moment. We should
-    // create a std::vector<LogEventClass> to be shared by IrUnitHandler() and KVPairIRStreamReader
-    // so that even after we free the m_stream_reader_data_context in the KVPairIRStreamReader
-    // instance (after we deserialize and stored all events in deserialize_stream), we can still
-    // access the stored log events.
+    auto deserialized_log_events{std::make_shared<std::vector<clp::ffi::KeyValuePairLogEvent>>()};
+
     auto result{clp::ffi::ir_stream::Deserializer<IrUnitHandler>::create(
             *zstd_decompressor,
             IrUnitHandler(
+                    *deserialized_log_events,
                     reader_options["logLevelKey"].as<std::string>(),
                     reader_options["timestampKey"].as<std::string>()
             )
@@ -76,15 +74,14 @@ auto KVPairIRStreamReader::create(
             std::move(zstd_decompressor),
             std::move(result.value())
     };
-    return KVPairIRStreamReader{std::move(stream_reader_data_context)};
+    return KVPairIRStreamReader{
+            std::move(stream_reader_data_context),
+            std::move(deserialized_log_events)
+    };
 }
 
 auto KVPairIRStreamReader::get_num_events_buffered() const -> size_t {
-    // FIXME: we should not access the vector in ir_unit_handler. See above for reasons.
-    return m_stream_reader_data_context->get_deserializer()
-            .get_ir_unit_handler()
-            .get_deserialized_log_events()
-            .size();
+    return m_deserialized_log_events->size();
 }
 
 auto KVPairIRStreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
@@ -96,7 +93,7 @@ auto KVPairIRStreamReader::get_filtered_log_event_map() const -> FilteredLogEven
 }
 
 auto KVPairIRStreamReader::filter_log_events(emscripten::val const& log_level_filter) -> void {
-    if (log_level_filter.isNull()) {
+    if (log_level_filter.isNull() || false == m_level_node_id.has_value()) {
         m_filtered_log_event_map.reset();
         return;
     }
@@ -104,11 +101,15 @@ auto KVPairIRStreamReader::filter_log_events(emscripten::val const& log_level_fi
     m_filtered_log_event_map.emplace();
     auto filter_levels{emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter
     )};
-    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
-        auto const& log_event = m_encoded_log_events[log_event_idx];
+    for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size();
+         ++log_event_idx)
+    {
+        auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
+        auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
+        auto const& log_level{id_value_pairs.at(m_level_node_id.value())};
         if (std::ranges::find(
                     filter_levels,
-                    clp::enum_to_underlying_type(log_event.get_log_level())
+                    log_level.value().get_immutable_view<clp::ffi::value_int_t>()
             )
             != filter_levels.end())
         {
@@ -120,7 +121,7 @@ auto KVPairIRStreamReader::filter_log_events(emscripten::val const& log_level_fi
 auto KVPairIRStreamReader::deserialize_stream() -> size_t {
     if (nullptr != m_stream_reader_data_context) {
         constexpr size_t cDefaultNumReservedLogEvents{500'000};
-        m_encoded_log_events.reserve(cDefaultNumReservedLogEvents);
+        m_deserialized_log_events->reserve(cDefaultNumReservedLogEvents);
         auto& reader{m_stream_reader_data_context->get_reader()};
         clp::ffi::SchemaTree::Node::id_t log_level_node_id{clp::ffi::SchemaTree::cRootId};
         while (true) {
@@ -147,73 +148,70 @@ auto KVPairIRStreamReader::deserialize_stream() -> size_t {
                     "Failed to deserialize: "s + error.category().name() + ":" + error.message()
             };
         }
-        // FIXME: we should really free this after we decode all events. See the FIXME in ::create()
-        // about why we commented out below line.
-        //        m_stream_reader_data_context.reset(nullptr);
+        m_stream_reader_data_context.reset(nullptr);
     }
 
-    return m_stream_reader_data_context->get_deserializer()
-            .get_ir_unit_handler()
-            .get_deserialized_log_events()
-            .size();
+    return m_deserialized_log_events->size();
 }
 
-auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool /*use_filter*/) const
+auto KVPairIRStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
-    // FIXME: we should not access the vector from the ir_unit_handler. See above for reasons.
-    if (m_stream_reader_data_context->get_deserializer()
-                        .get_ir_unit_handler()
-                        .get_deserialized_log_events()
-                        .size()
-                < end_idx
-        || begin_idx >= end_idx)
-    {
+    if (use_filter && false == m_filtered_log_event_map.has_value()) {
+        return DecodedResultsTsType{emscripten::val::null()};
+    }
+
+    size_t length
+            = use_filter ? m_filtered_log_event_map->size() : m_deserialized_log_events->size();
+    if (length < end_idx || begin_idx > end_idx) {
         return DecodedResultsTsType(emscripten::val::null());
     }
 
-    std::span const log_events_span{
-            m_stream_reader_data_context->get_deserializer()
-                            .get_ir_unit_handler()
-                            .get_deserialized_log_events()
-                            .begin()
-                    + static_cast<std::vector<clp::ffi::KeyValuePairLogEvent>::difference_type>(
-                            begin_idx
-                    ),
-            m_stream_reader_data_context->get_deserializer()
-                            .get_ir_unit_handler()
-                            .get_deserialized_log_events()
-                            .begin()
-                    + static_cast<std::vector<clp::ffi::KeyValuePairLogEvent>::difference_type>(
-                            end_idx
-                    )
-    };
-    size_t log_num{begin_idx + 1};
     auto const results{emscripten::val::array()};
-    //    for (auto const& log_event_with_level : log_events_span) {
-    //        auto const json{log_event_with_level.get_log_event().serialize_to_json()};
-    for (auto const& log_event : log_events_span) {
+    for (size_t i = begin_idx; i < end_idx; ++i) {
+        size_t log_event_idx = use_filter ? m_filtered_log_event_map->at(i) : i;
+        auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
+
         auto const json{log_event.serialize_to_json()};
         if (false == json.has_value()) {
             SPDLOG_ERROR("Failed to decode message.");
             break;
         }
 
+        auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
+        clp::ffi::value_int_t log_level{static_cast<clp::ffi::value_int_t>(LogLevel::NONE)};
+        if (m_level_node_id.has_value()) {
+            auto const& log_level_pair{id_value_pairs.at(m_level_node_id.value())};
+            log_level = log_level_pair.has_value()
+                                ? log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>()
+                                : static_cast<clp::ffi::value_int_t>(LogLevel::NONE);
+        }
+        clp::ffi::value_int_t timestamp{0};
+        if (m_timestamp_node_id.has_value()) {
+            auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
+            timestamp = timestamp_pair.has_value()
+                                ? timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
+                                : 0;
+        }
+
         EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2]); },
+                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
                 json.value().dump().c_str(),
-                log_num
+                log_level,
+                timestamp,
+                log_event_idx + 1
         );
-        ++log_num;
     }
 
     return DecodedResultsTsType(results);
 }
 
 KVPairIRStreamReader::KVPairIRStreamReader(
-        StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
+        StreamReaderDataContext<deserializer_t>&& stream_reader_data_context,
+        std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events
 )
         : m_stream_reader_data_context{std::make_unique<StreamReaderDataContext<deserializer_t>>(
                   std::move(stream_reader_data_context)
-          )} {}
+          )},
+          m_deserialized_log_events{std::move(deserialized_log_events)} {}
 }  // namespace clp_ffi_js::ir
