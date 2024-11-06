@@ -37,7 +37,7 @@ using clp::ir::four_byte_encoded_variable_t;
 
 auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-        clp::Array<char>&& data_array
+        clp::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
     auto result{
             clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)

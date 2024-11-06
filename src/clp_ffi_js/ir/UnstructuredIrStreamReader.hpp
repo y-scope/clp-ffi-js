@@ -51,7 +51,7 @@ public:
      */
     [[nodiscard]] static auto create(
             std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-            clp::Array<char>&& data_array
+            clp::Array<char> data_array
     ) -> UnstructuredIrStreamReader;
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
