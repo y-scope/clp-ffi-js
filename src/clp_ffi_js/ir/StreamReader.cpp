@@ -158,6 +158,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     zstd_decompressor->open(data_buffer.data(), length);
 
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
+
     // Validate the stream's version
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
@@ -179,6 +180,7 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
                 std::format("Unable to rewind zstd decompressor: {}", e.what())
         };
     }
+
     return std::make_unique<UnstructuredIrStreamReader>(
             UnstructuredIrStreamReader::create(std::move(zstd_decompressor), std::move(data_buffer))
     );
