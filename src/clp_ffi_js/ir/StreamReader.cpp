@@ -138,7 +138,6 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
 }  // namespace
 
 namespace clp_ffi_js::ir {
-
 auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<StreamReader> {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
