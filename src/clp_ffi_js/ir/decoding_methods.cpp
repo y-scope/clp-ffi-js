@@ -55,7 +55,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
     };
     if (clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success != deserialize_preamble_result) {
         SPDLOG_CRITICAL(
-                "Failed to deserialize preamble for version reading: {}",
+                "Failed to deserialize stream's preamble: {}",
                 clp::enum_to_underlying_type(deserialize_preamble_result)
         );
 
@@ -70,7 +70,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
         };
     }
 
-    // Deserialize metadata bytes which is encoded in JSON.
+    // Deserialize metadata bytes as JSON.
     std::string_view const metadata_view{
             clp::size_checked_pointer_cast<char const>(metadata_bytes.data()),
             metadata_bytes.size()
@@ -85,7 +85,7 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
                 clp::ErrorCode::ErrorCode_MetadataCorrupted,
                 __FILENAME__,
                 __LINE__,
-                std::format("Error parsing stream metadata: {}", e.what())
+                std::format("Failed to parse stream's metadata: {}", e.what())
         };
     }
 

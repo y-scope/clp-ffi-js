@@ -45,7 +45,6 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
                 new IrStreamReader(std::move(stream_reader_data_context))
         );
     }
-    SPDLOG_CRITICAL("Unable to create reader for CLP stream with version {}.", version);
 
     throw ClpFfiJsException{
             clp::ErrorCode::ErrorCode_Unsupported,
@@ -58,13 +57,14 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
 
 namespace {
 EMSCRIPTEN_BINDINGS(ClpStreamReader) {
-    // Output to JS types
+    // JS types used as outputs
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
-    // Input from JS types
+
+    // JS types used as inputs
     emscripten::register_type<clp_ffi_js::ir::LogLevelFilterTsType>("number[] | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(

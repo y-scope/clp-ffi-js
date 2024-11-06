@@ -26,8 +26,8 @@ using clp::ir::four_byte_encoded_variable_t;
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
 /**
- * Class to deserialize and decode Zstandard-compressed CLP IRv1 streams as well as format decoded
- * log events.
+ * Class to deserialize and decode Zstd-compressed CLP unstructured IR streams, as well as format
+ * decoded log events.
  */
 class IrStreamReader : public StreamReader {
     friend StreamReader;
@@ -51,16 +51,8 @@ public:
      */
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
 
-    /**
-     * @return The filtered log events map.
-     */
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType override;
 
-    /**
-     * Generates a filtered collection from all log events.
-     *
-     * @param log_level_filter Array of selected log levels
-     */
     void filter_log_events(LogLevelFilterTsType const& log_level_filter) override;
 
     /**
@@ -71,27 +63,12 @@ public:
      */
     [[nodiscard]] auto deserialize_stream() -> size_t override;
 
-    /**
-     * Decodes log events in the range `[beginIdx, endIdx)` of the filtered or unfiltered
-     * (depending on the value of `useFilter`) log events collection.
-     *
-     * @param begin_idx
-     * @param end_idx
-     * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
-     * @return An array where each element is a decoded log event represented by an array of:
-     * - The log event's message
-     * - The log event's timestamp as milliseconds since the Unix epoch
-     * - The log event's log level as an integer that indexes into `cLogLevelNames`
-     * - The log event's number (1-indexed) in the stream
-     * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
-     * of log events in the collection).
-     */
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType override;
 
 private:
     // Constructor
-    IrStreamReader(
+    explicit IrStreamReader(
             StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
     );
 

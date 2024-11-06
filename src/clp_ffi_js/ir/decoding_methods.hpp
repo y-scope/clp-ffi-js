@@ -17,10 +17,9 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 /**
  * Gets the version of the IR stream from the specified reader.
  * @param reader
- * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
- * unsupported.
- * @throws ClpFfiJsException if the preamble could not be deserialized.
- * @return Stream version.
+ * @throws Propagates `rewind_reader_and_validate_encoding_type`'s exceptions.
+ * @throws ClpFfiJsException if the preamble couldn't be deserialized.
+ * @return The stream's version.
  */
 auto get_version(clp::ReaderInterface& reader) -> std::string;
 }  // namespace clp_ffi_js::ir
