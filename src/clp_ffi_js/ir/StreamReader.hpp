@@ -6,6 +6,7 @@
 #include <memory>
 #include <string_view>
 
+#include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
 
 namespace clp_ffi_js::ir {
@@ -15,8 +16,25 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 
-constexpr std::array<std::string_view, 6> cTextIrVersions
+constexpr std::array<std::string_view, 6> cUnstructuredIrVersions
         = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
+
+/**
+* Rewinds the reader to the beginning and validates the CLP IR data encoding type.
+* @param reader
+* @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
+* unsupported.
+*/
+static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
+
+/**
+* Gets the version of the IR stream from the specified reader.
+* @param reader
+* @throws Propagates `rewind_reader_and_validate_encoding_type`'s exceptions.
+* @throws ClpFfiJsException if the preamble couldn't be deserialized.
+* @return The stream's version.
+*/
+static auto get_version(clp::ReaderInterface& reader) -> std::string;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -24,8 +42,10 @@ constexpr std::array<std::string_view, 6> cTextIrVersions
  */
 class StreamReader {
 public:
+    using ZstdDecompressor = clp::streaming_compression::zstd::Decompressor;
+
     /**
-     * Creates a StreamReader to read from the given array.
+     * Creates a `StreamReader` to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
@@ -47,6 +67,7 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+
     /**
      * @return The number of events buffered.
      */
@@ -65,8 +86,7 @@ public:
     virtual void filter_log_events(LogLevelFilterTsType const& log_level_filter) = 0;
 
     /**
-     * Deserializes all log events in the stream. After the stream has been exhausted, it will be
-     * deallocated.
+     * Deserializes all log events in the stream.
      *
      * @return The number of successfully deserialized ("valid") log events.
      */
