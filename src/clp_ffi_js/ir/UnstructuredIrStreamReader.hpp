@@ -1,11 +1,10 @@
-#ifndef CLP_FFI_JS_IR_UNSTRUCTUREDUnstructuredIrStreamReader_HPP
-#define CLP_FFI_JS_IR_UNSTRUCTUREDUnstructuredIrStreamReader_HPP
+#ifndef CLP_FFI_JS_IR_UNSTRUCTUREDIRSTREAMREADER_HPP
+#define CLP_FFI_JS_IR_UNSTRUCTUREDIRSTREAMREADER_HPP
 
 #include <Array.hpp>
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <streaming_compression/zstd/Decompressor.hpp>
 #include <vector>
 
 #include <clp/ir/types.hpp>
@@ -30,8 +29,6 @@ using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
  * decoded log events.
  */
 class UnstructuredIrStreamReader : public StreamReader {
-    friend StreamReader;
-
 public:
     // Destructor
     ~UnstructuredIrStreamReader() override = default;
@@ -45,10 +42,19 @@ public:
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(UnstructuredIrStreamReader&&) -> UnstructuredIrStreamReader& = delete;
 
+    /**
+     * First packages a `StreamReaderDataContext` using inputs and a unstructured IR deserializer,
+     * then creates a `UnstructuredIrStreamReader`.
+     *
+     * @param zstd_decompressor
+     * @param data_array An array containing a Zstandard-compressed IR stream.
+     * @return The created instance.
+     * @throw ClpFfiJsException if any error occurs.
+     */
     [[nodiscard]] static auto create(
             std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
             clp::Array<char>&& data_array
-    ) -> std::unique_ptr<StreamReader>;
+    ) -> UnstructuredIrStreamReader;
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
 
@@ -67,12 +73,6 @@ private:
             StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
     );
 
-    // Methods
-    [[nodiscard]] static auto create_data_context(
-            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
-            clp::Array<char>&& data_buffer
-    ) -> StreamReaderDataContext<four_byte_encoded_variable_t>;
-
     // Variables
     std::vector<LogEventWithLevel<four_byte_encoded_variable_t>> m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<four_byte_encoded_variable_t>>
@@ -82,4 +82,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_UNSTRUCTUREDUnstructuredIrStreamReader_HPP
+#endif  // CLP_FFI_JS_IR_UNSTRUCTUREDIRSTREAMREADER_HPP

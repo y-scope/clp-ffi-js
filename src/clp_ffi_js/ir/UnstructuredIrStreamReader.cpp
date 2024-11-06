@@ -17,7 +17,6 @@
 #include <clp/ErrorCode.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
@@ -39,8 +38,7 @@ using clp::ir::four_byte_encoded_variable_t;
 auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
         clp::Array<char>&& data_array
-) -> std::unique_ptr<StreamReader> {
-
+) -> UnstructuredIrStreamReader {
     auto result{
             clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
     };
@@ -62,9 +60,7 @@ auto UnstructuredIrStreamReader::create(
             std::move(zstd_decompressor),
             std::move(result.value())
     );
-    return std::make_unique<UnstructuredIrStreamReader>(
-            UnstructuredIrStreamReader(std::move(data_context))
-    );
+    return UnstructuredIrStreamReader(std::move(data_context));
 }
 
 auto UnstructuredIrStreamReader::get_num_events_buffered() const -> size_t {

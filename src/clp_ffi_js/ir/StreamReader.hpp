@@ -1,5 +1,5 @@
-#ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
-#define CLP_FFI_JS_IR_STREAM_READER_HPP
+#ifndef CLP_FFI_JS_IR_STREAMREADER_HPP
+#define CLP_FFI_JS_IR_STREAMREADER_HPP
 
 #include <array>
 #include <cstddef>
@@ -11,30 +11,16 @@
 
 namespace clp_ffi_js::ir {
 
+// JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
+
+// JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 
 constexpr std::array<std::string_view, 6> cUnstructuredIrVersions
         = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
-
-/**
-* Rewinds the reader to the beginning and validates the CLP IR data encoding type.
-* @param reader
-* @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
-* unsupported.
-*/
-static auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
-
-/**
-* Gets the version of the IR stream from the specified reader.
-* @param reader
-* @throws Propagates `rewind_reader_and_validate_encoding_type`'s exceptions.
-* @throws ClpFfiJsException if the preamble couldn't be deserialized.
-* @return The stream's version.
-*/
-static auto get_version(clp::ReaderInterface& reader) -> std::string;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -114,4 +100,4 @@ protected:
     explicit StreamReader() = default;
 };
 }  // namespace clp_ffi_js::ir
-#endif  // CLP_FFI_JS_IR_STREAM_READER_HPP
+#endif  // CLP_FFI_JS_IR_STREAMREADER_HPP
