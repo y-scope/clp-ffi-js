@@ -30,7 +30,7 @@ using ClpFfiJsException = clp_ffi_js::ClpFfiJsException;
 using IRErrorCode = clp::ffi::ir_stream::IRErrorCode;
 
 /**
- * Rewinds the reader to start then validates the CLP IR data encoding type.
+ * Rewinds the reader to the beginning then validates the CLP IR data encoding type.
  * @param reader
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
