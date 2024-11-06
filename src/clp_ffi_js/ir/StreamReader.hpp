@@ -52,7 +52,6 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
-
     /**
      * @return The number of events buffered.
      */
