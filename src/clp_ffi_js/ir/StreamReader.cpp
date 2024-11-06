@@ -153,21 +153,19 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     auto zstd_decompressor{std::make_unique<ZstdDecompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    size_t reader_offset = 0;
-    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
-    reader_offset = zstd_decompressor->try_get_pos(reader_offset);
-
     // Required to validate encoding type prior to getting version.
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
     auto const version{get_version(*zstd_decompressor)};
-    // Required that reader offset matches position after validation in order to decode log events.
-    zstd_decompressor->seek_from_begin(reader_offset);
 
+    // Required that reader offset matches position after validation in order to decode log events.
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
     if (std::ranges::find(cUnstructuredIrVersions, version) != cUnstructuredIrVersions.end()) {
         return std::make_unique<UnstructuredIrStreamReader>(UnstructuredIrStreamReader::create(
                 std::move(zstd_decompressor),
                 std::move(data_buffer)
         ));
     }
+    SPDLOG_INFO("did i get here 3");
 
     throw ClpFfiJsException{
             clp::ErrorCode::ErrorCode_Unsupported,
