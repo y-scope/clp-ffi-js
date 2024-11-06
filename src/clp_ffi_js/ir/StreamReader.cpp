@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
-#include <json/single_include/nlohmann/json.hpp>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -20,6 +19,7 @@
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
@@ -29,12 +29,23 @@ namespace {
 using ClpFfiJsException = clp_ffi_js::ClpFfiJsException;
 using IRErrorCode = clp::ffi::ir_stream::IRErrorCode;
 
+// Function declarations
 /**
  * Rewinds the reader to the beginning then validates the CLP IR data encoding type.
  * @param reader
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
  */
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
+
+/**
+ * Gets the version of the IR stream.
+ * @param reader
+ * @throws ClpFfiJsException if the preamble couldn't be deserialized.
+ * @return The IR stream's version.
+ */
+auto get_version(clp::ReaderInterface& reader) -> std::string;
+
 auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void {
     reader.seek_from_begin(0);
 
@@ -62,12 +73,6 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
     }
 }
 
-/**
- * Gets the version of the IR stream.
- * @param reader
- * @throws ClpFfiJsException if the preamble couldn't be deserialized.
- * @return The IR stream's version.
- */
 auto get_version(clp::ReaderInterface& reader) -> std::string {
     // Deserialize metadata bytes from preamble.
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
@@ -152,25 +157,30 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
     auto zstd_decompressor{std::make_unique<ZstdDecompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
 
-    // Required to validate encoding type prior to getting version.
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
+    // Validate the stream's version
+    auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
-
-    // Required that reader offset matches position after validation in order to decode log events.
-    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
-    if (std::ranges::find(cUnstructuredIrVersions, version) != cUnstructuredIrVersions.end()) {
-        return std::make_unique<UnstructuredIrStreamReader>(UnstructuredIrStreamReader::create(
-                std::move(zstd_decompressor),
-                std::move(data_buffer)
-        ));
+    if (std::ranges::find(cUnstructuredIrVersions, version) == cUnstructuredIrVersions.end()) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Unsupported,
+                __FILENAME__,
+                __LINE__,
+                std::format("Unable to create reader for IR stream with version {}.", version)
+        };
     }
-    SPDLOG_INFO("did i get here 3");
-
-    throw ClpFfiJsException{
-            clp::ErrorCode::ErrorCode_Unsupported,
-            __FILENAME__,
-            __LINE__,
-            std::format("Unable to create reader for IR stream with version {}.", version)
-    };
+    try {
+        zstd_decompressor->seek_from_begin(pos);
+    } catch (ZstdDecompressor::OperationFailed& e) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Unable to rewind zstd decompressor: {}", e.what())
+        };
+    }
+    return std::make_unique<UnstructuredIrStreamReader>(
+            UnstructuredIrStreamReader::create(std::move(zstd_decompressor), std::move(data_buffer))
+    );
 }
 }  // namespace clp_ffi_js::ir

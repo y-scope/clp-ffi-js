@@ -7,7 +7,7 @@ IncludeCategories:
     Priority: 4
   # Library headers. Update when adding new libraries.
   # NOTE: clang-format retains leading white-space on a line in violation of the YAML spec.
-  - Regex: "<(emscripten|fmt|spdlog)"
+  - Regex: "<(emscripten|fmt|spdlog|json)"
     Priority: 3
   - Regex: "^<(clp)"
     Priority: 3
