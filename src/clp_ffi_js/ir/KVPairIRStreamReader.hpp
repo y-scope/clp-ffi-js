@@ -3,47 +3,88 @@
 
 #include <cstddef>
 #include <ffi/ir_stream/Deserializer.hpp>
+#include <format>
 #include <memory>
 #include <vector>
 
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ir/LogEventWithLevel.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
+using parsed_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 class IrUnitHandler {
 public:
+    IrUnitHandler(std::string log_level_key, std::string timestamp_key)
+            : m_log_level_key{std::move(log_level_key)},
+              m_timestamp_key{std::move(timestamp_key)} {}
+
     // Implements `clp::ffi::ir_stream::IrUnitHandlerInterface` interface
-    [[nodiscard]] auto handle_log_event(clp::ffi::KeyValuePairLogEvent&& log_event) -> clp::ffi::ir_stream::IRErrorCode {
+    [[nodiscard]] auto handle_log_event(clp::ffi::KeyValuePairLogEvent&& log_event
+    ) -> clp::ffi::ir_stream::IRErrorCode {
         m_deserialized_log_events.emplace_back(std::move(log_event));
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
+
     [[nodiscard]] static auto handle_utc_offset_change(
             [[maybe_unused]] clp::UtcOffset utc_offset_old,
             [[maybe_unused]] clp::UtcOffset utc_offset_new
     ) -> clp::ffi::ir_stream::IRErrorCode {
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
-    [[nodiscard]] static auto handle_schema_tree_node_insertion(
+
+    [[nodiscard]] auto handle_schema_tree_node_insertion(
             [[maybe_unused]] clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
     ) -> clp::ffi::ir_stream::IRErrorCode {
+        ++m_current_node_id;
+        auto const& key_name{schema_tree_node_locator.get_key_name()};
+        SPDLOG_DEBUG("m_current_node_id={}, key_name={}", m_current_node_id, key_name);
+
+        if (m_log_level_key == key_name) {
+            m_level_node_id.emplace(m_current_node_id);
+        } else if (m_timestamp_key == key_name) {
+            m_timestamp_node_id.emplace(m_current_node_id);
+        }
+
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
+
     [[nodiscard]] auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
         m_is_complete = true;
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
+
     // Methods
     [[nodiscard]] auto is_complete() const -> bool { return m_is_complete; }
-    [[nodiscard]] auto get_deserialized_log_events() const -> std::vector<clp::ffi::KeyValuePairLogEvent> const & {
+
+    [[nodiscard]] auto get_deserialized_log_events(
+    ) const -> std::vector<clp::ffi::KeyValuePairLogEvent> const& {
         return m_deserialized_log_events;
     }
+
+    [[nodiscard]] auto get_level_node_id() const -> parsed_tree_node_id_t {
+        return m_level_node_id;
+    }
+
+    [[nodiscard]] auto get_timestamp_node_id() const -> parsed_tree_node_id_t {
+        return m_timestamp_node_id;
+    }
+
 private:
+    std::string m_log_level_key;
+    std::string m_timestamp_key;
+
+    // the root node has id=0
+    clp::ffi::SchemaTree::Node::id_t m_current_node_id;
+    parsed_tree_node_id_t m_level_node_id;
+    parsed_tree_node_id_t m_timestamp_node_id;
+
     std::vector<clp::ffi::KeyValuePairLogEvent> m_deserialized_log_events;
     bool m_is_complete{false};
 };
@@ -61,7 +102,10 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array, ReaderOptions const& reader_options) -> KVPairIRStreamReader;
+    [[nodiscard]] static auto create(
+            DataArrayTsType const& data_array,
+            ReaderOptions const& reader_options
+    ) -> KVPairIRStreamReader;
 
     // Destructor
     ~KVPairIRStreamReader() override = default;
@@ -117,15 +161,13 @@ private:
 
     // Constructor
     explicit KVPairIRStreamReader(
-            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context, ReaderOptions const& reader_options
+            StreamReaderDataContext<deserializer_t>&& stream_reader_data_context
     );
 
     // Variables
     std::vector<LogEventWithLevel<clp::ffi::KeyValuePairLogEvent>> m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<deserializer_t>> m_stream_reader_data_context;
 
-    std::string m_log_level_key;
-    std::string m_timestamp_key;
     FilteredLogEventsMap m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::ir
