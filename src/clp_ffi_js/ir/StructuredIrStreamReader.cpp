@@ -111,7 +111,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
                 __FILENAME__,
                 __LINE__,
                 std::format(
-                        "Failed to deserialize: {}:{}",
+                        "Failed to deserialize IR unit: {}:{}",
                         error.category().name(),
                         error.message()
                 )
@@ -148,7 +148,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 
         auto const json{log_event.serialize_to_json()};
         if (false == json.has_value()) {
-            SPDLOG_ERROR("Failed to decode message.");
+            SPDLOG_ERROR("Failed to decode log event.");
             break;
         }
 

@@ -66,7 +66,7 @@ public:
             [[maybe_unused]] clp::UtcOffset utc_offset_old,
             [[maybe_unused]] clp::UtcOffset utc_offset_new
     ) -> clp::ffi::ir_stream::IRErrorCode {
-        SPDLOG_WARN("UTC offset change packets are currently not handled.");
+        SPDLOG_WARN("UTC offset change packets aren't handled currently.");
 
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
