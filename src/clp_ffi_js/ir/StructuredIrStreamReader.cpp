@@ -155,19 +155,22 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         }
 
         auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
-        clp::ffi::value_int_t log_level{static_cast<clp::ffi::value_int_t>(LogLevel::NONE)};
+        LogLevel log_level{LogLevel::NONE};
         if (m_level_node_id.has_value()) {
             auto const& log_level_pair{id_value_pairs.at(m_level_node_id.value())};
             log_level = log_level_pair.has_value()
-                                ? log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>()
-                                : static_cast<clp::ffi::value_int_t>(LogLevel::NONE);
+                                ? static_cast<LogLevel>(
+                                          log_level_pair.value()
+                                                  .get_immutable_view<clp::ffi::value_int_t>()
+                                  )
+                                : log_level;
         }
         clp::ffi::value_int_t timestamp{0};
         if (m_timestamp_node_id.has_value()) {
             auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
             timestamp = timestamp_pair.has_value()
                                 ? timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
-                                : 0;
+                                : timestamp;
         }
 
         EM_ASM(
