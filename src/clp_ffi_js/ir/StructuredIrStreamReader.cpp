@@ -59,12 +59,12 @@ auto StructuredIrStreamReader::create(
                 )
         };
     }
-    auto data_context = StreamReaderDataContext<StructuredIrDeserializer>(
+    StreamReaderDataContext<StructuredIrDeserializer> data_context{
             std::move(data_array),
             std::move(zstd_decompressor),
             std::move(result.value())
-    );
-    return StructuredIrStreamReader(std::move(data_context), std::move(deserialized_log_events));
+    };
+    return StructuredIrStreamReader{std::move(data_context), std::move(deserialized_log_events)};
 }
 
 auto StructuredIrStreamReader::get_num_events_buffered() const -> size_t {
