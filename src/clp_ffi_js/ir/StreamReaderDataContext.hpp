@@ -44,6 +44,10 @@ public:
      */
     [[nodiscard]] auto get_deserializer() -> Deserializer& { return m_deserializer; }
 
+    /**
+     * @return A reference to the reader.
+     */
+    [[nodiscard]] auto get_reader() -> clp::ReaderInterface& { return *m_reader; }
 private:
     clp::Array<char> m_data_buffer;
     std::unique_ptr<clp::ReaderInterface> m_reader;

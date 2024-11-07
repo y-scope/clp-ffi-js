@@ -83,11 +83,16 @@ endif()
 
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/StreamReader.cpp
+    src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
     src/clp_ffi_js/ir/UnstructuredIrStreamReader.cpp
 )
 
 set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/utils.cpp
+    src/submodules/clp/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
+    src/submodules/clp/components/core/src/clp/ffi/SchemaTree.cpp
     src/submodules/clp/components/core/src/clp/ir/EncodedTextAst.cpp
     src/submodules/clp/components/core/src/clp/ir/LogEventDeserializer.cpp
     src/submodules/clp/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp

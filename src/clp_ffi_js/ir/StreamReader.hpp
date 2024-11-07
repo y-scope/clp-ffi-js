@@ -13,6 +13,7 @@ namespace clp_ffi_js::ir {
 // JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
@@ -36,7 +37,8 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array,
+                                     ReaderOptions const& reader_options
     ) -> std::unique_ptr<StreamReader>;
 
     // Destructor
