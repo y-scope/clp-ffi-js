@@ -12,16 +12,16 @@ namespace clp_ffi_js::ir {
  * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
  * An IR deserializer class that reads from a `clp::ReaderInterface`, which in turn reads from a
  * `clp::Array`.
- * @tparam deserializer_t Type of deserializer.
+ * @tparam Deserializer Type of deserializer.
  */
-template <typename deserializer_t>
+template <typename Deserializer>
 class StreamReaderDataContext {
 public:
     // Constructors
     StreamReaderDataContext(
             clp::Array<char>&& data_buffer,
             std::unique_ptr<clp::ReaderInterface>&& reader,
-            deserializer_t deserializer
+            Deserializer deserializer
     )
             : m_data_buffer{std::move(data_buffer)},
               m_reader{std::move(reader)},
@@ -42,12 +42,12 @@ public:
     /**
      * @return A reference to the deserializer.
      */
-    [[nodiscard]] auto get_deserializer() -> deserializer_t& { return m_deserializer; }
+    [[nodiscard]] auto get_deserializer() -> Deserializer& { return m_deserializer; }
 
 private:
     clp::Array<char> m_data_buffer;
     std::unique_ptr<clp::ReaderInterface> m_reader;
-    deserializer_t m_deserializer;
+    Deserializer m_deserializer;
 };
 }  // namespace clp_ffi_js::ir
 
