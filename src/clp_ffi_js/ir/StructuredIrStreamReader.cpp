@@ -177,8 +177,8 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
                 json.value().dump().c_str(),
-                log_level,
                 timestamp,
+                log_level,
                 log_event_idx + 1
         );
     }
