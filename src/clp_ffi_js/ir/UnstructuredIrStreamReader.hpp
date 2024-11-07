@@ -60,6 +60,13 @@ public:
 
     void filter_log_events(LogLevelFilterTsType const& log_level_filter) override;
 
+    /**
+     * @see StreamReader::deserialize_stream
+     *
+     * After the stream has been exhausted, it will be deallocated.
+     *
+     * @return @see StreamReader::deserialize_stream
+     */
     [[nodiscard]] auto deserialize_stream() -> size_t override;
 
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
