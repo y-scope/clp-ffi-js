@@ -28,7 +28,7 @@
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 
-static constexpr std::string_view cLogLevelFilteringNotSupportedPrompt{
+static constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
         "Log level filtering is not yet supported in this reader."
 };
 
@@ -72,7 +72,7 @@ auto StructuredIrStreamReader::get_num_events_buffered() const -> size_t {
 }
 
 auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
-    SPDLOG_ERROR(cLogLevelFilteringNotSupportedPrompt);
+    SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
     return FilteredLogEventMapTsType{emscripten::val::null()};
 }
 
@@ -80,7 +80,7 @@ void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log
     if (log_level_filter.isNull()) {
         return;
     }
-    SPDLOG_ERROR(cLogLevelFilteringNotSupportedPrompt);
+    SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
 }
 
 auto StructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -130,7 +130,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
 auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
     if (use_filter) {
-        SPDLOG_ERROR(cLogLevelFilteringNotSupportedPrompt);
+        SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
         return DecodedResultsTsType{emscripten::val::null()};
     }
 
