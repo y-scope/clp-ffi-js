@@ -40,11 +40,11 @@ auto StructuredIrStreamReader::create(
     auto deserialized_log_events{std::make_shared<std::vector<clp::ffi::KeyValuePairLogEvent>>()};
     auto result{StructuredIrDeserializer::create(
             *zstd_decompressor,
-            IrUnitHandler(
+            IrUnitHandler{
                     deserialized_log_events,
                     reader_options["logLevelKey"].as<std::string>(),
                     reader_options["timestampKey"].as<std::string>()
-            )
+            }
     )};
     if (result.has_error()) {
         auto const error_code{result.error()};
