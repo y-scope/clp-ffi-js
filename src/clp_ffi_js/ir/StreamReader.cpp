@@ -167,12 +167,11 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
 
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
 
-    // Validate the stream's version
+    // Validate the stream's version and decide which type of IR stream reader to create.
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
-    auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)};
-
     try {
+        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)};
         if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
             zstd_decompressor->seek_from_begin(0);
             return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
