@@ -145,8 +145,8 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
     for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
         auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
 
-        auto const json{log_event.serialize_to_json()};
-        if (false == json.has_value()) {
+        auto const json_result{log_event.serialize_to_json()};
+        if (false == json_result.has_value()) {
             SPDLOG_ERROR("Failed to decode log event.");
             break;
         }
@@ -173,7 +173,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         EM_ASM(
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
-                json.value().dump().c_str(),
+                json_result.value().dump().c_str(),
                 timestamp,
                 log_level,
                 log_event_idx + 1
