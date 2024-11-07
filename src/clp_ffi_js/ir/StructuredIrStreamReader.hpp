@@ -41,9 +41,9 @@ public:
             std::string log_level_key,
             std::string timestamp_key
     )
-            : m_deserialized_log_events{std::move(deserialized_log_events)},
-              m_log_level_key{std::move(log_level_key)},
-              m_timestamp_key{std::move(timestamp_key)} {}
+            : m_log_level_key{std::move(log_level_key)},
+              m_timestamp_key{std::move(timestamp_key)},
+              m_deserialized_log_events{std::move(deserialized_log_events)} {}
 
     // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
     /**
