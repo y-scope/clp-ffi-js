@@ -7,7 +7,6 @@
 #include <optional>
 #include <vector>
 
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
@@ -57,9 +56,8 @@ public:
             clp::Array<char> data_array
     ) -> UnstructuredIrStreamReader;
 
-    [[nodiscard]] auto get_ir_protocol_error_code(
-    ) const -> clp::ffi::ir_stream::IRProtocolErrorCode override {
-        return clp::ffi::ir_stream::IRProtocolErrorCode::BackwardCompatible;
+    [[nodiscard]] auto get_ir_stream_type() const -> IrStreamType override {
+        return IrStreamType::Unstructured;
     }
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;

@@ -2,6 +2,7 @@
 #define CLP_FFI_JS_IR_STREAMREADER_HPP
 
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
@@ -17,6 +18,11 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+
+enum class IrStreamType : uint8_t {
+    Structured,
+    Unstructured,
+};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -51,8 +57,7 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
-    [[nodiscard]] virtual auto get_ir_protocol_error_code(
-    ) const -> clp::ffi::ir_stream::IRProtocolErrorCode = 0;
+    [[nodiscard]] virtual auto get_ir_stream_type() const -> IrStreamType = 0;
 
     /**
      * @return The number of events buffered.

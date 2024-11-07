@@ -122,12 +122,9 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
     );
 
     // JS types used as outputs
-    emscripten::enum_<clp::ffi::ir_stream::IRProtocolErrorCode>("IRProtocolErrorCode")
-            .value("SUPPORTED", clp::ffi::ir_stream::IRProtocolErrorCode::Supported)
-            .value("BACKWARD_COMPATIBLE",
-                   clp::ffi::ir_stream::IRProtocolErrorCode::BackwardCompatible)
-            .value("UNSUPPORTED", clp::ffi::ir_stream::IRProtocolErrorCode::Unsupported)
-            .value("INVALID", clp::ffi::ir_stream::IRProtocolErrorCode::Invalid);
+    emscripten::enum_<clp_ffi_js::ir::IrStreamType>("IrStreamType")
+            .value("STRUCTURED", clp_ffi_js::ir::IrStreamType::Structured)
+            .value("UNSTRUCTURED", clp_ffi_js::ir::IrStreamType::Unstructured);
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
@@ -137,10 +134,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
                     &clp_ffi_js::ir::StreamReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
-            .function(
-                    "getIrProtocolErrorCode",
-                    &clp_ffi_js::ir::StreamReader::get_ir_protocol_error_code
-            )
+            .function("getIrStreamType", &clp_ffi_js::ir::StreamReader::get_ir_stream_type)
             .function(
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered

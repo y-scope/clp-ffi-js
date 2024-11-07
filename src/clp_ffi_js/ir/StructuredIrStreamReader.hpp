@@ -3,7 +3,6 @@
 
 #include <clp/Array.hpp>
 #include <cstddef>
-
 #include <memory>
 #include <optional>
 #include <string>
@@ -166,9 +165,8 @@ public:
             ReaderOptions const& reader_options
     ) -> StructuredIrStreamReader;
 
-    [[nodiscard]] auto get_ir_protocol_error_code(
-    ) const -> clp::ffi::ir_stream::IRProtocolErrorCode override {
-        return clp::ffi::ir_stream::IRProtocolErrorCode::Supported;
+    [[nodiscard]] auto get_ir_stream_type() const -> IrStreamType override {
+        return IrStreamType::Structured;
     }
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
