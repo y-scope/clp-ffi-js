@@ -85,7 +85,7 @@ public:
 
         auto const& key_name{schema_tree_node_locator.get_key_name()};
         if (m_log_level_key == key_name) {
-            m_level_node_id.emplace(m_current_node_id);
+            m_log_level_node_id.emplace(m_current_node_id);
         } else if (m_timestamp_key == key_name) {
             m_timestamp_node_id.emplace(m_current_node_id);
         }
@@ -104,8 +104,8 @@ public:
     /**
      * @return The schema-tree node ID associated with events' authoritative log-level key.
      */
-    [[nodiscard]] auto get_level_node_id() const -> schema_tree_node_id_t {
-        return m_level_node_id;
+    [[nodiscard]] auto get_log_level_node_id() const -> schema_tree_node_id_t {
+        return m_log_level_node_id;
     }
 
     /**
@@ -122,7 +122,7 @@ private:
 
     clp::ffi::SchemaTree::Node::id_t m_current_node_id{clp::ffi::SchemaTree::cRootId};
 
-    schema_tree_node_id_t m_level_node_id;
+    schema_tree_node_id_t m_log_level_node_id;
     schema_tree_node_id_t m_timestamp_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will

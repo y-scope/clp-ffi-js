@@ -121,7 +121,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
     }
     m_level_node_id = m_stream_reader_data_context->get_deserializer()
                               .get_ir_unit_handler()
-                              .get_level_node_id();
+                              .get_log_level_node_id();
     m_timestamp_node_id = m_stream_reader_data_context->get_deserializer()
                                   .get_ir_unit_handler()
                                   .get_timestamp_node_id();
