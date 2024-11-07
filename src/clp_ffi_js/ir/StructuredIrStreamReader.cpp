@@ -150,9 +150,14 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         clp::ffi::value_int_t timestamp{0};
         if (m_timestamp_node_id.has_value()) {
             auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
-            timestamp = timestamp_pair.has_value()
-                                ? timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
-                                : timestamp;
+            if (timestamp_pair.has_value()) {
+                if (timestamp_pair->is<clp::ffi::value_int_t>()) {
+                    timestamp = timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>();
+                } else {
+                    // TODO: add support for parsing timestamp values of string type.
+                    SPDLOG_ERROR("Unable to parse timestamp for log_event_idx={}", log_event_idx);
+                }
+            }
         }
 
         EM_ASM(
