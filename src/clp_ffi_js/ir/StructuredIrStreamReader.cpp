@@ -138,9 +138,6 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         return DecodedResultsTsType{emscripten::val::null()};
     }
 
-    std::string message;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    message.reserve(cDefaultReservedMessageLength);
     auto const results{emscripten::val::array()};
 
     for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
