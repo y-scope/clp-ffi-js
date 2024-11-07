@@ -25,24 +25,20 @@ using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 /**
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
- * determine the schema-tree node IDs of the timestamp and log level kv-pairs.
+ * determine the schema-tree node ID of the timestamp kv-pair.
  */
 class IrUnitHandler {
 public:
     /**
      * @param deserialized_log_events The vector in which to store deserialized log events.
-     * @param log_level_key Key name of the schema-tree node that contains the authoritative log
-     * level for events.
      * @param timestamp_key Key name of schema-tree node that contains the authoritative timestamp
      * for events.
      */
     IrUnitHandler(
             std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events,
-            std::string log_level_key,
             std::string timestamp_key
     )
-            : m_log_level_key{std::move(log_level_key)},
-              m_timestamp_key{std::move(timestamp_key)},
+            : m_timestamp_key{std::move(timestamp_key)},
               m_deserialized_log_events{std::move(deserialized_log_events)} {}
 
     // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
@@ -73,8 +69,7 @@ public:
     }
 
     /**
-     * Saves the node's ID if it corresponds to events' authoritative log level or timestamp
-     * kv-pairs.
+     * Saves the node's ID if it corresponds to events' authoritative timestamp kv-pair.
      * @param schema_tree_node_locator
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -84,9 +79,7 @@ public:
         ++m_current_node_id;
 
         auto const& key_name{schema_tree_node_locator.get_key_name()};
-        if (m_log_level_key == key_name) {
-            m_log_level_node_id.emplace(m_current_node_id);
-        } else if (m_timestamp_key == key_name) {
+        if (m_timestamp_key == key_name) {
             m_timestamp_node_id.emplace(m_current_node_id);
         }
 
@@ -102,13 +95,6 @@ public:
 
     // Methods
     /**
-     * @return The schema-tree node ID associated with events' authoritative log-level key.
-     */
-    [[nodiscard]] auto get_log_level_node_id() const -> schema_tree_node_id_t {
-        return m_log_level_node_id;
-    }
-
-    /**
      * @return The schema-tree node ID associated with events' authoritative timestamp key.
      */
     [[nodiscard]] auto get_timestamp_node_id() const -> schema_tree_node_id_t {
@@ -117,12 +103,10 @@ public:
 
 private:
     // Variables
-    std::string m_log_level_key;
     std::string m_timestamp_key;
 
     clp::ffi::SchemaTree::Node::id_t m_current_node_id{clp::ffi::SchemaTree::cRootId};
 
-    schema_tree_node_id_t m_log_level_node_id;
     schema_tree_node_id_t m_timestamp_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
@@ -198,7 +182,6 @@ private:
     std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
 
-    schema_tree_node_id_t m_level_node_id;
     schema_tree_node_id_t m_timestamp_node_id;
 };
 }  // namespace clp_ffi_js::ir

@@ -31,7 +31,6 @@ using clp::ir::four_byte_encoded_variable_t;
 static constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
         "Log level filtering is not yet supported in this reader."
 };
-static constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 static constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
 
 auto StructuredIrStreamReader::create(
@@ -44,7 +43,6 @@ auto StructuredIrStreamReader::create(
             *zstd_decompressor,
             IrUnitHandler{
                     deserialized_log_events,
-                    reader_options[cReaderOptionsLogLevelKey.data()].as<std::string>(),
                     reader_options[cReaderOptionsTimestampKey.data()].as<std::string>()
             }
     )};
@@ -119,9 +117,6 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
                 )
         };
     }
-    m_level_node_id = m_stream_reader_data_context->get_deserializer()
-                              .get_ir_unit_handler()
-                              .get_log_level_node_id();
     m_timestamp_node_id = m_stream_reader_data_context->get_deserializer()
                                   .get_ir_unit_handler()
                                   .get_timestamp_node_id();
@@ -152,16 +147,6 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         }
 
         auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
-        LogLevel log_level{LogLevel::NONE};
-        if (m_level_node_id.has_value()) {
-            auto const& log_level_pair{id_value_pairs.at(m_level_node_id.value())};
-            log_level = log_level_pair.has_value()
-                                ? static_cast<LogLevel>(
-                                          log_level_pair.value()
-                                                  .get_immutable_view<clp::ffi::value_int_t>()
-                                  )
-                                : log_level;
-        }
         clp::ffi::value_int_t timestamp{0};
         if (m_timestamp_node_id.has_value()) {
             auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
@@ -175,7 +160,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
                 results.as_handle(),
                 json_result.value().dump().c_str(),
                 timestamp,
-                log_level,
+                LogLevel::NONE,
                 log_event_idx + 1
         );
     }
