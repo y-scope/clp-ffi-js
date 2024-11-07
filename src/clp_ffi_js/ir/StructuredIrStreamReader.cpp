@@ -31,6 +31,8 @@ using clp::ir::four_byte_encoded_variable_t;
 static constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
         "Log level filtering is not yet supported in this reader."
 };
+static constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
+static constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
 
 auto StructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
@@ -42,8 +44,8 @@ auto StructuredIrStreamReader::create(
             *zstd_decompressor,
             IrUnitHandler{
                     deserialized_log_events,
-                    reader_options["logLevelKey"].as<std::string>(),
-                    reader_options["timestampKey"].as<std::string>()
+                    reader_options[cReaderOptionsLogLevelKey].as<std::string>(),
+                    reader_options[cReaderOptionsTimestampKey].as<std::string>()
             }
     )};
     if (result.has_error()) {
