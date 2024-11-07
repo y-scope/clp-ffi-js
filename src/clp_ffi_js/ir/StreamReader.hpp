@@ -1,27 +1,25 @@
-#ifndef CLP_FFI_JS_IR_STREAM_READER_HPP
-#define CLP_FFI_JS_IR_STREAM_READER_HPP
+#ifndef CLP_FFI_JS_IR_STREAMREADER_HPP
+#define CLP_FFI_JS_IR_STREAMREADER_HPP
 
-#include <Array.hpp>
+#include <array>
 #include <cstddef>
 #include <memory>
-#include <optional>
-#include <streaming_compression/zstd/Decompressor.hpp>
-#include <vector>
+#include <string_view>
 
-#include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
-#include <emscripten/bind.h>
+#include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
 
-#include <clp_ffi_js/ir/LogEventWithLevel.hpp>
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
-
 namespace clp_ffi_js::ir {
-using clp::ir::four_byte_encoded_variable_t;
-
+// JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
+
+// JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+
+constexpr std::array<std::string_view, 6> cUnstructuredIrVersions
+        = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -29,23 +27,20 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
  */
 class StreamReader {
 public:
-    /**
-     * Mapping between an index in the filtered log events collection to an index in the unfiltered
-     * log events collection.
-     */
-    using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+    using ZstdDecompressor = clp::streaming_compression::zstd::Decompressor;
 
     /**
-     * Creates a StreamReader to read from the given array.
+     * Creates a `StreamReader` to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array) -> StreamReader;
+    [[nodiscard]] static auto create(DataArrayTsType const& data_array
+    ) -> std::unique_ptr<StreamReader>;
 
     // Destructor
-    ~StreamReader() = default;
+    virtual ~StreamReader() = default;
 
     // Disable copy constructor and assignment operator
     StreamReader(StreamReader const&) = delete;
@@ -60,27 +55,26 @@ public:
     /**
      * @return The number of events buffered.
      */
-    [[nodiscard]] auto get_num_events_buffered() const -> size_t;
+    [[nodiscard]] virtual auto get_num_events_buffered() const -> size_t = 0;
 
     /**
      * @return The filtered log events map.
      */
-    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType;
+    [[nodiscard]] virtual auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType = 0;
 
     /**
      * Generates a filtered collection from all log events.
      *
      * @param log_level_filter Array of selected log levels
      */
-    void filter_log_events(emscripten::val const& log_level_filter);
+    virtual void filter_log_events(LogLevelFilterTsType const& log_level_filter) = 0;
 
     /**
-     * Deserializes all log events in the stream. After the stream has been exhausted, it will be
-     * deallocated.
+     * Deserializes all log events in the stream.
      *
      * @return The number of successfully deserialized ("valid") log events.
      */
-    [[nodiscard]] auto deserialize_stream() -> size_t;
+    [[nodiscard]] virtual auto deserialize_stream() -> size_t = 0;
 
     /**
      * Decodes log events in the range `[beginIdx, endIdx)` of the filtered or unfiltered
@@ -97,28 +91,12 @@ public:
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      */
-    [[nodiscard]] auto
-    decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const -> DecodedResultsTsType;
+    [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+            -> DecodedResultsTsType = 0;
 
-private:
-    // Constructor
-    explicit StreamReader(
-            StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
-    );
-
-    // Methods
-    [[nodiscard]] static auto create_data_context(
-            std::unique_ptr<clp::streaming_compression::zstd::Decompressor>&& zstd_decompressor,
-            clp::Array<char> data_buffer
-    ) -> StreamReaderDataContext<four_byte_encoded_variable_t>;
-
-    // Variables
-    std::vector<LogEventWithLevel<four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext<four_byte_encoded_variable_t>>
-            m_stream_reader_data_context;
-    FilteredLogEventsMap m_filtered_log_event_map;
-    clp::TimestampPattern m_ts_pattern;
+protected:
+    explicit StreamReader() = default;
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_STREAM_READER_HPP
+#endif  // CLP_FFI_JS_IR_STREAMREADER_HPP
