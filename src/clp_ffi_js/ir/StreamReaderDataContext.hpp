@@ -39,14 +39,8 @@ public:
     ~StreamReaderDataContext() = default;
 
     // Methods
-    /**
-     * @return A reference to the deserializer.
-     */
     [[nodiscard]] auto get_deserializer() -> Deserializer& { return m_deserializer; }
 
-    /**
-     * @return A reference to the reader.
-     */
     [[nodiscard]] auto get_reader() -> clp::ReaderInterface& { return *m_reader; }
 
 private:
