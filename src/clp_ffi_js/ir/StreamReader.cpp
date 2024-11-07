@@ -171,7 +171,8 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
     try {
-        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)};
+        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)
+        };
         if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
             zstd_decompressor->seek_from_begin(0);
             return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
