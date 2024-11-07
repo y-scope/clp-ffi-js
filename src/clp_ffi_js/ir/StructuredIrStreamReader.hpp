@@ -1,13 +1,13 @@
 #ifndef CLP_FFI_JS_IR_STRUCTUREDIRSTREAMREADER_HPP
 #define CLP_FFI_JS_IR_STRUCTUREDIRSTREAMREADER_HPP
 
-#include <Array.hpp>
+#include <clp/Array.hpp>
 #include <cstddef>
 
 #include <memory>
 #include <optional>
 #include <string>
-#include <time_types.hpp>
+#include <clp/time_types.hpp>
 #include <utility>
 #include <vector>
 
