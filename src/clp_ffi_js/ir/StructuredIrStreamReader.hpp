@@ -78,7 +78,7 @@ public:
      * @return IRErrorCode::IRErrorCode_Success
      */
     [[nodiscard]] auto handle_schema_tree_node_insertion(
-            [[maybe_unused]] clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
+            clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
     ) -> clp::ffi::ir_stream::IRErrorCode {
         ++m_current_node_id;
 
