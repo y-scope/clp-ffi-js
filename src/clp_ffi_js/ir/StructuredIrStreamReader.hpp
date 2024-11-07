@@ -139,18 +139,6 @@ using StructuredIrDeserializer = clp::ffi::ir_stream::Deserializer<IrUnitHandler
  */
 class StructuredIrStreamReader : public StreamReader {
 public:
-    // Destructor
-    ~StructuredIrStreamReader() override = default;
-
-    // Disable copy constructor and assignment operator
-    StructuredIrStreamReader(StructuredIrStreamReader const&) = delete;
-    auto operator=(StructuredIrStreamReader const&) -> StructuredIrStreamReader& = delete;
-
-    // Define default move constructor
-    StructuredIrStreamReader(StructuredIrStreamReader&&) = default;
-    // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
-    auto operator=(StructuredIrStreamReader&&) -> StructuredIrStreamReader& = delete;
-
     /**
      * @param zstd_decompressor A decompressor for an IR stream, where the read head of the stream
      * is just after the stream's encoding type.
@@ -164,6 +152,18 @@ public:
             clp::Array<char> data_array,
             ReaderOptions const& reader_options
     ) -> StructuredIrStreamReader;
+
+    // Destructor
+    ~StructuredIrStreamReader() override = default;
+
+    // Disable copy constructor and assignment operator
+    StructuredIrStreamReader(StructuredIrStreamReader const&) = delete;
+    auto operator=(StructuredIrStreamReader const&) -> StructuredIrStreamReader& = delete;
+
+    // Define default move constructor
+    StructuredIrStreamReader(StructuredIrStreamReader&&) = default;
+    // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
+    auto operator=(StructuredIrStreamReader&&) -> StructuredIrStreamReader& = delete;
 
     [[nodiscard]] auto get_ir_stream_type() const -> IrStreamType override {
         return IrStreamType::Structured;
