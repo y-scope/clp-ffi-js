@@ -40,7 +40,7 @@ auto UnstructuredIrStreamReader::create(
         clp::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
     auto result{
-            clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>::create(*zstd_decompressor)
+            UnstructuredIrDeserializer::create(*zstd_decompressor)
     };
     if (result.has_error()) {
         auto const error_code{result.error()};
@@ -55,7 +55,7 @@ auto UnstructuredIrStreamReader::create(
                 )
         };
     }
-    auto data_context = StreamReaderDataContext<four_byte_encoded_variable_t>(
+    auto data_context = StreamReaderDataContext<UnstructuredIrDeserializer>(
             std::move(data_array),
             std::move(zstd_decompressor),
             std::move(result.value())
@@ -218,10 +218,10 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
-        StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
+        StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
 )
         : m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<four_byte_encoded_variable_t>>(
+                  StreamReaderDataContext<UnstructuredIrDeserializer>>(
                   std::move(stream_reader_data_context)
           )},
           m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}

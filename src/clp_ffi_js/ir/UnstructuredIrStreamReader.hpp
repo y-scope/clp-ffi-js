@@ -7,6 +7,7 @@
 #include <optional>
 #include <vector>
 
+#include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>
@@ -17,6 +18,7 @@
 
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
+using UnstructuredIrDeserializer = clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>;
 
 /**
  * Mapping between an index in the filtered log events collection to an index in the unfiltered
@@ -75,12 +77,12 @@ public:
 private:
     // Constructor
     explicit UnstructuredIrStreamReader(
-            StreamReaderDataContext<four_byte_encoded_variable_t>&& stream_reader_data_context
+            StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
     );
 
     // Variables
     std::vector<LogEventWithLevel<four_byte_encoded_variable_t>> m_encoded_log_events;
-    std::unique_ptr<StreamReaderDataContext<four_byte_encoded_variable_t>>
+    std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
     clp::TimestampPattern m_ts_pattern;
