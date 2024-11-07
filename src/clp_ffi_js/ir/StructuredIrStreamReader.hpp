@@ -21,7 +21,7 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
-using parsed_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
+using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 /**
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
@@ -104,14 +104,14 @@ public:
     /**
      * @return The schema-tree node ID associated with events' authoritative log-level key.
      */
-    [[nodiscard]] auto get_level_node_id() const -> parsed_tree_node_id_t {
+    [[nodiscard]] auto get_level_node_id() const -> schema_tree_node_id_t {
         return m_level_node_id;
     }
 
     /**
      * @return The schema-tree node ID associated with events' authoritative timestamp key.
      */
-    [[nodiscard]] auto get_timestamp_node_id() const -> parsed_tree_node_id_t {
+    [[nodiscard]] auto get_timestamp_node_id() const -> schema_tree_node_id_t {
         return m_timestamp_node_id;
     }
 
@@ -122,8 +122,8 @@ private:
 
     clp::ffi::SchemaTree::Node::id_t m_current_node_id{clp::ffi::SchemaTree::cRootId};
 
-    parsed_tree_node_id_t m_level_node_id;
-    parsed_tree_node_id_t m_timestamp_node_id;
+    schema_tree_node_id_t m_level_node_id;
+    schema_tree_node_id_t m_timestamp_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
     // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add
@@ -198,8 +198,8 @@ private:
     std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
 
-    parsed_tree_node_id_t m_level_node_id;
-    parsed_tree_node_id_t m_timestamp_node_id;
+    schema_tree_node_id_t m_level_node_id;
+    schema_tree_node_id_t m_timestamp_node_id;
 };
 }  // namespace clp_ffi_js::ir
 
