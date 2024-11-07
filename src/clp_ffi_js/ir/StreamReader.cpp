@@ -23,8 +23,8 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
-#include <clp_ffi_js/ir/UnstructuredIrStreamReader.hpp>
 #include <clp_ffi_js/ir/StructuredIrStreamReader.hpp>
+#include <clp_ffi_js/ir/UnstructuredIrStreamReader.hpp>
 
 namespace {
 using ClpFfiJsException = clp_ffi_js::ClpFfiJsException;
@@ -183,9 +183,9 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
                 std::move(data_buffer)
         ));
     }
-//    if (clp::ffi::ir_stream::IRProtocolErrorCode_Supported
-//               == clp::ffi::ir_stream::validate_protocol_version(version))
-//    {
+    //    if (clp::ffi::ir_stream::IRProtocolErrorCode_Supported
+    //               == clp::ffi::ir_stream::validate_protocol_version(version))
+    //    {
     // FIXME: wait for https://github.com/y-scope/clp/pull/573
     try {
         zstd_decompressor->seek_from_begin(0);
@@ -197,18 +197,18 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
                 std::format("Unable to rewind zstd decompressor: {}", e.what())
         };
     }
-        return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
-                std::move(zstd_decompressor),
-                std::move(data_buffer),
-                reader_options
-        ));
-//    }
+    return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
+            std::move(zstd_decompressor),
+            std::move(data_buffer),
+            reader_options
+    ));
+    //    }
 
-//    throw ClpFfiJsException{
-//            clp::ErrorCode::ErrorCode_Unsupported,
-//            __FILENAME__,
-//            __LINE__,
-//            std::format("Unable to create reader for IR stream with version {}.", version)
-//    };
+    //    throw ClpFfiJsException{
+    //            clp::ErrorCode::ErrorCode_Unsupported,
+    //            __FILENAME__,
+    //            __LINE__,
+    //            std::format("Unable to create reader for IR stream with version {}.", version)
+    //    };
 }
 }  // namespace clp_ffi_js::ir

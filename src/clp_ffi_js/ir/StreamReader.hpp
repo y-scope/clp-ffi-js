@@ -37,8 +37,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array,
-                                     ReaderOptions const& reader_options
+    [[nodiscard]] static auto create(
+            DataArrayTsType const& data_array,
+            ReaderOptions const& reader_options
     ) -> std::unique_ptr<StreamReader>;
 
     // Destructor
