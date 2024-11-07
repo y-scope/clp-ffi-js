@@ -39,9 +39,7 @@ auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
         clp::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
-    auto result{
-            UnstructuredIrDeserializer::create(*zstd_decompressor)
-    };
+    auto result{UnstructuredIrDeserializer::create(*zstd_decompressor)};
     if (result.has_error()) {
         auto const error_code{result.error()};
         throw ClpFfiJsException{
