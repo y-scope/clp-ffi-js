@@ -56,6 +56,11 @@ public:
             clp::Array<char> data_array
     ) -> UnstructuredIrStreamReader;
 
+    [[nodiscard]] auto get_ir_protocol_error_code(
+    ) const -> clp::ffi::ir_stream::IRProtocolErrorCode override {
+        return clp::ffi::ir_stream::IRProtocolErrorCode::BackwardCompatible;
+    }
+
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
 
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType override;

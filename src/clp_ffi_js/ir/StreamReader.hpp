@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <memory>
 
+#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
 
@@ -50,6 +51,9 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    [[nodiscard]] virtual auto get_ir_protocol_error_code(
+    ) const -> clp::ffi::ir_stream::IRProtocolErrorCode = 0;
+
     /**
      * @return The number of events buffered.
      */
