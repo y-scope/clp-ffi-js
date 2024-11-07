@@ -26,8 +26,6 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
-
-using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
 static constexpr std::string_view cLogLevelFilteringNotSupportedPrompt{
