@@ -44,8 +44,8 @@ auto StructuredIrStreamReader::create(
             *zstd_decompressor,
             IrUnitHandler{
                     deserialized_log_events,
-                    reader_options[cReaderOptionsLogLevelKey].as<std::string>(),
-                    reader_options[cReaderOptionsTimestampKey].as<std::string>()
+                    reader_options[cReaderOptionsLogLevelKey.data()].as<std::string>(),
+                    reader_options[cReaderOptionsTimestampKey.data()].as<std::string>()
             }
     )};
     if (result.has_error()) {
