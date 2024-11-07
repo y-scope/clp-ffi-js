@@ -30,7 +30,7 @@ namespace clp_ffi_js::ir {
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
-constexpr std::string_view cLogLevelFilteringNotSupportedPrompt{
+static constexpr std::string_view cLogLevelFilteringNotSupportedPrompt{
         "Log level filtering is not yet supported in this reader."
 };
 

@@ -3,9 +3,7 @@
 
 #include <Array.hpp>
 #include <cstddef>
-#include <ffi/ir_stream/decoding_methods.hpp>
-#include <ffi/KeyValuePairLogEvent.hpp>
-#include <ffi/SchemaTree.hpp>
+
 #include <memory>
 #include <optional>
 #include <string>
@@ -13,7 +11,10 @@
 #include <utility>
 #include <vector>
 
+#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
+#include <clp/ffi/KeyValuePairLogEvent.hpp>
+#include <clp/ffi/SchemaTree.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
