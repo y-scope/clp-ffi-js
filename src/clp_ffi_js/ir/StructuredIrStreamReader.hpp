@@ -25,16 +25,17 @@ namespace clp_ffi_js::ir {
 using parsed_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 /**
- * Class to handle deserialized IR units, managing log events, UTC offset changes, schema node
- * insertions and End of Stream in a stream.
+ * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
+ * determine the schema-tree node IDs of the timestamp and log level kv-pairs.
  */
 class IrUnitHandler {
 public:
     /**
-     * @param deserialized_log_events Shared pointer to a vector that stores deserialized log
-     * events.
-     * @param log_level_key Key name of Key-Value Pair node that contains log level information.
-     * @param timestamp_key Key name of Key-Value Pair node that contains timestamp information.
+     * @param deserialized_log_events The vector in which to store deserialized log events.
+     * @param log_level_key Key name of the schema-tree node that contains the authoritative log
+     * level for events.
+     * @param timestamp_key Key name of schema-tree node that contains the authoritative timestamp
+     * for events.
      */
     IrUnitHandler(
             std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events,
@@ -45,8 +46,9 @@ public:
               m_log_level_key{std::move(log_level_key)},
               m_timestamp_key{std::move(timestamp_key)} {}
 
+    // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
     /**
-     * Handles a log event by inserting it into the deserialized log events vector.
+     * Buffers the log event.
      * @param log_event
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -72,8 +74,8 @@ public:
     }
 
     /**
-     * Handles the insertion of a schema tree node by finding node IDs for log level and
-     * timestamp keys.
+     * Saves the node's ID if it corresponds to events' authoritative log level or timestamp
+     * kv-pairs.
      * @param schema_tree_node_locator
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -101,14 +103,14 @@ public:
 
     // Methods
     /**
-     * @return The node ID associated with the log level key.
+     * @return The schema-tree node ID associated with events' authoritative log-level key.
      */
     [[nodiscard]] auto get_level_node_id() const -> parsed_tree_node_id_t {
         return m_level_node_id;
     }
 
     /**
-     * @return The node ID associated with the timestamp key.
+     * @return The schema-tree node ID associated with events' authoritative timestamp key.
      */
     [[nodiscard]] auto get_timestamp_node_id() const -> parsed_tree_node_id_t {
         return m_timestamp_node_id;
@@ -150,6 +152,7 @@ public:
      * @param zstd_decompressor A decompressor for an IR stream, where the read head of the stream
      * is just after the stream's encoding type.
      * @param data_array The array backing `zstd_decompressor`.
+     * @param reader_options
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
