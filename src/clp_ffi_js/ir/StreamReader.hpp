@@ -1,10 +1,8 @@
 #ifndef CLP_FFI_JS_IR_STREAMREADER_HPP
 #define CLP_FFI_JS_IR_STREAMREADER_HPP
 
-#include <array>
 #include <cstddef>
 #include <memory>
-#include <string_view>
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
@@ -18,9 +16,6 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
-
-constexpr std::array<std::string_view, 6> cUnstructuredIrVersions
-        = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded

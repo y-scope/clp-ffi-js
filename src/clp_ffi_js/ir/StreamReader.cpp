@@ -1,6 +1,5 @@
 #include "StreamReader.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <format>
@@ -167,29 +166,27 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     // Validate the stream's version
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
-    if (std::ranges::find(cUnstructuredIrVersions, version) != cUnstructuredIrVersions.end()) {
-        try {
-            zstd_decompressor->seek_from_begin(pos);
-        } catch (ZstdDecompressor::OperationFailed& e) {
-            throw ClpFfiJsException{
-                    clp::ErrorCode::ErrorCode_Failure,
-                    __FILENAME__,
-                    __LINE__,
-                    std::format("Unable to rewind zstd decompressor: {}", e.what())
-            };
-        }
-        return std::make_unique<UnstructuredIrStreamReader>(UnstructuredIrStreamReader::create(
-                std::move(zstd_decompressor),
-                std::move(data_buffer)
-        ));
-    }
-    //    if (clp::ffi::ir_stream::IRProtocolErrorCode_Supported
-    //               == clp::ffi::ir_stream::validate_protocol_version(version))
-    //    {
-    // FIXME: wait for https://github.com/y-scope/clp/pull/573
+    auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)};
+
     try {
-        zstd_decompressor->seek_from_begin(0);
-    } catch (ZstdDecompressor::OperationFailed& e) {
+        if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
+            zstd_decompressor->seek_from_begin(0);
+            return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
+                    std::move(zstd_decompressor),
+                    std::move(data_buffer),
+                    reader_options
+            ));
+        }
+        if (clp::ffi::ir_stream::IRProtocolErrorCode::BackwardCompatible
+            == version_validation_result)
+        {
+            zstd_decompressor->seek_from_begin(pos);
+            return std::make_unique<UnstructuredIrStreamReader>(UnstructuredIrStreamReader::create(
+                    std::move(zstd_decompressor),
+                    std::move(data_buffer)
+            ));
+        }
+    } catch (ZstdDecompressor::OperationFailed const& e) {
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
@@ -197,18 +194,12 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
                 std::format("Unable to rewind zstd decompressor: {}", e.what())
         };
     }
-    return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
-            std::move(zstd_decompressor),
-            std::move(data_buffer),
-            reader_options
-    ));
-    //    }
 
-    //    throw ClpFfiJsException{
-    //            clp::ErrorCode::ErrorCode_Unsupported,
-    //            __FILENAME__,
-    //            __LINE__,
-    //            std::format("Unable to create reader for IR stream with version {}.", version)
-    //    };
+    throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_Unsupported,
+            __FILENAME__,
+            __LINE__,
+            std::format("Unable to create reader for IR stream with version {}.", version)
+    };
 }
 }  // namespace clp_ffi_js::ir
