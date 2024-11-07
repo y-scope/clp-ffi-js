@@ -125,6 +125,10 @@ private:
 
     parsed_tree_node_id_t m_level_node_id;
     parsed_tree_node_id_t m_timestamp_node_id;
+
+    // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
+    // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add
+    // `gsl` into the project.
     std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> m_deserialized_log_events;
 };
 
