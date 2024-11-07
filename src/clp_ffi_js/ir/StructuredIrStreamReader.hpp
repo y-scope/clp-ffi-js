@@ -24,10 +24,17 @@ namespace clp_ffi_js::ir {
 using parsed_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 /**
- * Class to handle deserialized IR units.
+ * Class to handle deserialized IR units, managing log events, UTC offset changes, schema node
+ * insertions and End of Stream in a stream.
  */
 class IrUnitHandler {
 public:
+    /**
+     * @param deserialized_log_events Shared pointer to a vector that stores deserialized log
+     * events.
+     * @param log_level_key Key name of Key-Value Pair node that contains log level information.
+     * @param timestamp_key Key name of Key-Value Pair node that contains timestamp information.
+     */
     IrUnitHandler(
             std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events,
             std::string log_level_key,
@@ -37,7 +44,11 @@ public:
               m_log_level_key{std::move(log_level_key)},
               m_timestamp_key{std::move(timestamp_key)} {}
 
-    // Implements `clp::ffi::ir_stream::IrUnitHandlerInterface` interface
+    /**
+     * Handles a log event by inserting it into the deserialized log events vector.
+     * @param log_event
+     * @return IRErrorCode::IRErrorCode_Success
+     */
     [[nodiscard]] auto handle_log_event(clp::ffi::KeyValuePairLogEvent&& log_event
     ) -> clp::ffi::ir_stream::IRErrorCode {
         m_deserialized_log_events->emplace_back(std::move(log_event));
@@ -45,6 +56,11 @@ public:
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
 
+    /**
+     * @param utc_offset_old
+     * @param utc_offset_new
+     * @return IRErrorCode::IRErrorCode_Success
+     */
     [[nodiscard]] static auto handle_utc_offset_change(
             [[maybe_unused]] clp::UtcOffset utc_offset_old,
             [[maybe_unused]] clp::UtcOffset utc_offset_new
@@ -54,6 +70,12 @@ public:
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
 
+    /**
+     * Handles the insertion of a schema tree node by finding node IDs for log level and
+     * timestamp keys.
+     * @param schema_tree_node_locator
+     * @return IRErrorCode::IRErrorCode_Success
+     */
     [[nodiscard]] auto handle_schema_tree_node_insertion(
             [[maybe_unused]] clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
     ) -> clp::ffi::ir_stream::IRErrorCode {
@@ -69,29 +91,38 @@ public:
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
 
+    /**
+     * @return IRErrorCode::IRErrorCode_Success
+     */
     [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
 
     // Methods
+    /**
+     * @return The node ID associated with the log level key.
+     */
     [[nodiscard]] auto get_level_node_id() const -> parsed_tree_node_id_t {
         return m_level_node_id;
     }
 
+    /**
+     * @return The node ID associated with the timestamp key.
+     */
     [[nodiscard]] auto get_timestamp_node_id() const -> parsed_tree_node_id_t {
         return m_timestamp_node_id;
     }
 
 private:
+    // Variables
     std::string m_log_level_key;
     std::string m_timestamp_key;
 
     clp::ffi::SchemaTree::Node::id_t m_current_node_id{clp::ffi::SchemaTree::cRootId};
+
     parsed_tree_node_id_t m_level_node_id;
     parsed_tree_node_id_t m_timestamp_node_id;
-
     std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> m_deserialized_log_events;
-    bool m_is_complete{false};
 };
 
 using StructuredIrDeserializer = clp::ffi::ir_stream::Deserializer<IrUnitHandler>;
