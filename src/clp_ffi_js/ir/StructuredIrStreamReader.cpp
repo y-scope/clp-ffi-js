@@ -28,6 +28,7 @@
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 
+static constexpr std::string_view cEmptyJsonStr{"{}"};
 static constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
         "Log level filtering is not yet supported in this reader."
 };
@@ -141,9 +142,11 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
 
         auto const json_result{log_event.serialize_to_json()};
+        std::string json_str{cEmptyJsonStr};
         if (false == json_result.has_value()) {
             SPDLOG_ERROR("Failed to decode log event.");
-            break;
+        } else {
+            json_str = json_result.value().dump();
         }
 
         auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
@@ -163,7 +166,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         EM_ASM(
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
-                json_result.value().dump().c_str(),
+                json_str.c_str(),
                 timestamp,
                 LogLevel::NONE,
                 log_event_idx + 1
