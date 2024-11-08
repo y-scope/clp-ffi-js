@@ -181,8 +181,9 @@ StructuredIrStreamReader::StructuredIrStreamReader(
         std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events
 )
         : m_deserialized_log_events{std::move(deserialized_log_events)},
-          m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<StructuredIrDeserializer>>(
-                  std::move(stream_reader_data_context)
-          )} {}
+          m_stream_reader_data_context{
+                  std::make_unique<StreamReaderDataContext<StructuredIrDeserializer>>(
+                          std::move(stream_reader_data_context)
+                  )
+          } {}
 }  // namespace clp_ffi_js::ir

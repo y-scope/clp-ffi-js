@@ -11,7 +11,6 @@
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/protocol_constants.hpp>
 #include <clp/ReaderInterface.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
@@ -117,9 +116,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
     // JS types used as inputs
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::LogLevelFilterTsType>("number[] | null");
-    emscripten::register_type<clp_ffi_js::ir::ReaderOptions>(
-            "{timestampKey: string} | null"
-    );
+    emscripten::register_type<clp_ffi_js::ir::ReaderOptions>("{timestampKey: string} | null");
 
     // JS types used as outputs
     emscripten::enum_<clp_ffi_js::ir::IrStreamType>("IrStreamType")
