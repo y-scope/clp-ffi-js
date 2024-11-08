@@ -25,6 +25,7 @@
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
+namespace clp_ffi_js::ir {
 namespace {
 constexpr std::string_view cEmptyJsonStr{"{}"};
 constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
@@ -33,7 +34,6 @@ constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
 }  // namespace
 
-namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 
 auto StructuredIrStreamReader::create(
