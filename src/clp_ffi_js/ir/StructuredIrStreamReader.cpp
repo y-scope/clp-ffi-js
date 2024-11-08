@@ -146,7 +146,12 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         auto const json_result{log_event.serialize_to_json()};
         std::string json_str{cEmptyJsonStr};
         if (false == json_result.has_value()) {
-            SPDLOG_ERROR("Failed to decode log event.");
+            auto error_code{json_result.error()};
+            SPDLOG_ERROR(
+                    "Failed to deserialize log event to JSON: {}:{}",
+                    error_code.category().name(),
+                    error_code.message()
+            );
         } else {
             json_str = json_result.value().dump();
         }
