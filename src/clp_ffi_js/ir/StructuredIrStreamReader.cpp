@@ -101,8 +101,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
             continue;
         }
         auto const error{result.error()};
-        if (std::errc::operation_not_permitted == error)
-        {
+        if (std::errc::operation_not_permitted == error) {
             break;
         }
         if (std::errc::result_out_of_range == error) {

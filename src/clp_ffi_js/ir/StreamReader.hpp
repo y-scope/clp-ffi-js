@@ -5,7 +5,6 @@
 #include <cstdint>
 #include <memory>
 
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
 

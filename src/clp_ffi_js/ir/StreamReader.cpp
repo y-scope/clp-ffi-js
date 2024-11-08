@@ -11,6 +11,7 @@
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
+#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/protocol_constants.hpp>
 #include <clp/ReaderInterface.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
