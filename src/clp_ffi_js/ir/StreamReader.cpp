@@ -119,9 +119,9 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::ReaderOptions>("{timestampKey: string} | null");
 
     // JS types used as outputs
-    emscripten::enum_<clp_ffi_js::ir::IrStreamType>("IrStreamType")
-            .value("STRUCTURED", clp_ffi_js::ir::IrStreamType::Structured)
-            .value("UNSTRUCTURED", clp_ffi_js::ir::IrStreamType::Unstructured);
+    emscripten::enum_<clp_ffi_js::ir::StreamType>("IrStreamType")
+            .value("STRUCTURED", clp_ffi_js::ir::StreamType::Structured)
+            .value("UNSTRUCTURED", clp_ffi_js::ir::StreamType::Unstructured);
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );

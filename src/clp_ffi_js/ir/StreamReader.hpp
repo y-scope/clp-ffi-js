@@ -19,7 +19,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 
-enum class IrStreamType : uint8_t {
+enum class StreamType : uint8_t {
     Structured,
     Unstructured,
 };
@@ -57,7 +57,7 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
-    [[nodiscard]] virtual auto get_ir_stream_type() const -> IrStreamType = 0;
+    [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
 
     /**
      * @return The number of events buffered.

@@ -56,8 +56,8 @@ public:
             clp::Array<char> data_array
     ) -> UnstructuredIrStreamReader;
 
-    [[nodiscard]] auto get_ir_stream_type() const -> IrStreamType override {
-        return IrStreamType::Unstructured;
+    [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
+        return StreamType::Unstructured;
     }
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;

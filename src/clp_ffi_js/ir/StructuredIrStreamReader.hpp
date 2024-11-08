@@ -149,8 +149,8 @@ public:
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(StructuredIrStreamReader&&) -> StructuredIrStreamReader& = delete;
 
-    [[nodiscard]] auto get_ir_stream_type() const -> IrStreamType override {
-        return IrStreamType::Structured;
+    [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
+        return StreamType::Structured;
     }
 
     [[nodiscard]] auto get_num_events_buffered() const -> size_t override;
