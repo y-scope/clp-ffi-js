@@ -3,10 +3,7 @@
 
 #include <utility>
 
-#include <clp/ir/EncodedTextAst.hpp>
-#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/time_types.hpp>
 
 #include <clp_ffi_js/constants.hpp>
 
@@ -20,10 +17,14 @@ template <typename LogEvent>
 class LogEventWithFilterData {
 public:
     // Constructor
-    explicit LogEventWithFilterData(LogEvent log_event, LogLevel log_level, clp::ir::epoch_time_ms_t timestamp)
-        : m_log_event{std::move(log_event)},
-          m_log_level{log_level},
-          m_timestamp{timestamp} {}
+    explicit LogEventWithFilterData(
+            LogEvent log_event,
+            LogLevel log_level,
+            clp::ir::epoch_time_ms_t timestamp
+    )
+            : m_log_event{std::move(log_event)},
+              m_log_level{log_level},
+              m_timestamp{timestamp} {}
 
     [[nodiscard]] auto get_log_event() const -> LogEvent const& { return m_log_event; }
 
