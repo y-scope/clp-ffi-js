@@ -17,7 +17,7 @@ template <typename LogEvent>
 class LogEventWithFilterData {
 public:
     // Constructor
-    explicit LogEventWithFilterData(
+    LogEventWithFilterData(
             LogEvent log_event,
             LogLevel log_level,
             clp::ir::epoch_time_ms_t timestamp
