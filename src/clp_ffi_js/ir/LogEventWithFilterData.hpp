@@ -26,6 +26,17 @@ public:
               m_log_level{log_level},
               m_timestamp{timestamp} {}
 
+    // Disable copy constructor and assignment operator
+    LogEventWithFilterData(LogEventWithFilterData const&) = delete;
+    auto operator=(LogEventWithFilterData const&) -> LogEventWithFilterData& = delete;
+
+    // Default move constructor and assignment operator
+    LogEventWithFilterData(LogEventWithFilterData&&) = default;
+    auto operator=(LogEventWithFilterData&&) -> LogEventWithFilterData& = default;
+
+    // Destructor
+    ~LogEventWithFilterData() = default;
+
     [[nodiscard]] auto get_log_event() const -> LogEvent const& { return m_log_event; }
 
     [[nodiscard]] auto get_log_level() const -> LogLevel { return m_log_level; }
