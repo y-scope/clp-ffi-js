@@ -1,10 +1,9 @@
 #ifndef CLP_FFI_JS_IR_STREAMREADER_HPP
 #define CLP_FFI_JS_IR_STREAMREADER_HPP
 
-#include <array>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <string_view>
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
@@ -13,13 +12,16 @@ namespace clp_ffi_js::ir {
 // JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 
-constexpr std::array<std::string_view, 6> cUnstructuredIrVersions
-        = {"v0.0.2", "v0.0.1", "v0.0.0", "0.0.2", "0.0.1", "0.0.0"};
+enum class StreamType : uint8_t {
+    Structured,
+    Unstructured,
+};
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -36,7 +38,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array
+    [[nodiscard]] static auto create(
+            DataArrayTsType const& data_array,
+            ReaderOptions const& reader_options
     ) -> std::unique_ptr<StreamReader>;
 
     // Destructor
@@ -52,6 +56,8 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
+
     /**
      * @return The number of events buffered.
      */

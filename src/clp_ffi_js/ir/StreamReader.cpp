@@ -1,6 +1,5 @@
 #include "StreamReader.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <format>
@@ -23,6 +22,7 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/ir/StructuredIrStreamReader.hpp>
 #include <clp_ffi_js/ir/UnstructuredIrStreamReader.hpp>
 
 namespace {
@@ -117,8 +117,12 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
     // JS types used as inputs
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::LogLevelFilterTsType>("number[] | null");
+    emscripten::register_type<clp_ffi_js::ir::ReaderOptions>("{timestampKey: string} | null");
 
     // JS types used as outputs
+    emscripten::enum_<clp_ffi_js::ir::StreamType>("IrStreamType")
+            .value("STRUCTURED", clp_ffi_js::ir::StreamType::Structured)
+            .value("UNSTRUCTURED", clp_ffi_js::ir::StreamType::Unstructured);
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
             "Array<[string, number, number, number]>"
     );
@@ -128,6 +132,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
                     &clp_ffi_js::ir::StreamReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
+            .function("getIrStreamType", &clp_ffi_js::ir::StreamReader::get_ir_stream_type)
             .function(
                     "getNumEventsBuffered",
                     &clp_ffi_js::ir::StreamReader::get_num_events_buffered
@@ -143,7 +148,8 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
 }  // namespace
 
 namespace clp_ffi_js::ir {
-auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<StreamReader> {
+auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
+        -> std::unique_ptr<StreamReader> {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
@@ -159,20 +165,30 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
 
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
 
-    // Validate the stream's version
+    // Validate the stream's version and decide which type of IR stream reader to create.
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
-    if (std::ranges::find(cUnstructuredIrVersions, version) == cUnstructuredIrVersions.end()) {
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Unsupported,
-                __FILENAME__,
-                __LINE__,
-                std::format("Unable to create reader for IR stream with version {}.", version)
-        };
-    }
     try {
-        zstd_decompressor->seek_from_begin(pos);
-    } catch (ZstdDecompressor::OperationFailed& e) {
+        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)
+        };
+        if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
+            zstd_decompressor->seek_from_begin(0);
+            return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
+                    std::move(zstd_decompressor),
+                    std::move(data_buffer),
+                    reader_options
+            ));
+        }
+        if (clp::ffi::ir_stream::IRProtocolErrorCode::BackwardCompatible
+            == version_validation_result)
+        {
+            zstd_decompressor->seek_from_begin(pos);
+            return std::make_unique<UnstructuredIrStreamReader>(UnstructuredIrStreamReader::create(
+                    std::move(zstd_decompressor),
+                    std::move(data_buffer)
+            ));
+        }
+    } catch (ZstdDecompressor::OperationFailed const& e) {
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
@@ -181,8 +197,11 @@ auto StreamReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<
         };
     }
 
-    return std::make_unique<UnstructuredIrStreamReader>(
-            UnstructuredIrStreamReader::create(std::move(zstd_decompressor), std::move(data_buffer))
-    );
+    throw ClpFfiJsException{
+            clp::ErrorCode::ErrorCode_Unsupported,
+            __FILENAME__,
+            __LINE__,
+            std::format("Unable to create reader for IR stream with version {}.", version)
+    };
 }
 }  // namespace clp_ffi_js::ir
