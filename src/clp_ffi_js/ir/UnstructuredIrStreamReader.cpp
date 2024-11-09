@@ -19,14 +19,13 @@
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
-
 #include <emscripten/bind.h>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
-#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
