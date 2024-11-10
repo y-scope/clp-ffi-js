@@ -1,6 +1,7 @@
 #ifndef CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 #define CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 
+#include <concepts>
 #include <utility>
 
 #include <clp/ir/LogEvent.hpp>
@@ -15,7 +16,7 @@ using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 // Concept defining valid log event types.
 // TODO: Extend valid log event types when filtering support is added for structured logs.
 template <typename T>
-concept validLogEventTypes = std::same_as<T, UnstructuredLogEvent>;
+concept ValidLogEventTypes = std::same_as<T, UnstructuredLogEvent>;
 
 /**
  * A templated class that extends a log event type with processed versions of some of its fields,
@@ -25,7 +26,7 @@ concept validLogEventTypes = std::same_as<T, UnstructuredLogEvent>;
  * @tparam LogEvent The type of the log event.
  */
 template <typename LogEvent>
-requires validLogEventTypes<LogEvent>
+requires ValidLogEventTypes<LogEvent>
 class LogEventWithFilterData {
 public:
     // Constructor
