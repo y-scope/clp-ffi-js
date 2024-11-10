@@ -179,6 +179,7 @@ private:
     // Variables
     std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
+    FilteredLogEventsMap m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::ir
 

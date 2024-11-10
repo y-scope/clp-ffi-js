@@ -24,6 +24,12 @@ enum class StreamType : uint8_t {
 };
 
 /**
+ * Mapping between an index in the filtered log events collection to an index in the unfiltered
+ * log events collection.
+ */
+using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+
+/**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */

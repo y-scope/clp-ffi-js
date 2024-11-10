@@ -123,7 +123,6 @@ auto IrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
-
 auto StructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
         clp::Array<char> data_array,
@@ -164,15 +163,33 @@ auto StructuredIrStreamReader::get_num_events_buffered() const -> size_t {
 }
 
 auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
-    SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
-    return FilteredLogEventMapTsType{emscripten::val::null()};
+    if (false == m_filtered_log_event_map.has_value()) {
+        return FilteredLogEventMapTsType{emscripten::val::null()};
+    }
+
+    return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
 void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
     if (log_level_filter.isNull()) {
+        m_filtered_log_event_map.reset();
         return;
     }
-    SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
+
+    m_filtered_log_event_map.emplace();
+    auto filter_levels{emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter
+    )};
+    for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size(); ++log_event_idx) {
+        auto const& log_event = m_deserialized_log_events->at(log_event_idx);
+        if (std::ranges::find(
+                    filter_levels,
+                    clp::enum_to_underlying_type(log_event.get_log_level())
+            )
+            != filter_levels.end())
+        {
+            m_filtered_log_event_map->emplace_back(log_event_idx);
+        }
+    }
 }
 
 auto StructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -258,7 +275,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 
 StructuredIrStreamReader::StructuredIrStreamReader(
         StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
-        std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events
+        std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> deserialized_log_events
 )
         : m_deserialized_log_events{std::move(deserialized_log_events)},
           m_stream_reader_data_context{

@@ -22,11 +22,6 @@ using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredIrDeserializer = clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>;
 using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 
-/**
- * Mapping between an index in the filtered log events collection to an index in the unfiltered
- * log events collection.
- */
-using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
 /**
  * Class to deserialize and decode Zstd-compressed CLP unstructured IR streams, as well as format
