@@ -37,7 +37,8 @@ public:
      * @param timestamp_key Key name of schema-tree node that contains the authoritative timestamp.
      */
     IrUnitHandler(
-            std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> deserialized_log_events,
+            std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
+                    deserialized_log_events,
             std::string log_level_key,
             std::string timestamp_key
     )
@@ -86,10 +87,6 @@ public:
 
     // Methods
 
-
-
-
-
     /**
      * @return The schema-tree node ID associated with events' authoritative timestamp key.
      */
@@ -110,7 +107,8 @@ private:
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
     // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add
     // `gsl` into the project.
-    std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> m_deserialized_log_events;
+    std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
+            m_deserialized_log_events;
 };
 
 using StructuredIrDeserializer = clp::ffi::ir_stream::Deserializer<IrUnitHandler>;
@@ -173,11 +171,13 @@ private:
     // Constructor
     explicit StructuredIrStreamReader(
             StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
-            std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> deserialized_log_events
+            std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
+                    deserialized_log_events
     );
 
     // Variables
-    std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> m_deserialized_log_events;
+    std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
+            m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
 };

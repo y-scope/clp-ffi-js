@@ -55,13 +55,18 @@ auto get_log_level(std::string_view str) -> LogLevel {
     );
 
     // Do not accept "None" when checking if input string is in `cLogLevelNames`.
-    const auto* it = std::ranges::find(cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx), cLogLevelNames.end(), log_level_name_upper_case);
+    auto const* it = std::ranges::find(
+            cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx),
+            cLogLevelNames.end(),
+            log_level_name_upper_case
+    );
 
     if (it == cLogLevelNames.end()) {
         return log_level;
     }
 
-    return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));;
+    return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));
+    ;
 }
 
 }  // namespace
@@ -85,7 +90,6 @@ auto IrUnitHandler::handle_schema_tree_node_insertion(
 
 auto IrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
 ) -> clp::ffi::ir_stream::IRErrorCode {
-
     auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
     clp::ffi::value_int_t timestamp{0};
 
@@ -106,7 +110,8 @@ auto IrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
         auto const& log_level_pair{id_value_pairs.at(m_log_level_node_id.value())};
         if (log_level_pair.has_value()) {
             if (log_level_pair->is<std::string>()) {
-                auto const& log_level_name = log_level_pair.value().get_immutable_view<std::string>();
+                auto const& log_level_name
+                        = log_level_pair.value().get_immutable_view<std::string>();
                 log_level = get_log_level(log_level_name);
             } else {
                 SPDLOG_ERROR("Log level type is not string");
@@ -128,7 +133,9 @@ auto StructuredIrStreamReader::create(
         clp::Array<char> data_array,
         ReaderOptions const& reader_options
 ) -> StructuredIrStreamReader {
-    auto deserialized_log_events{std::make_shared<std::vector<LogEventWithFilterData<StructuredLogEvent>>>()};
+    auto deserialized_log_events{
+            std::make_shared<std::vector<LogEventWithFilterData<StructuredLogEvent>>>()
+    };
     auto result{StructuredIrDeserializer::create(
             *zstd_decompressor,
             IrUnitHandler{
@@ -179,7 +186,9 @@ void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log
     m_filtered_log_event_map.emplace();
     auto filter_levels{emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter
     )};
-    for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size(); ++log_event_idx) {
+    for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size();
+         ++log_event_idx)
+    {
         auto const& log_event = m_deserialized_log_events->at(log_event_idx);
         if (std::ranges::find(
                     filter_levels,
@@ -259,7 +268,6 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             json_str = json_result.value().dump();
         }
 
-
         EM_ASM(
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
@@ -275,7 +283,8 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 
 StructuredIrStreamReader::StructuredIrStreamReader(
         StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
-        std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>> deserialized_log_events
+        std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
+                deserialized_log_events
 )
         : m_deserialized_log_events{std::move(deserialized_log_events)},
           m_stream_reader_data_context{

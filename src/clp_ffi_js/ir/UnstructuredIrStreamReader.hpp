@@ -22,7 +22,6 @@ using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredIrDeserializer = clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>;
 using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 
-
 /**
  * Class to deserialize and decode Zstd-compressed CLP unstructured IR streams, as well as format
  * decoded log events.
