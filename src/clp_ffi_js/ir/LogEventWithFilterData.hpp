@@ -9,8 +9,10 @@
 
 namespace clp_ffi_js::ir {
 /**
- * A class which accepts a log event type as a template parameter and provides additional members
- * for the log level and timestamp. The additional members facilitate log level filtering.
+ * A templated class that extends a log event type with processed versions of some of its fields,
+ * specifically the fields that are used for filtering in the `StreamReader` classes and their
+ * callers.
+ *
  * @tparam LogEvent The type of the log event.
  */
 template <typename LogEvent>
