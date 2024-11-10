@@ -4,10 +4,19 @@
 #include <utility>
 
 #include <clp/ir/types.hpp>
+#include <clp/ir/LogEvent.hpp>
 
 #include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
+using clp::ir::four_byte_encoded_variable_t;
+using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
+
+// Concept defining valid log event types.
+// TODO: Extend valid log event types when filtering support is added for structured logs.
+template <typename T>
+concept validLogEventTypes = std::same_as<T, UnstructuredLogEvent>;
+
 /**
  * A templated class that extends a log event type with processed versions of some of its fields,
  * specifically the fields that are used for filtering in the `StreamReader` classes and their
@@ -16,6 +25,7 @@ namespace clp_ffi_js::ir {
  * @tparam LogEvent The type of the log event.
  */
 template <typename LogEvent>
+requires validLogEventTypes<LogEvent>
 class LogEventWithFilterData {
 public:
     // Constructor
