@@ -187,10 +187,9 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
             log_event_idx = i;
         }
         auto const& log_event_with_filter_data{m_encoded_log_events[log_event_idx]};
+        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
         auto const& log_level = log_event_with_filter_data.get_log_level();
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
-
-        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
 
         auto const parsed{unstructured_log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
