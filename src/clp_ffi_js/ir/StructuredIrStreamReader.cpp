@@ -22,6 +22,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
+#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
@@ -31,21 +32,109 @@ constexpr std::string_view cEmptyJsonStr{"{}"};
 constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
         "Log level filtering is not yet supported in this reader."
 };
+constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
+
+/**
+ * Gets the `LogLevel` from an input string.
+ * @param str
+ * @return
+ */
+auto get_log_level(std::string_view str) -> LogLevel;
+
+auto get_log_level(std::string_view str) -> LogLevel {
+    LogLevel log_level{LogLevel::NONE};
+
+    // Convert the string to uppercase,
+    std::string log_level_name_upper_case{str};
+    std::transform(
+            log_level_name_upper_case.begin(),
+            log_level_name_upper_case.end(),
+            log_level_name_upper_case.begin(),
+            [](unsigned char c) { return std::toupper(c); }
+    );
+
+    // Do not accept "None" when checking if input string is in `cLogLevelNames`.
+    const auto* it = std::ranges::find(cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx), cLogLevelNames.end(), log_level_name_upper_case);
+
+    if (it == cLogLevelNames.end()) {
+        return log_level;
+    }
+
+    return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));;
+}
+
 }  // namespace
 
 using clp::ir::four_byte_encoded_variable_t;
+
+auto IrUnitHandler::handle_schema_tree_node_insertion(
+        clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
+) -> clp::ffi::ir_stream::IRErrorCode {
+    ++m_current_node_id;
+
+    auto const& key_name{schema_tree_node_locator.get_key_name()};
+    if (m_log_level_key == key_name) {
+        m_log_level_node_id.emplace(m_current_node_id);
+    } else if (m_timestamp_key == key_name) {
+        m_timestamp_node_id.emplace(m_current_node_id);
+    }
+
+    return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+}
+
+auto IrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
+) -> clp::ffi::ir_stream::IRErrorCode {
+
+    auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
+    clp::ffi::value_int_t timestamp{0};
+
+    if (m_timestamp_node_id.has_value()) {
+        auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
+        if (timestamp_pair.has_value()) {
+            if (timestamp_pair->is<clp::ffi::value_int_t>()) {
+                timestamp = timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>();
+            } else {
+                // TODO: Add support for parsing timestamp values of string type.
+                SPDLOG_ERROR("Timestamp type is not int");
+            }
+        }
+    }
+
+    LogLevel log_level{LogLevel::NONE};
+    if (m_log_level_node_id.has_value()) {
+        auto const& log_level_pair{id_value_pairs.at(m_log_level_node_id.value())};
+        if (log_level_pair.has_value()) {
+            if (log_level_pair->is<std::string>()) {
+                auto const& log_level_name = log_level_pair.value().get_immutable_view<std::string>();
+                log_level = get_log_level(log_level_name);
+            } else {
+                SPDLOG_ERROR("Log level type is not string");
+            }
+        }
+    }
+
+    auto log_event_with_filter_data{
+            LogEventWithFilterData<StructuredLogEvent>(std::move(log_event), log_level, timestamp)
+    };
+
+    m_deserialized_log_events->emplace_back(std::move(log_event_with_filter_data));
+
+    return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+}
+
 
 auto StructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
         clp::Array<char> data_array,
         ReaderOptions const& reader_options
 ) -> StructuredIrStreamReader {
-    auto deserialized_log_events{std::make_shared<std::vector<clp::ffi::KeyValuePairLogEvent>>()};
+    auto deserialized_log_events{std::make_shared<std::vector<LogEventWithFilterData<StructuredLogEvent>>>()};
     auto result{StructuredIrDeserializer::create(
             *zstd_decompressor,
             IrUnitHandler{
                     deserialized_log_events,
+                    reader_options[cReaderOptionsLogLevelKey.data()].as<std::string>(),
                     reader_options[cReaderOptionsTimestampKey.data()].as<std::string>()
             }
     )};
@@ -119,9 +208,6 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
                 )
         };
     }
-    m_timestamp_node_id = m_stream_reader_data_context->get_deserializer()
-                                  .get_ir_unit_handler()
-                                  .get_timestamp_node_id();
     m_stream_reader_data_context.reset(nullptr);
     return m_deserialized_log_events->size();
 }
@@ -140,9 +226,10 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
     auto const results{emscripten::val::array()};
 
     for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
-        auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
+        auto const& log_event_with_filter_data{m_deserialized_log_events->at(log_event_idx)};
+        auto const& structured_log_event = log_event_with_filter_data.get_log_event();
 
-        auto const json_result{log_event.serialize_to_json()};
+        auto const json_result{structured_log_event.serialize_to_json()};
         std::string json_str{cEmptyJsonStr};
         if (false == json_result.has_value()) {
             auto error_code{json_result.error()};
@@ -155,26 +242,13 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             json_str = json_result.value().dump();
         }
 
-        auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
-        clp::ffi::value_int_t timestamp{0};
-        if (m_timestamp_node_id.has_value()) {
-            auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
-            if (timestamp_pair.has_value()) {
-                if (timestamp_pair->is<clp::ffi::value_int_t>()) {
-                    timestamp = timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>();
-                } else {
-                    // TODO: Add support for parsing timestamp values of string type.
-                    SPDLOG_ERROR("Unable to parse timestamp for log_event_idx={}", log_event_idx);
-                }
-            }
-        }
 
         EM_ASM(
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
                 json_str.c_str(),
-                timestamp,
-                LogLevel::NONE,
+                log_event_with_filter_data.get_timestamp(),
+                log_event_with_filter_data.get_log_level(),
                 log_event_idx + 1
         );
     }
