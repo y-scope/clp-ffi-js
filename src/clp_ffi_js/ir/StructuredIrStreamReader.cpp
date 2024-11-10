@@ -6,6 +6,7 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <type_utils.hpp>
 #include <utility>
 #include <vector>
 
@@ -113,6 +114,11 @@ auto IrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
                 auto const& log_level_name
                         = log_level_pair.value().get_immutable_view<std::string>();
                 log_level = get_log_level(log_level_name);
+            } else if (log_level_pair->is<clp::ffi::value_int_t>()) {
+                auto const& value = (log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>());
+                if (value <= (clp::enum_to_underlying_type(cValidLogLevelsEndIdx))) {
+                    log_level = static_cast<LogLevel>(value);
+                }
             } else {
                 SPDLOG_ERROR("Log level type is not string");
             }

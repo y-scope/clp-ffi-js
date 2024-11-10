@@ -19,6 +19,7 @@ enum class LogLevel : std::uint8_t {
     FATAL,
 };
 constexpr LogLevel cValidLogLevelsBeginIdx{LogLevel::TRACE};
+constexpr LogLevel cValidLogLevelsEndIdx{LogLevel::FATAL};
 
 /**
  * Strings corresponding to `LogLevel`.
