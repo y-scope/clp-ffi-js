@@ -3,8 +3,8 @@
 
 #include <utility>
 
-#include <clp/ir/types.hpp>
 #include <clp/ir/LogEvent.hpp>
+#include <clp/ir/types.hpp>
 
 #include <clp_ffi_js/constants.hpp>
 
