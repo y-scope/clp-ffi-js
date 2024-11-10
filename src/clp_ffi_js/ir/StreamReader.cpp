@@ -124,7 +124,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .value("STRUCTURED", clp_ffi_js::ir::StreamType::Structured)
             .value("UNSTRUCTURED", clp_ffi_js::ir::StreamType::Unstructured);
     emscripten::register_type<clp_ffi_js::ir::DecodedResultsTsType>(
-            "Array<[string, number, number, number]>"
+            "Array<[string, bigint, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
