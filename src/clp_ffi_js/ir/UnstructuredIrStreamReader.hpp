@@ -7,8 +7,8 @@
 #include <optional>
 #include <vector>
 
-#include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/LogEvent.hpp>
+#include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>
