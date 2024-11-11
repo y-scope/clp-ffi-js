@@ -147,12 +147,7 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        auto log_event_with_filter_data{LogEventWithFilterData<UnstructuredLogEvent>(
-                log_event,
-                log_level,
-                log_event.get_timestamp()
-        )};
-        m_encoded_log_events.emplace_back(std::move(log_event_with_filter_data));
+        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
