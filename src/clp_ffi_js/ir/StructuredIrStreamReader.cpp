@@ -128,8 +128,18 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
+
+    if (use_filter && false == m_filtered_log_event_map.has_value()) {
+        return DecodedResultsTsType{emscripten::val::null()};
+    }
+
+    size_t length{0};
     if (use_filter) {
-        SPDLOG_ERROR(cLogLevelFilteringNotSupportedErrorMsg);
+        length = m_filtered_log_event_map->size();
+    } else {
+        length = m_deserialized_log_events->size();
+    }
+    if (length < end_idx || begin_idx > end_idx) {
         return DecodedResultsTsType{emscripten::val::null()};
     }
 
