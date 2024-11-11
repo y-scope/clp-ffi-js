@@ -20,11 +20,10 @@
 
 namespace clp_ffi_js::ir {
 using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
-using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
 
 /**
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
- * determine the schema-tree node ID of the timestamp kv-pair.
+ * determine the schema-tree node ID of the log level and timestamp kv-pair.
  */
 class StructuredIrUnitHandler {
 public:

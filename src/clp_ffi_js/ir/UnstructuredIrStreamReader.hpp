@@ -6,7 +6,6 @@
 #include <memory>
 #include <vector>
 
-#include <clp/ir/LogEvent.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TimestampPattern.hpp>
@@ -19,7 +18,6 @@
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredIrDeserializer = clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>;
-using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 
 /**
  * Class to deserialize and decode Zstd-compressed CLP unstructured IR streams, as well as format
