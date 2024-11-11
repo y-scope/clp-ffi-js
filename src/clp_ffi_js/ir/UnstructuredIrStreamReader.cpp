@@ -26,7 +26,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/LogEventWithLevel.hpp>
+#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
@@ -147,13 +147,7 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        auto log_viewer_event{LogEventWithLevel<four_byte_encoded_variable_t>(
-                log_event.get_timestamp(),
-                log_event.get_utc_offset(),
-                message,
-                log_level
-        )};
-        m_encoded_log_events.emplace_back(std::move(log_viewer_event));
+        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
@@ -187,9 +181,12 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
         } else {
             log_event_idx = i;
         }
-        auto const& log_event{m_encoded_log_events[log_event_idx]};
+        auto const& log_event_with_filter_data{m_encoded_log_events[log_event_idx]};
+        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
+        auto const& log_level = log_event_with_filter_data.get_log_level();
+        auto const& timestamp = log_event_with_filter_data.get_timestamp();
 
-        auto const parsed{log_event.get_message().decode_and_unparse()};
+        auto const parsed{unstructured_log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             throw ClpFfiJsException{
                     clp::ErrorCode::ErrorCode_Failure,
@@ -200,14 +197,14 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
         }
         message = parsed.value();
 
-        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
+        m_ts_pattern.insert_formatted_timestamp(timestamp, message);
 
         EM_ASM(
                 { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                 results.as_handle(),
                 message.c_str(),
-                log_event.get_timestamp(),
-                log_event.get_log_level(),
+                timestamp,
+                log_level,
                 log_event_idx + 1
         );
     }
