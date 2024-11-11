@@ -4,7 +4,6 @@
 #include <Array.hpp>
 #include <cstddef>
 #include <memory>
-#include <optional>
 #include <vector>
 
 #include <clp/ir/LogEvent.hpp>

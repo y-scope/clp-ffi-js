@@ -8,18 +8,16 @@
 #include <utility>
 #include <vector>
 
-#include <clp/Array.hpp>
+
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
+#include <clp/ffi/Value.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/time_types.hpp>
-#include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
+#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
-#include <clp_ffi_js/ir/StreamReader.hpp>
-#include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
 using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
@@ -29,14 +27,14 @@ using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
  * determine the schema-tree node ID of the timestamp kv-pair.
  */
-class IrUnitHandler {
+class StructuredIrUnitHandler {
 public:
     /**
      * @param deserialized_log_events The vector in which to store deserialized log events.
      * @param log_level_key Key name of schema-tree node that contains the authoritative log level.
      * @param timestamp_key Key name of schema-tree node that contains the authoritative timestamp.
      */
-    IrUnitHandler(
+    StructuredIrUnitHandler(
             std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
                     deserialized_log_events,
             std::string log_level_key,
@@ -97,18 +95,19 @@ public:
 private:
     // Methods
 
-     /**
+    /**
      * @param id_value_pairs
      * @return Timestamp from `StructuredLogEvent`
      */
-    [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs) const -> LogLevel;
+    [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+    ) const -> LogLevel;
 
     /**
      * @param id_value_pairs
      * @return Timestamp from `StructuredLogEvent`
      */
-    [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs) const -> clp::ffi::value_int_t;
-
+    [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+    ) const -> clp::ffi::value_int_t;
 
     // Variables
     std::string m_log_level_key;
