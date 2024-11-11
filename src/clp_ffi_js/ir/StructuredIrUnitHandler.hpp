@@ -8,11 +8,10 @@
 #include <utility>
 #include <vector>
 
-
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
-#include <clp/ffi/Value.hpp>
 #include <clp/ffi/SchemaTree.hpp>
+#include <clp/ffi/Value.hpp>
 #include <clp/time_types.hpp>
 #include <spdlog/spdlog.h>
 

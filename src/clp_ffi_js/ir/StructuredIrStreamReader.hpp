@@ -1,31 +1,23 @@
 #ifndef CLP_FFI_JS_IR_STRUCTUREDIRSTREAMREADER_HPP
 #define CLP_FFI_JS_IR_STRUCTUREDIRSTREAMREADER_HPP
 
-#include "clp_ffi_js/ir/StructuredIrUnitHandler.hpp"
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <string>
-#include <utility>
 #include <vector>
 
 #include <clp/Array.hpp>
-#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
-#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
-#include <clp/time_types.hpp>
 #include <emscripten/val.h>
-#include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
-#include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+#include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
 
 namespace clp_ffi_js::ir {
 using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
-using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
 using StructuredIrDeserializer = clp::ffi::ir_stream::Deserializer<StructuredIrUnitHandler>;
 
 /**

@@ -9,7 +9,6 @@
 #include <string>
 #include <string_view>
 #include <system_error>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -18,7 +17,6 @@
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
-#include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
@@ -28,6 +26,7 @@
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+#include <clp_ffi_js/ir/utils.hpp>
 
 namespace clp_ffi_js::ir {
 
@@ -73,25 +72,7 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    if (log_level_filter.isNull()) {
-        m_filtered_log_event_map.reset();
-        return;
-    }
-
-    m_filtered_log_event_map.emplace();
-    auto filter_levels{emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter
-    )};
-    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
-        auto const& log_event = m_encoded_log_events[log_event_idx];
-        if (std::ranges::find(
-                    filter_levels,
-                    clp::enum_to_underlying_type(log_event.get_log_level())
-            )
-            != filter_levels.end())
-        {
-            m_filtered_log_event_map->emplace_back(log_event_idx);
-        }
-    }
+    filter_deserialized_events(log_level_filter, m_filtered_log_event_map, m_encoded_log_events);
 }
 
 auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {

@@ -1,8 +1,8 @@
 #include "StructuredIrUnitHandler.hpp"
 
 #include <algorithm>
-#include <cstddef>
 #include <cctype>
+#include <cstddef>
 #include <iterator>
 #include <memory>
 #include <string>
@@ -10,7 +10,7 @@
 #include <type_utils.hpp>
 #include <utility>
 
-
+#include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
@@ -91,7 +91,8 @@ auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
-auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+auto StructuredIrUnitHandler::get_log_level(
+        StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
 ) const -> LogLevel {
     LogLevel log_level{LogLevel::NONE};
 
@@ -122,7 +123,8 @@ auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent::NodeIdValuePairs
     return log_level;
 }
 
-auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+auto StructuredIrUnitHandler::get_timestamp(
+        StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
 ) const -> clp::ffi::value_int_t {
     clp::ffi::value_int_t timestamp{0};
 
