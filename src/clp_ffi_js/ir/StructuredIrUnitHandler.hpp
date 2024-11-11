@@ -86,14 +86,14 @@ private:
     // Methods
     /**
      * @param id_value_pairs
-     * @return `LogLevel` from node with id `m_log_level_node_id`
+     * @return `LogLevel` from node with id `m_log_level_node_id`.
      */
     [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> LogLevel;
 
     /**
      * @param id_value_pairs
-     * @return Timestamp from node with id `m_timestamp_node_id;`
+     * @return Timestamp from node with id `m_timestamp_node_id`.
      */
     [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> clp::ffi::value_int_t;

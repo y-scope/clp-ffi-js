@@ -1,7 +1,6 @@
 #ifndef CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 #define CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 
-#include <concepts>
 #include <utility>
 
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
@@ -15,12 +14,6 @@ using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
 
-// Concept defining valid log event types.
-// TODO: Extend valid log event types when filtering support is added for structured logs.
-template <typename T>
-concept ValidLogEventTypes
-        = std::same_as<T, UnstructuredLogEvent> || std::same_as<T, StructuredLogEvent>;
-
 /**
  * A templated class that extends a log event type with processed versions of some of its fields,
  * specifically the fields that are used for filtering in the `StreamReader` classes and their
@@ -29,7 +22,7 @@ concept ValidLogEventTypes
  * @tparam LogEvent The type of the log event.
  */
 template <typename LogEvent>
-requires ValidLogEventTypes<LogEvent>
+requires std::same_as<LogEvent, UnstructuredLogEvent> || std::same_as<LogEvent, StructuredLogEvent>
 class LogEventWithFilterData {
 public:
     // Constructor
@@ -64,7 +57,6 @@ private:
     LogLevel m_log_level;
     clp::ir::epoch_time_ms_t m_timestamp;
 };
-
 }  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP

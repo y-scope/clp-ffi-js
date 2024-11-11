@@ -86,11 +86,7 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
 }
 
 void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    filter_deserialized_events(
-            log_level_filter,
-            m_filtered_log_event_map,
-            *m_deserialized_log_events
-    );
+    filter_deserialized_events(m_filtered_log_event_map, log_level_filter, *m_deserialized_log_events);
 }
 
 auto StructuredIrStreamReader::deserialize_stream() -> size_t {
