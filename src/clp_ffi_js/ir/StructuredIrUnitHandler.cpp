@@ -34,7 +34,7 @@ auto parse_log_level(std::string_view str) -> LogLevel;
 auto parse_log_level(std::string_view str) -> LogLevel {
     LogLevel log_level{LogLevel::NONE};
 
-    // Convert the string to uppercase,
+    // Convert the string to uppercase.
     std::string log_level_name_upper_case{str};
     std::ranges::transform(
             log_level_name_upper_case.begin(),
@@ -43,7 +43,6 @@ auto parse_log_level(std::string_view str) -> LogLevel {
             [](unsigned char c) { return std::toupper(c); }
     );
 
-    // Do not accept "None" when checking if input string is in `cLogLevelNames`.
     auto const* it = std::ranges::find(
             cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx),
             cLogLevelNames.end(),
@@ -58,8 +57,6 @@ auto parse_log_level(std::string_view str) -> LogLevel {
     return log_level;
 }
 }  // namespace
-
-using clp::ir::four_byte_encoded_variable_t;
 
 auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
@@ -82,11 +79,7 @@ auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
     auto const timestamp = get_timestamp(id_value_pairs);
     auto const log_level = get_log_level(id_value_pairs);
 
-    auto log_event_with_filter_data{
-            LogEventWithFilterData<StructuredLogEvent>(std::move(log_event), log_level, timestamp)
-    };
-
-    m_deserialized_log_events->emplace_back(std::move(log_event_with_filter_data));
+    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
 
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }

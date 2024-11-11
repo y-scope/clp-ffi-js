@@ -67,7 +67,7 @@ public:
     }
 
     /**
-     * Saves the node's ID if it corresponds to events' authoritative timestamp kv-pair.
+     * Saves the node's ID if it corresponds to events' authoritative log level or timestamp kv-pair.
      * @param schema_tree_node_locator
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -81,29 +81,19 @@ public:
     [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
-
-    // Methods
-
-    /**
-     * @return The schema-tree node ID associated with events' authoritative timestamp key.
-     */
-    [[nodiscard]] auto get_timestamp_node_id() const -> schema_tree_node_id_t {
-        return m_timestamp_node_id;
-    }
-
 private:
-    // Methods
 
+    // Methods
     /**
      * @param id_value_pairs
-     * @return Timestamp from `StructuredLogEvent`
+     * @return `LogLevel` from node with id `m_log_level_node_id`
      */
     [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> LogLevel;
 
     /**
      * @param id_value_pairs
-     * @return Timestamp from `StructuredLogEvent`
+     * @return Timestamp from node with id `m_timestamp_node_id;`
      */
     [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> clp::ffi::value_int_t;
@@ -114,8 +104,8 @@ private:
 
     clp::ffi::SchemaTree::Node::id_t m_current_node_id{clp::ffi::SchemaTree::cRootId};
 
-    schema_tree_node_id_t m_timestamp_node_id;
     schema_tree_node_id_t m_log_level_node_id;
+    schema_tree_node_id_t m_timestamp_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
     // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add
