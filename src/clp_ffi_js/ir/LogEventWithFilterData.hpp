@@ -1,6 +1,7 @@
 #ifndef CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 #define CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 
+#include <concepts>
 #include <utility>
 
 #include <clp/ir/LogEvent.hpp>
