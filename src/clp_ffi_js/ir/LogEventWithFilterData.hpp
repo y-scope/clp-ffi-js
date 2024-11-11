@@ -1,21 +1,19 @@
 #ifndef CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 #define CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 
-
 #include <concepts>
 #include <utility>
 
+#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ir/LogEvent.hpp>
 #include <clp/ir/types.hpp>
 
-#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
-
 
 /**
  * A templated class that extends a log event type with processed versions of some of its fields,
@@ -64,4 +62,3 @@ private:
 }  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
-

@@ -67,7 +67,8 @@ public:
     }
 
     /**
-     * Saves the node's ID if it corresponds to events' authoritative log level or timestamp kv-pair.
+     * Saves the node's ID if it corresponds to events' authoritative log level or timestamp
+     * kv-pair.
      * @param schema_tree_node_locator
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -81,8 +82,8 @@ public:
     [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
         return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
     }
-private:
 
+private:
     // Methods
     /**
      * @param id_value_pairs
