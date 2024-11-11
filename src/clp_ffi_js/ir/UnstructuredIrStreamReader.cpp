@@ -23,6 +23,7 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
@@ -127,12 +128,7 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        auto log_event_with_filter_data{LogEventWithFilterData<UnstructuredLogEvent>(
-                log_event,
-                log_level,
-                log_event.get_timestamp()
-        )};
-        m_encoded_log_events.emplace_back(std::move(log_event_with_filter_data));
+        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
@@ -167,10 +163,9 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
             log_event_idx = i;
         }
         auto const& log_event_with_filter_data{m_encoded_log_events[log_event_idx]};
+        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
         auto const& log_level = log_event_with_filter_data.get_log_level();
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
-
-        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
 
         auto const parsed{unstructured_log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
