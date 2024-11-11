@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <vector>
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>

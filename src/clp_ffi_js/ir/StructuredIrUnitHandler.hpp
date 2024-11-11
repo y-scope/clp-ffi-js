@@ -116,4 +116,4 @@ private:
 };
 }  // namespace clp_ffi_js::ir
 
-#endif  // CLP_FFI_JS_IR_STRUCTUREDIRSTREAMREADER_HPP
+#endif  // CLP_FFI_JS_IR_STRUCTUREDIRUNITHANDLER_HPP

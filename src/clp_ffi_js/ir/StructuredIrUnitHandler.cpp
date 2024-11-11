@@ -14,7 +14,6 @@
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
-#include <clp/ir/types.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
@@ -105,7 +104,9 @@ auto StructuredIrUnitHandler::get_log_level(
     } else if (log_level_pair->is<clp::ffi::value_int_t>()) {
         auto const& log_level_node_value
                 = (log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>());
-        if (log_level_node_value <= (clp::enum_to_underlying_type(cValidLogLevelsEndIdx))) {
+        if (log_level_node_value >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
+            && log_level_node_value <= clp::enum_to_underlying_type(cValidLogLevelsEndIdx))
+        {
             log_level = static_cast<LogLevel>(log_level_node_value);
         }
     } else {
