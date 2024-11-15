@@ -24,11 +24,22 @@ namespace clp_ffi_js::ir {
 
 namespace {
 /**
- * Parses the `LogLevel` from an input string.
+ * Parses a string to determine the corresponding `LogLevel` enum value.
  * @param str
- * @return
+ * @return `LogLevel` enum corresponding to a string in `cLogLevelNames`. If input string
+ * is not in `cLogLevelNames`, returns `LogLevel::NONE`.
+ *
  */
 auto parse_log_level(std::string_view str) -> LogLevel;
+
+
+/**
+	 * Parses a string to determine the corresponding `LogLevel` enumeration value.
+	 *
+	 * @param str It should match one of the valid log level names in `cLogLevelNames`.
+	 * @return The parsed value if the input is valid.
+	 *         If invalid, returns `LogLevel::NONE`.
+	 */
 
 auto parse_log_level(std::string_view str) -> LogLevel {
     LogLevel log_level{LogLevel::NONE};
@@ -49,11 +60,10 @@ auto parse_log_level(std::string_view str) -> LogLevel {
     );
 
     if (it == cLogLevelNames.end()) {
-        return log_level;
+        return LogLevel::NONE;
     }
 
-    log_level = static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));
-    return log_level;
+    return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));
 }
 }  // namespace
 
@@ -105,7 +115,7 @@ auto StructuredIrUnitHandler::get_log_level(
         auto const& log_level_node_value
                 = (log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>());
         if (log_level_node_value >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
-            && log_level_node_value <= clp::enum_to_underlying_type(cValidLogLevelsEndIdx))
+            && log_level_node_value < clp::enum_to_underlying_type(cValidLogLevelsEndIdx))
         {
             log_level = static_cast<LogLevel>(log_level_node_value);
         }

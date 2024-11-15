@@ -18,8 +18,8 @@ namespace clp_ffi_js::ir {
  * Generates a filtered collection from all log events.
  *
  * @param log_level_filter Array of selected log levels.
- * @param filtered_log_event_map A reference to `FilteredLogEventsMap` that stores filtered result.
  * @param log_events
+ * @param[out] filtered_log_event_map A reference to `FilteredLogEventsMap` that stores filtered result.
  */
 template <typename LogEvents>
 auto filter_deserialized_events(
