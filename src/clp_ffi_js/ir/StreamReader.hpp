@@ -7,6 +7,7 @@
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
+#include <ir/types.hpp>
 
 namespace clp_ffi_js::ir {
 // JS types used as inputs
@@ -100,6 +101,8 @@ public:
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
 
+    [[nodiscard]] virtual auto find_timestamp_last_occurrence(clp::ir::epoch_time_ms_t input_timestamp)
+            -> std::ptrdiff_t = 0;
 protected:
     explicit StreamReader() = default;
 };

@@ -182,6 +182,12 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
     return DecodedResultsTsType(results);
 }
 
+auto StructuredIrStreamReader::find_timestamp_last_occurrence(
+        clp::ir::epoch_time_ms_t input_timestamp
+) -> std::ptrdiff_t {
+    return 0;
+}
+
 StructuredIrStreamReader::StructuredIrStreamReader(
         StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
         std::shared_ptr<std::vector<clp::ffi::KeyValuePairLogEvent>> deserialized_log_events
