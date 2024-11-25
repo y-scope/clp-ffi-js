@@ -41,8 +41,6 @@ auto parse_log_level(std::string_view str) -> LogLevel;
  */
 
 auto parse_log_level(std::string_view str) -> LogLevel {
-    LogLevel log_level{LogLevel::NONE};
-
     // Convert the string to uppercase.
     std::string log_level_name_upper_case{str};
     std::ranges::transform(
