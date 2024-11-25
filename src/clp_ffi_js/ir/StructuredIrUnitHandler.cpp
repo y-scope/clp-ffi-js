@@ -32,14 +32,13 @@ namespace {
  */
 auto parse_log_level(std::string_view str) -> LogLevel;
 
-
 /**
-	 * Parses a string to determine the corresponding `LogLevel` enumeration value.
-	 *
-	 * @param str It should match one of the valid log level names in `cLogLevelNames`.
-	 * @return The parsed value if the input is valid.
-	 *         If invalid, returns `LogLevel::NONE`.
-	 */
+ * Parses a string to determine the corresponding `LogLevel` enumeration value.
+ *
+ * @param str It should match one of the valid log level names in `cLogLevelNames`.
+ * @return The parsed value if the input is valid.
+ *         If invalid, returns `LogLevel::NONE`.
+ */
 
 auto parse_log_level(std::string_view str) -> LogLevel {
     LogLevel log_level{LogLevel::NONE};
