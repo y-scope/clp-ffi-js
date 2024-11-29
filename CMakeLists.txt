@@ -68,6 +68,7 @@ set(CLP_FFI_JS_COMMON_LINK_OPTIONS
     -fwasm-exceptions
     -sALLOW_MEMORY_GROWTH
     -sEXPORT_ES6
+    -sMAXIMUM_MEMORY=4GB
     -sMODULARIZE
     -sWASM_BIGINT
 )
