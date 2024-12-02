@@ -100,16 +100,14 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
     constexpr size_t cDefaultNumReservedLogEvents{500'000};
     m_deserialized_log_events->reserve(cDefaultNumReservedLogEvents);
     auto& reader{m_stream_reader_data_context->get_reader()};
-    while (true) {
-        auto result{m_stream_reader_data_context->get_deserializer().deserialize_next_ir_unit(reader
-        )};
+    auto& deserializer = m_stream_reader_data_context->get_deserializer();
+
+    while (false == deserializer.is_stream_completed()) {
+        auto result{deserializer.deserialize_next_ir_unit(reader)};
         if (false == result.has_error()) {
             continue;
         }
         auto const error{result.error()};
-        if (std::errc::operation_not_permitted == error) {
-            break;
-        }
         if (std::errc::result_out_of_range == error) {
             SPDLOG_ERROR("File contains an incomplete IR stream");
             break;

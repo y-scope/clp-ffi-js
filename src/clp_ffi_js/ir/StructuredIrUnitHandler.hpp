@@ -13,7 +13,6 @@
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
 #include <clp/time_types.hpp>
-#include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
@@ -52,6 +51,7 @@ public:
     ) -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
+     * Dummy implementation that does nothing but conforms to the interface.
      * @param utc_offset_old
      * @param utc_offset_new
      * @return IRErrorCode::IRErrorCode_Success
@@ -59,11 +59,7 @@ public:
     [[nodiscard]] static auto handle_utc_offset_change(
             [[maybe_unused]] clp::UtcOffset utc_offset_old,
             [[maybe_unused]] clp::UtcOffset utc_offset_new
-    ) -> clp::ffi::ir_stream::IRErrorCode {
-        SPDLOG_WARN("UTC offset change packets aren't handled currently.");
-
-        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
-    }
+    ) -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
      * Saves the node's ID if it corresponds to events' authoritative log level or timestamp
@@ -76,11 +72,10 @@ public:
     ) -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
+     * Dummy implementation that does nothing but conforms to the interface.
      * @return IRErrorCode::IRErrorCode_Success
      */
-    [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
-        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
-    }
+    [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode;
 
 private:
     // Methods

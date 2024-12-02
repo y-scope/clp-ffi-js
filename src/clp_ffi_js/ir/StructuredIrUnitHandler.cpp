@@ -14,6 +14,7 @@
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
+#include <clp/time_types.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
@@ -28,17 +29,8 @@ namespace {
  * @param str
  * @return `LogLevel` enum corresponding to a string in `cLogLevelNames`. If input string
  * is not in `cLogLevelNames`, returns `LogLevel::NONE`.
- *
  */
 auto parse_log_level(std::string_view str) -> LogLevel;
-
-/**
- * Parses a string to determine the corresponding `LogLevel` enumeration value.
- *
- * @param str It should match one of the valid log level names in `cLogLevelNames`.
- * @return The parsed value if the input is valid.
- *         If invalid, returns `LogLevel::NONE`.
- */
 
 auto parse_log_level(std::string_view str) -> LogLevel {
     // Convert the string to uppercase.
@@ -64,6 +56,25 @@ auto parse_log_level(std::string_view str) -> LogLevel {
 }
 }  // namespace
 
+auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
+) -> clp::ffi::ir_stream::IRErrorCode {
+    auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
+    auto const timestamp = get_timestamp(id_value_pairs);
+    auto const log_level = get_log_level(id_value_pairs);
+
+    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
+
+    return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+}
+
+auto StructuredIrUnitHandler::handle_utc_offset_change(
+        [[maybe_unused]] clp::UtcOffset utc_offset_old,
+        [[maybe_unused]] clp::UtcOffset utc_offset_new
+) -> clp::ffi::ir_stream::IRErrorCode {
+    SPDLOG_WARN("UTC offset change packets aren't handled currently.");
+    return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+}
+
 auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
 ) -> clp::ffi::ir_stream::IRErrorCode {
@@ -79,14 +90,7 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
-auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
-) -> clp::ffi::ir_stream::IRErrorCode {
-    auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
-    auto const timestamp = get_timestamp(id_value_pairs);
-    auto const log_level = get_log_level(id_value_pairs);
-
-    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
-
+auto StructuredIrUnitHandler::handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
@@ -112,7 +116,7 @@ auto StructuredIrUnitHandler::get_log_level(
         auto const& log_level_node_value
                 = (log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>());
         if (log_level_node_value >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
-            && log_level_node_value < clp::enum_to_underlying_type(cValidLogLevelsEndIdx))
+            && log_level_node_value < clp::enum_to_underlying_type(LogLevel::LENGTH))
         {
             log_level = static_cast<LogLevel>(log_level_node_value);
         }
