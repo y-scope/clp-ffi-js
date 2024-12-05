@@ -149,7 +149,14 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 
     auto const results{emscripten::val::array()};
 
-    for (size_t log_event_idx = begin_idx; log_event_idx < end_idx; ++log_event_idx) {
+    for (size_t i = begin_idx; i < end_idx; ++i) {
+        size_t log_event_idx{0};
+        if (use_filter) {
+            log_event_idx = m_filtered_log_event_map->at(i);
+        } else {
+            log_event_idx = i;
+        }
+
         auto const& log_event_with_filter_data{m_deserialized_log_events->at(log_event_idx)};
         auto const& structured_log_event = log_event_with_filter_data.get_log_event();
 
