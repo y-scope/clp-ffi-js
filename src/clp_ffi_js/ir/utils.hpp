@@ -10,6 +10,7 @@
 
 #include <clp/ErrorCode.hpp>
 #include <clp/TimestampPattern.hpp>
+#include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
