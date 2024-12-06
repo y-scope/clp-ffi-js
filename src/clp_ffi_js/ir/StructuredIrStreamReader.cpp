@@ -125,6 +125,8 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             m_filtered_log_event_map,
             *m_deserialized_log_events,
             use_filter,
+            // `ts_pattern` argument is unused in `generic_decode_range<StructuredLogEvents>`.
+            // Default timestamp pattern is used to conform to `generic_decode_range<T>` interface.
             clp::TimestampPattern()
     );
 }

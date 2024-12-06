@@ -20,7 +20,6 @@ enum class LogLevel : std::uint8_t {
     FATAL,
     LENGTH,  // This isn't a valid log level.
 };
-
 constexpr LogLevel cValidLogLevelsBeginIdx{LogLevel::TRACE};
 
 /**

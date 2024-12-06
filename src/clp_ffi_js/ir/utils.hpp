@@ -26,8 +26,9 @@ constexpr std::string_view cEmptyJsonStr{"{}"};
 
 /**
  * A templated function that implements `StreamReader::filter_log_events` for both
- * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`. Additional
- * arguments are private members of the derived `StreamReader` classes.
+ * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`. The additional arguments,
+ * which are not part of `filter_log_events`, are private members of the derived
+ * `StreamReader` classes.
  *
  * @param log_level_filter
  * @param log_events
@@ -64,16 +65,17 @@ auto generic_filter_log_events(
 
 /**
  * A templated function that implements `StreamReader::decode_range` for both
- * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`. Additional
- * arguments are private members of the derived `StreamReader` classes.
+ * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`. The additional
+ * arguments, which are not part of `decode_range`, are private members of
+ * the derived `StreamReader` classes.
  *
  * @param begin_idx
  * @param end_idx
  * @param filtered_log_event_map
  * @param log_events
  * @param use_filter
- * @param ts_pattern Pattern for formatting unstructured log event timestamps as date strings.
- * Structured log event timestamps are not formatted in clp-ffi-js, so the pattern has no effect.
+ * @param ts_pattern A pattern for formatting unstructured log event timestamps as date strings.
+ * The pattern is unused for structured log events, as they are not formatted in `clp-ffi-js`.
  * @return
  */
 template <typename LogEvents>
