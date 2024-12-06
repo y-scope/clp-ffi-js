@@ -19,6 +19,7 @@
 namespace clp_ffi_js::ir {
 using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 using StructuredIrDeserializer = clp::ffi::ir_stream::Deserializer<StructuredIrUnitHandler>;
+using StructuredLogEvents = std::vector<LogEventWithFilterData<StructuredLogEvent>>;
 
 /**
  * Class to deserialize and decode Zstd-compressed CLP structured IR streams, as well as format
@@ -78,13 +79,11 @@ private:
     // Constructor
     explicit StructuredIrStreamReader(
             StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
-            std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
-                    deserialized_log_events
+            std::shared_ptr<StructuredLogEvents> deserialized_log_events
     );
 
     // Variables
-    std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
-            m_deserialized_log_events;
+    std::shared_ptr<StructuredLogEvents> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
 };

@@ -5,12 +5,10 @@
 #include <format>
 #include <iterator>
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <utility>
-#include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
@@ -18,13 +16,11 @@
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
-#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
-#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/utils.hpp>
@@ -73,7 +69,7 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    filter_deserialized_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
+    generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 
 auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -136,61 +132,14 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
         const -> DecodedResultsTsType {
-    if (use_filter && false == m_filtered_log_event_map.has_value()) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    size_t length{0};
-    if (use_filter) {
-        length = m_filtered_log_event_map->size();
-    } else {
-        length = m_encoded_log_events.size();
-    }
-    if (length < end_idx || begin_idx > end_idx) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    std::string message;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    message.reserve(cDefaultReservedMessageLength);
-    auto const results{emscripten::val::array()};
-
-    for (size_t i = begin_idx; i < end_idx; ++i) {
-        size_t log_event_idx{0};
-        if (use_filter) {
-            log_event_idx = m_filtered_log_event_map->at(i);
-        } else {
-            log_event_idx = i;
-        }
-        auto const& log_event_with_filter_data{m_encoded_log_events[log_event_idx]};
-        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
-        auto const& log_level = log_event_with_filter_data.get_log_level();
-        auto const& timestamp = log_event_with_filter_data.get_timestamp();
-
-        auto const parsed{unstructured_log_event.get_message().decode_and_unparse()};
-        if (false == parsed.has_value()) {
-            throw ClpFfiJsException{
-                    clp::ErrorCode::ErrorCode_Failure,
-                    __FILENAME__,
-                    __LINE__,
-                    "Failed to decode message"
-            };
-        }
-        message = parsed.value();
-
-        m_ts_pattern.insert_formatted_timestamp(timestamp, message);
-
-        EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
-                results.as_handle(),
-                message.c_str(),
-                timestamp,
-                log_level,
-                log_event_idx + 1
-        );
-    }
-
-    return DecodedResultsTsType(results);
+    return generic_decode_range(
+            begin_idx,
+            end_idx,
+            m_filtered_log_event_map,
+            m_encoded_log_events,
+            use_filter,
+            m_ts_pattern
+    );
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(

@@ -7,19 +7,15 @@
 #include <string_view>
 #include <system_error>
 #include <utility>
-#include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
-#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/TraceableException.hpp>
-#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
-#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
@@ -27,10 +23,6 @@
 
 namespace clp_ffi_js::ir {
 namespace {
-constexpr std::string_view cEmptyJsonStr{"{}"};
-constexpr std::string_view cLogLevelFilteringNotSupportedErrorMsg{
-        "Log level filtering is not yet supported in this reader."
-};
 constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
 }  // namespace
@@ -40,9 +32,7 @@ auto StructuredIrStreamReader::create(
         clp::Array<char> data_array,
         ReaderOptions const& reader_options
 ) -> StructuredIrStreamReader {
-    auto deserialized_log_events{
-            std::make_shared<std::vector<LogEventWithFilterData<StructuredLogEvent>>>()
-    };
+    auto deserialized_log_events{std::make_shared<StructuredLogEvents>()};
     auto result{StructuredIrDeserializer::create(
             *zstd_decompressor,
             StructuredIrUnitHandler{
@@ -85,7 +75,7 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
 }
 
 void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    filter_deserialized_events(
+    generic_filter_log_events(
             m_filtered_log_event_map,
             log_level_filter,
             *m_deserialized_log_events
@@ -129,67 +119,19 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
-    if (use_filter && false == m_filtered_log_event_map.has_value()) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    size_t length{0};
-    if (use_filter) {
-        length = m_filtered_log_event_map->size();
-    } else {
-        length = m_deserialized_log_events->size();
-    }
-    if (length < end_idx || begin_idx > end_idx) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    if (m_deserialized_log_events->size() < end_idx || begin_idx > end_idx) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    auto const results{emscripten::val::array()};
-
-    for (size_t i = begin_idx; i < end_idx; ++i) {
-        size_t log_event_idx{0};
-        if (use_filter) {
-            log_event_idx = m_filtered_log_event_map->at(i);
-        } else {
-            log_event_idx = i;
-        }
-
-        auto const& log_event_with_filter_data{m_deserialized_log_events->at(log_event_idx)};
-        auto const& structured_log_event = log_event_with_filter_data.get_log_event();
-
-        auto const json_result{structured_log_event.serialize_to_json()};
-        std::string json_str{cEmptyJsonStr};
-        if (false == json_result.has_value()) {
-            auto error_code{json_result.error()};
-            SPDLOG_ERROR(
-                    "Failed to deserialize log event to JSON: {}:{}",
-                    error_code.category().name(),
-                    error_code.message()
-            );
-        } else {
-            json_str = json_result.value().dump();
-        }
-
-        EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
-                results.as_handle(),
-                json_str.c_str(),
-                log_event_with_filter_data.get_timestamp(),
-                log_event_with_filter_data.get_log_level(),
-                log_event_idx + 1
-        );
-    }
-
-    return DecodedResultsTsType(results);
+    return generic_decode_range(
+            begin_idx,
+            end_idx,
+            m_filtered_log_event_map,
+            *m_deserialized_log_events,
+            use_filter,
+            clp::TimestampPattern()
+    );
 }
 
 StructuredIrStreamReader::StructuredIrStreamReader(
         StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
-        std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
-                deserialized_log_events
+        std::shared_ptr<StructuredLogEvents> deserialized_log_events
 )
         : m_deserialized_log_events{std::move(deserialized_log_events)},
           m_stream_reader_data_context{
