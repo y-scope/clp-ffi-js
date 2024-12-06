@@ -3,17 +3,17 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
-#include <string>
 
+#include <clp/ErrorCode.hpp>
 #include <clp/TimestampPattern.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 
-#include <clp/ErrorCode.hpp>
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
