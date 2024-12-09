@@ -12,6 +12,7 @@
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
+#include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
 
 #include <clp_ffi_js/constants.hpp>
@@ -43,7 +44,7 @@ public:
 
     // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
     /**
-     * Buffers the log event.
+     * Buffers the log event with filter data extracted.
      * @param log_event
      * @return IRErrorCode::IRErrorCode_Success
      */
@@ -91,7 +92,7 @@ private:
      * @return Timestamp from node with id `m_timestamp_node_id`.
      */
     [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
-    ) const -> clp::ffi::value_int_t;
+    ) const -> clp::ir::epoch_time_ms_t;
 
     // Variables
     std::string m_log_level_key;

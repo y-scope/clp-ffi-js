@@ -102,6 +102,7 @@ auto generic_decode_range(
     }
 
     auto const results{emscripten::val::array()};
+    std::string generic_event_string;
 
     for (size_t i = begin_idx; i < end_idx; ++i) {
         size_t log_event_idx{0};

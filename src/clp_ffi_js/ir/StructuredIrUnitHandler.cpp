@@ -14,6 +14,7 @@
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
+#include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
@@ -102,13 +103,10 @@ auto StructuredIrUnitHandler::get_log_level(
     if (false == m_log_level_node_id.has_value()) {
         return log_level;
     }
-
     auto const& log_level_pair{id_value_pairs.at(m_log_level_node_id.value())};
-
     if (false == log_level_pair.has_value()) {
         return log_level;
     }
-
     if (log_level_pair->is<std::string>()) {
         auto const& log_level_node_value = log_level_pair.value().get_immutable_view<std::string>();
         log_level = parse_log_level(log_level_node_value);
@@ -130,21 +128,20 @@ auto StructuredIrUnitHandler::get_log_level(
 
 auto StructuredIrUnitHandler::get_timestamp(
         StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
-) const -> clp::ffi::value_int_t {
-    clp::ffi::value_int_t timestamp{0};
+) const -> clp::ir::epoch_time_ms_t {
+    clp::ir::epoch_time_ms_t timestamp{0};
 
     if (false == m_timestamp_node_id.has_value()) {
         return timestamp;
     }
-
     auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
-
     if (false == timestamp_pair.has_value()) {
         return timestamp;
     }
-
     if (timestamp_pair->is<clp::ffi::value_int_t>()) {
-        timestamp = timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>();
+        timestamp = static_cast<clp::ir::epoch_time_ms_t>(
+                timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
+        );
     } else {
         // TODO: Add support for parsing timestamp values of string type.
         auto log_event_idx = m_deserialized_log_events->size();
