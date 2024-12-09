@@ -117,8 +117,6 @@ auto generic_decode_range(
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
         auto const& log_level = log_event_with_filter_data.get_log_level();
 
-        std::string generic_event_string;
-
         if constexpr (std::is_same_v<LogEvents, UnstructuredLogEvents>) {
             constexpr size_t cDefaultReservedLength{512};
             generic_event_string.reserve(cDefaultReservedLength);
