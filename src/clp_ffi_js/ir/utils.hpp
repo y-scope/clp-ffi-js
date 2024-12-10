@@ -103,6 +103,8 @@ auto generic_decode_range(
 
     auto const results{emscripten::val::array()};
     std::string generic_event_string;
+    constexpr size_t cDefaultReservedLength{512};
+    generic_event_string.reserve(cDefaultReservedLength);
 
     for (size_t i = begin_idx; i < end_idx; ++i) {
         size_t log_event_idx{0};
@@ -118,9 +120,6 @@ auto generic_decode_range(
         auto const& log_level = log_event_with_filter_data.get_log_level();
 
         if constexpr (std::is_same_v<LogEvents, UnstructuredLogEvents>) {
-            constexpr size_t cDefaultReservedLength{512};
-            generic_event_string.reserve(cDefaultReservedLength);
-
             auto const parsed{log_event.get_message().decode_and_unparse()};
             if (false == parsed.has_value()) {
                 throw ClpFfiJsException{
