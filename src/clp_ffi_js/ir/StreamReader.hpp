@@ -1,14 +1,21 @@
 #ifndef CLP_FFI_JS_IR_STREAMREADER_HPP
 #define CLP_FFI_JS_IR_STREAMREADER_HPP
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <optional>
+#include <string>
+#include <type_traits>
 #include <vector>
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
+#include <clp/type_utils.hpp>
+#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
+
+#include <clp_ffi_js/constants.hpp>
 
 namespace clp_ffi_js::ir {
 // JS types used as inputs
@@ -108,6 +115,111 @@ public:
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
+
+    /**
+     * A templated function that implements `filter_log_events` for both
+     * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`.
+     *
+     * @param log_level_filter
+     * @param log_events Derived class's log events.
+     * @param[out] filtered_log_event_map A reference to derived class's `FilteredLogEventsMap`
+     * that stores filtered result.
+     */
+    template <typename LogEvents>
+    static auto generic_filter_log_events(
+            FilteredLogEventsMap& filtered_log_event_map,
+            LogLevelFilterTsType const& log_level_filter,
+            LogEvents const& log_events
+    ) -> void {
+        if (log_level_filter.isNull()) {
+            filtered_log_event_map.reset();
+            return;
+        }
+
+        filtered_log_event_map.emplace();
+        auto filter_levels
+                = emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter);
+
+        for (size_t log_event_idx = 0; log_event_idx < log_events.size(); ++log_event_idx) {
+            auto const& log_event = log_events[log_event_idx];
+            if (std::ranges::find(
+                        filter_levels,
+                        clp::enum_to_underlying_type(log_event.get_log_level())
+                )
+                != filter_levels.end())
+            {
+                filtered_log_event_map->emplace_back(log_event_idx);
+            }
+        }
+    }
+
+    /**
+     * A templated function that implements `decode_range` for both
+     * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`.
+     *
+     * @param begin_idx
+     * @param end_idx
+     * @param filtered_log_event_map Derived class's filtered log event map.
+     * @param log_events Derived class's log events.
+     * @param use_filter
+     * @param log_event_to_string Lambda function which retrieves a string from a single log event.
+     * The derived class must implement lambda since `Unstructured` and `Structured`
+     * log events have different interfaces.
+     * @return
+     */
+    template <typename LogEvents, typename ToStringFunc>
+    static auto generic_decode_range(
+            size_t begin_idx,
+            size_t end_idx,
+            FilteredLogEventsMap const& filtered_log_event_map,
+            LogEvents const& log_events,
+            ToStringFunc log_event_to_string,
+            bool use_filter
+    ) -> DecodedResultsTsType {
+        if (use_filter && false == filtered_log_event_map.has_value()) {
+            return DecodedResultsTsType{emscripten::val::null()};
+        }
+
+        size_t length{0};
+        if (use_filter) {
+            length = filtered_log_event_map->size();
+        } else {
+            length = log_events.size();
+        }
+        if (length < end_idx || begin_idx > end_idx) {
+            return DecodedResultsTsType{emscripten::val::null()};
+        }
+
+        auto const results{emscripten::val::array()};
+        std::string generic_event_string;
+
+        for (size_t i = begin_idx; i < end_idx; ++i) {
+            size_t log_event_idx{0};
+            if (use_filter) {
+                log_event_idx = filtered_log_event_map->at(i);
+            } else {
+                log_event_idx = i;
+            }
+
+            auto const& log_event_with_filter_data{log_events.at(log_event_idx)};
+            auto const& log_event = log_event_with_filter_data.get_log_event();
+            auto const& timestamp = log_event_with_filter_data.get_timestamp();
+            auto const& log_level = log_event_with_filter_data.get_log_level();
+
+            generic_event_string = log_event_to_string(log_event);
+
+            EM_ASM(
+                    { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
+                    results.as_handle(),
+                    generic_event_string.c_str(),
+                    timestamp,
+                    log_level,
+                    log_event_idx + 1
+            );
+        }
+
+        return DecodedResultsTsType(results);
+    }
 
 protected:
     explicit StreamReader() = default;

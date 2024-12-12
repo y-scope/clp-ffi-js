@@ -16,13 +16,14 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
-#include <clp_ffi_js/ir/utils.hpp>
 
 namespace clp_ffi_js::ir {
 namespace {
+constexpr std::string_view cEmptyJsonStr{"{}"};
 constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
 }  // namespace
@@ -75,7 +76,7 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
 }
 
 void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    generic_filter_log_events(
+    StreamReader::generic_filter_log_events(
             m_filtered_log_event_map,
             log_level_filter,
             *m_deserialized_log_events
@@ -119,15 +120,30 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
-    return generic_decode_range(
+    auto log_event_to_string = [](StructuredLogEvent const& log_event) -> std::string {
+        std::string json_str;
+        auto const json_result{log_event.serialize_to_json()};
+        if (false == json_result.has_value()) {
+            auto error_code{json_result.error()};
+            SPDLOG_ERROR(
+                    "Failed to deserialize log event to JSON: {}:{}",
+                    error_code.category().name(),
+                    error_code.message()
+            );
+            json_str = std::string(cEmptyJsonStr);
+        } else {
+            json_str = json_result.value().dump();
+        }
+        return json_str;
+    };
+
+    return StreamReader::generic_decode_range(
             begin_idx,
             end_idx,
             m_filtered_log_event_map,
             *m_deserialized_log_events,
-            use_filter,
-            // `ts_pattern` argument is unused in `generic_decode_range<StructuredLogEvents>`.
-            // Default timestamp pattern is used to conform to `generic_decode_range<T>` interface.
-            clp::TimestampPattern()
+            log_event_to_string,
+            use_filter
     );
 }
 

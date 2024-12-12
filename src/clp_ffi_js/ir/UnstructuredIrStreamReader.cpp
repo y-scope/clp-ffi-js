@@ -21,9 +21,9 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
+#include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
-#include <clp_ffi_js/ir/utils.hpp>
 
 namespace clp_ffi_js::ir {
 
@@ -69,7 +69,11 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
+    StreamReader::generic_filter_log_events(
+            m_filtered_log_event_map,
+            log_level_filter,
+            m_encoded_log_events
+    );
 }
 
 auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -132,13 +136,29 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
         const -> DecodedResultsTsType {
-    return generic_decode_range(
+    auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
+        std::string message;
+        auto const parsed{log_event.get_message().decode_and_unparse()};
+        if (false == parsed.has_value()) {
+            throw ClpFfiJsException{
+                    clp::ErrorCode::ErrorCode_Failure,
+                    __FILENAME__,
+                    __LINE__,
+                    "Failed to decode message"
+            };
+        }
+        message = parsed.value();
+        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
+        return message;
+    };
+
+    return StreamReader::generic_decode_range(
             begin_idx,
             end_idx,
             m_filtered_log_event_map,
             m_encoded_log_events,
-            use_filter,
-            m_ts_pattern
+            log_event_to_string,
+            use_filter
     );
 }
 
