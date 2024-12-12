@@ -159,7 +159,7 @@ public:
      *
      * @param begin_idx
      * @param end_idx
-     * @param filtered_log_event_map Derived class's filtered log event map.
+     * @param filtered_log_event_map Derived class's `FilteredLogEventsMap`.
      * @param log_events Derived class's log events.
      * @param use_filter
      * @param log_event_to_string Lambda function which retrieves a string from a single log event.
@@ -191,7 +191,6 @@ public:
         }
 
         auto const results{emscripten::val::array()};
-        std::string generic_event_string;
 
         for (size_t i = begin_idx; i < end_idx; ++i) {
             size_t log_event_idx{0};
@@ -206,12 +205,10 @@ public:
             auto const& timestamp = log_event_with_filter_data.get_timestamp();
             auto const& log_level = log_event_with_filter_data.get_log_level();
 
-            generic_event_string = log_event_to_string(log_event);
-
             EM_ASM(
                     { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
                     results.as_handle(),
-                    generic_event_string.c_str(),
+                    log_event_to_string(log_event).c_str(),
                     timestamp,
                     log_level,
                     log_event_idx + 1
