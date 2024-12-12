@@ -43,6 +43,7 @@ public:
      * Creates a `StreamReader` to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
+     * @param reader_options
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
