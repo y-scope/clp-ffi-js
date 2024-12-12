@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <vector>
 
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <emscripten/val.h>
@@ -24,6 +26,12 @@ enum class StreamType : uint8_t {
 };
 
 /**
+ * Mapping between an index in the filtered log events collection to an index in the unfiltered
+ * log events collection.
+ */
+using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+
+/**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */
@@ -35,6 +43,7 @@ public:
      * Creates a `StreamReader` to read from the given array.
      *
      * @param data_array An array containing a Zstandard-compressed IR stream.
+     * @param reader_options
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
