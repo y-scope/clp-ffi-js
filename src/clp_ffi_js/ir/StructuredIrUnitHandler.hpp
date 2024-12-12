@@ -22,10 +22,11 @@ using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
 
 /**
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
- * determine the schema-tree node ID of the log level and timestamp kv-pair.
+ * determine the schema-tree node IDs of the log level and timestamp kv-pairs.
  */
 class StructuredIrUnitHandler {
 public:
+    // Constructors
     /**
      * @param deserialized_log_events The vector in which to store deserialized log events.
      * @param log_level_key Key name of schema-tree node that contains the authoritative log level.
@@ -81,14 +82,18 @@ private:
     // Methods
     /**
      * @param id_value_pairs
-     * @return `LogLevel` from node with id `m_log_level_node_id`.
+     * @return `LogLevel::NONE` if `m_log_level_node_id` is unset, the node has no value, or the
+     * node's value is not an integer or string.
+     * @return `LogLevel` from node with id `m_log_level_node_id` otherwise.
      */
     [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> LogLevel;
 
     /**
      * @param id_value_pairs
-     * @return Timestamp from node with id `m_timestamp_node_id`.
+     * @return 0 if `m_timestamp_node_id` is unset, the node has no value, or the node's value is
+     * not an integer.
+     * @return Timestamp from node with ID `m_timestamp_node_id` otherwise.
      */
     [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> clp::ir::epoch_time_ms_t;

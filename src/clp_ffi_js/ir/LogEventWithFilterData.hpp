@@ -24,7 +24,6 @@ using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
  */
 template <typename LogEvent>
 requires std::same_as<LogEvent, UnstructuredLogEvent> || std::same_as<LogEvent, StructuredLogEvent>
-
 class LogEventWithFilterData {
 public:
     // Constructor

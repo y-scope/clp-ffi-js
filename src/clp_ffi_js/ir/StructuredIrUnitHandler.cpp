@@ -23,13 +23,12 @@
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 
 namespace clp_ffi_js::ir {
-
 namespace {
 /**
  * Parses a string to determine the corresponding `LogLevel` enum value.
  * @param str
- * @return `LogLevel` enum corresponding to a string in `cLogLevelNames`. If input string
- * is not in `cLogLevelNames`, returns `LogLevel::NONE`.
+ * @return `LogLevel` enum corresponding to `str` if `str` matches a string in `cLogLevelNames`.
+ * @return `LogLevel::NONE` otherwise.
  */
 auto parse_log_level(std::string_view str) -> LogLevel;
 
@@ -48,7 +47,6 @@ auto parse_log_level(std::string_view str) -> LogLevel {
             cLogLevelNames.end(),
             log_level_name_upper_case
     );
-
     if (it == cLogLevelNames.end()) {
         return LogLevel::NONE;
     }
@@ -82,9 +80,9 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     ++m_current_node_id;
 
     auto const& key_name{schema_tree_node_locator.get_key_name()};
-    if (m_log_level_key == key_name) {
+    if (key_name == m_log_level_key) {
         m_log_level_node_id.emplace(m_current_node_id);
-    } else if (m_timestamp_key == key_name) {
+    } else if (key_name == m_timestamp_key) {
         m_timestamp_node_id.emplace(m_current_node_id);
     }
 
@@ -120,7 +118,10 @@ auto StructuredIrUnitHandler::get_log_level(
         }
     } else {
         auto log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_ERROR("Log level type is not int or string for log event index {}", log_event_idx);
+        SPDLOG_ERROR(
+                "Authoritative log level's value is not an int or string for log event index {}",
+                log_event_idx
+        );
     }
 
     return log_level;
@@ -143,9 +144,12 @@ auto StructuredIrUnitHandler::get_timestamp(
                 timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
         );
     } else {
-        // TODO: Add support for parsing timestamp values of string type.
+        // TODO: Add support for parsing string-type timestamp values.
         auto log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_ERROR("Timestamp type is not int for log event index {}", log_event_idx);
+        SPDLOG_ERROR(
+                "Authoritative timestamp's value is not an int for log event index {}",
+                log_event_idx
+        );
     }
 
     return timestamp;
