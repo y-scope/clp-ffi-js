@@ -2,6 +2,7 @@
 #define CLP_FFI_JS_IR_STREAMREADER_HPP
 
 #include <algorithm>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
