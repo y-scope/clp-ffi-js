@@ -101,11 +101,11 @@ auto StructuredIrUnitHandler::get_log_level(
     if (false == m_log_level_node_id.has_value()) {
         return log_level;
     }
-    auto const& log_level_optional_value{id_value_pairs.at(m_log_level_node_id.value())};
-    if (false == log_level_optional_value.has_value()) {
+    auto const& optional_log_level_value{id_value_pairs.at(m_log_level_node_id.value())};
+    if (false == optional_log_level_value.has_value()) {
         return log_level;
     }
-    auto const log_level_value = log_level_optional_value.value();
+    auto const log_level_value = optional_log_level_value.value();
 
     if (log_level_value.is<std::string>()) {
         auto const& log_level_str = log_level_value.get_immutable_view<std::string>();
@@ -136,11 +136,11 @@ auto StructuredIrUnitHandler::get_timestamp(
     if (false == m_timestamp_node_id.has_value()) {
         return timestamp;
     }
-    auto const& timestamp_optional_value{id_value_pairs.at(m_timestamp_node_id.value())};
-    if (false == timestamp_optional_value.has_value()) {
+    auto const& optional_timestamp_value{id_value_pairs.at(m_timestamp_node_id.value())};
+    if (false == optional_timestamp_value.has_value()) {
         return timestamp;
     }
-    auto const timestamp_value = timestamp_optional_value.value();
+    auto const timestamp_value = optional_timestamp_value.value();
 
     if (timestamp_value.is<clp::ffi::value_int_t>()) {
         timestamp = static_cast<clp::ir::epoch_time_ms_t>(
