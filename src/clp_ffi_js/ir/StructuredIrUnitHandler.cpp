@@ -105,14 +105,13 @@ auto StructuredIrUnitHandler::get_log_level(
     if (false == log_level_optional_value.has_value()) {
         return log_level;
     }
-
     auto const log_level_value = log_level_optional_value.value();
 
     if (log_level_value.is<std::string>()) {
         auto const& log_level_str = log_level_value.get_immutable_view<std::string>();
         log_level = parse_log_level(log_level_str);
     } else if (log_level_value.is<clp::ffi::value_int_t>()) {
-        auto const& log_level_int = (log_level_value.get_immutable_view<clp::ffi::value_int_t>());
+        auto const& log_level_int = log_level_value.get_immutable_view<clp::ffi::value_int_t>();
         if (log_level_int >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
             && log_level_int < clp::enum_to_underlying_type(LogLevel::LENGTH))
         {
