@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <memory>
 #include <optional>
-#include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
