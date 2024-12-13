@@ -69,11 +69,7 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    generic_filter_log_events(
-            m_filtered_log_event_map,
-            log_level_filter,
-            m_encoded_log_events
-    );
+    generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 
 auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {

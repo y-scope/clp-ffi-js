@@ -101,20 +101,22 @@ auto StructuredIrUnitHandler::get_log_level(
     if (false == m_log_level_node_id.has_value()) {
         return log_level;
     }
-    auto const& log_level_pair{id_value_pairs.at(m_log_level_node_id.value())};
-    if (false == log_level_pair.has_value()) {
+    auto const& log_level_optional_value{id_value_pairs.at(m_log_level_node_id.value())};
+    if (false == log_level_optional_value.has_value()) {
         return log_level;
     }
-    if (log_level_pair->is<std::string>()) {
-        auto const& log_level_node_value = log_level_pair.value().get_immutable_view<std::string>();
-        log_level = parse_log_level(log_level_node_value);
-    } else if (log_level_pair->is<clp::ffi::value_int_t>()) {
-        auto const& log_level_node_value
-                = (log_level_pair.value().get_immutable_view<clp::ffi::value_int_t>());
-        if (log_level_node_value >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
-            && log_level_node_value < clp::enum_to_underlying_type(LogLevel::LENGTH))
+
+    auto const log_level_value = log_level_optional_value.value();
+
+    if (log_level_value.is<std::string>()) {
+        auto const& log_level_str = log_level_value.get_immutable_view<std::string>();
+        log_level = parse_log_level(log_level_str);
+    } else if (log_level_value.is<clp::ffi::value_int_t>()) {
+        auto const& log_level_int = (log_level_value.get_immutable_view<clp::ffi::value_int_t>());
+        if (log_level_int >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
+            && log_level_int < clp::enum_to_underlying_type(LogLevel::LENGTH))
         {
-            log_level = static_cast<LogLevel>(log_level_node_value);
+            log_level = static_cast<LogLevel>(log_level_int);
         }
     } else {
         auto log_event_idx = m_deserialized_log_events->size();
@@ -135,13 +137,15 @@ auto StructuredIrUnitHandler::get_timestamp(
     if (false == m_timestamp_node_id.has_value()) {
         return timestamp;
     }
-    auto const& timestamp_pair{id_value_pairs.at(m_timestamp_node_id.value())};
-    if (false == timestamp_pair.has_value()) {
+    auto const& timestamp_optional_value{id_value_pairs.at(m_timestamp_node_id.value())};
+    if (false == timestamp_optional_value.has_value()) {
         return timestamp;
     }
-    if (timestamp_pair->is<clp::ffi::value_int_t>()) {
+    auto const timestamp_value = timestamp_optional_value.value();
+
+    if (timestamp_value.is<clp::ffi::value_int_t>()) {
         timestamp = static_cast<clp::ir::epoch_time_ms_t>(
-                timestamp_pair.value().get_immutable_view<clp::ffi::value_int_t>()
+                timestamp_value.get_immutable_view<clp::ffi::value_int_t>()
         );
     } else {
         // TODO: Add support for parsing string-type timestamp values.
