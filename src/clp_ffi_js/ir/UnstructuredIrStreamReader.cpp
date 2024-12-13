@@ -69,7 +69,7 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    StreamReader::generic_filter_log_events(
+    generic_filter_log_events(
             m_filtered_log_event_map,
             log_level_filter,
             m_encoded_log_events
@@ -152,7 +152,7 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
         return message;
     };
 
-    return StreamReader::generic_decode_range(
+    return generic_decode_range(
             begin_idx,
             end_idx,
             m_filtered_log_event_map,

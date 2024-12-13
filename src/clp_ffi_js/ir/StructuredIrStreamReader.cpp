@@ -76,7 +76,7 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
 }
 
 void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    StreamReader::generic_filter_log_events(
+    generic_filter_log_events(
             m_filtered_log_event_map,
             log_level_filter,
             *m_deserialized_log_events
@@ -137,7 +137,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         return json_str;
     };
 
-    return StreamReader::generic_decode_range(
+    return generic_decode_range(
             begin_idx,
             end_idx,
             m_filtered_log_event_map,

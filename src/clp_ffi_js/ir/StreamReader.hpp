@@ -116,19 +116,19 @@ public:
             -> DecodedResultsTsType = 0;
 
     /**
-     * A templated function that implements `filter_log_events` for both
-     * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`.
+     * Templated implementation of `filter_log_events`.
      *
+     * @tparam LogEvent
      * @param log_level_filter
      * @param log_events Derived class's log events.
-     * @param[out] filtered_log_event_map A reference to derived class's `FilteredLogEventsMap`
-     * that stores filtered result.
+     * @param log_events
+     * @param[out] filtered_log_event_map Returns the filtered log events.
      */
-    template <typename LogEvents>
+    template <typename LogEvent>
     static auto generic_filter_log_events(
             FilteredLogEventsMap& filtered_log_event_map,
             LogLevelFilterTsType const& log_level_filter,
-            LogEvents const& log_events
+            std::vector<LogEventWithFilterData<LogEvent>> const& log_events
     ) -> void {
         if (log_level_filter.isNull()) {
             filtered_log_event_map.reset();
@@ -153,25 +153,30 @@ public:
     }
 
     /**
-     * A templated function that implements `decode_range` for both
-     * `UnstructuredIrStreamReader` and `StructuredIrStreamReader`.
+     * Templated implementation of `decode_range` that uses `log_event_to_string` to convert
+     * `log_event` to a string for the returned result.
      *
+     * @tparam LogEvent
+     * @tparam ToStringFunc Function to convert a log event into a string.
      * @param begin_idx
      * @param end_idx
-     * @param filtered_log_event_map Derived class's `FilteredLogEventsMap`.
-     * @param log_events Derived class's log events.
+     * @param filtered_log_event_map
+     * @param log_events
      * @param use_filter
-     * @param log_event_to_string Lambda function which retrieves a string from a single log event.
-     * The derived class must implement lambda since `Unstructured` and `Structured`
-     * log events have different interfaces.
-     * @return
+     * @param log_event_to_string
+     * @return See `decode_range`.
      */
-    template <typename LogEvents, typename ToStringFunc>
+    template <typename LogEvent, typename ToStringFunc>
+    requires requires(ToStringFunc func, LogEvent const& log_event) {
+        {
+            func(log_event)
+        } -> std::convertible_to<std::string>;
+    }
     static auto generic_decode_range(
             size_t begin_idx,
             size_t end_idx,
             FilteredLogEventsMap const& filtered_log_event_map,
-            LogEvents const& log_events,
+            std::vector<LogEventWithFilterData<LogEvent>> const& log_events,
             ToStringFunc log_event_to_string,
             bool use_filter
     ) -> DecodedResultsTsType {
