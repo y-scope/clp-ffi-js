@@ -15,6 +15,7 @@
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
+#include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
@@ -195,6 +196,7 @@ auto StreamReader::generic_decode_range(
         length = log_events.size();
     }
     if (length < end_idx || begin_idx > end_idx) {
+        SPDLOG_ERROR("Invalid log event index range: {}-{}", begin_idx, end_idx);
         return DecodedResultsTsType{emscripten::val::null()};
     }
 
