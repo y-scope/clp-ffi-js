@@ -101,6 +101,7 @@ public:
      * Deserializes all log events in the stream.
      *
      * @return The number of successfully deserialized ("valid") log events.
+     * @throw ClpFfiJsException if an error occurs deserialization.
      */
     [[nodiscard]] virtual auto deserialize_stream() -> size_t = 0;
 
@@ -118,6 +119,7 @@ public:
      * - The log event's number (1-indexed) in the stream
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
+     * @throw ClpFfiJsException if a message cannot be decoded.
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
