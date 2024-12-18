@@ -101,7 +101,7 @@ public:
      * Deserializes all log events in the stream.
      *
      * @return The number of successfully deserialized ("valid") log events.
-     * @throw ClpFfiJsException if an error occurs deserialization.
+     * @throw ClpFfiJsException if an error occurs during deserialization.
      */
     [[nodiscard]] virtual auto deserialize_stream() -> size_t = 0;
 
