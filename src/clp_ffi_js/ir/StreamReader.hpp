@@ -138,7 +138,7 @@ protected:
      * @param use_filter
      * @param log_event_to_string
      * @return See `decode_range`.
-     * @throw Propagates `ToStringFunc`'s exception.
+     * @throw Propagates exceptions from `ToStringFunc`.
      */
     template <typename LogEvent, typename ToStringFunc>
     requires requires(ToStringFunc func, LogEvent const& log_event) {
