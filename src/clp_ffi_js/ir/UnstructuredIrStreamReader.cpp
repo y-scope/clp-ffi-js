@@ -5,22 +5,17 @@
 #include <format>
 #include <iterator>
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <system_error>
-#include <type_traits>
 #include <utility>
-#include <vector>
 
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
-#include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
-#include <emscripten/em_asm.h>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 
@@ -74,25 +69,7 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
 }
 
 void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    if (log_level_filter.isNull()) {
-        m_filtered_log_event_map.reset();
-        return;
-    }
-
-    m_filtered_log_event_map.emplace();
-    auto filter_levels{emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter
-    )};
-    for (size_t log_event_idx = 0; log_event_idx < m_encoded_log_events.size(); ++log_event_idx) {
-        auto const& log_event = m_encoded_log_events[log_event_idx];
-        if (std::ranges::find(
-                    filter_levels,
-                    clp::enum_to_underlying_type(log_event.get_log_level())
-            )
-            != filter_levels.end())
-        {
-            m_filtered_log_event_map->emplace_back(log_event_idx);
-        }
-    }
+    generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 
 auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -155,38 +132,9 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
 
 auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
         const -> DecodedResultsTsType {
-    if (use_filter && false == m_filtered_log_event_map.has_value()) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    size_t length{0};
-    if (use_filter) {
-        length = m_filtered_log_event_map->size();
-    } else {
-        length = m_encoded_log_events.size();
-    }
-    if (length < end_idx || begin_idx > end_idx) {
-        return DecodedResultsTsType{emscripten::val::null()};
-    }
-
-    std::string message;
-    constexpr size_t cDefaultReservedMessageLength{512};
-    message.reserve(cDefaultReservedMessageLength);
-    auto const results{emscripten::val::array()};
-
-    for (size_t i = begin_idx; i < end_idx; ++i) {
-        size_t log_event_idx{0};
-        if (use_filter) {
-            log_event_idx = m_filtered_log_event_map->at(i);
-        } else {
-            log_event_idx = i;
-        }
-        auto const& log_event_with_filter_data{m_encoded_log_events[log_event_idx]};
-        auto const& unstructured_log_event = log_event_with_filter_data.get_log_event();
-        auto const& log_level = log_event_with_filter_data.get_log_level();
-        auto const& timestamp = log_event_with_filter_data.get_timestamp();
-
-        auto const parsed{unstructured_log_event.get_message().decode_and_unparse()};
+    auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
+        std::string message;
+        auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             throw ClpFfiJsException{
                     clp::ErrorCode::ErrorCode_Failure,
@@ -196,20 +144,18 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
             };
         }
         message = parsed.value();
+        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
+        return message;
+    };
 
-        m_ts_pattern.insert_formatted_timestamp(timestamp, message);
-
-        EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
-                results.as_handle(),
-                message.c_str(),
-                timestamp,
-                log_level,
-                log_event_idx + 1
-        );
-    }
-
-    return DecodedResultsTsType(results);
+    return generic_decode_range(
+            begin_idx,
+            end_idx,
+            m_filtered_log_event_map,
+            m_encoded_log_events,
+            log_event_to_string,
+            use_filter
+    );
 }
 
 auto UnstructuredIrStreamReader::find_timestamp_last_occurrence(

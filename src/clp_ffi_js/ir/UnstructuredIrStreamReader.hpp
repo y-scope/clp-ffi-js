@@ -4,8 +4,6 @@
 #include <Array.hpp>
 #include <cstddef>
 #include <memory>
-#include <optional>
-#include <vector>
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
@@ -19,12 +17,7 @@
 namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredIrDeserializer = clp::ir::LogEventDeserializer<four_byte_encoded_variable_t>;
-
-/**
- * Mapping between an index in the filtered log events collection to an index in the unfiltered
- * log events collection.
- */
-using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+using UnstructuredLogEvents = LogEvents<UnstructuredLogEvent>;
 
 /**
  * Class to deserialize and decode Zstd-compressed CLP unstructured IR streams, as well as format
@@ -88,7 +81,7 @@ private:
     );
 
     // Variables
-    std::vector<LogEventWithFilterData<UnstructuredLogEvent>> m_encoded_log_events;
+    UnstructuredLogEvents m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
