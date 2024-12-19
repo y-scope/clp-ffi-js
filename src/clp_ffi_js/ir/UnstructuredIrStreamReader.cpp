@@ -166,9 +166,8 @@ auto UnstructuredIrStreamReader::find_timestamp_last_occurrence(
             m_encoded_log_events.begin(),
             m_encoded_log_events.end(),
             input_timestamp,
-            [](const LogEventWithFilterData<UnstructuredLogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
-                return event.get_timestamp() <= timestamp;
-            }
+            [](LogEventWithFilterData<UnstructuredLogEvent> const& event,
+               clp::ir::epoch_time_ms_t timestamp) { return event.get_timestamp() <= timestamp; }
     );
 
     // Adjust the iterator to find the last valid index

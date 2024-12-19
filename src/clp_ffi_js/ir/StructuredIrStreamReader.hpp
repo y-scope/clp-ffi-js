@@ -74,8 +74,8 @@ public:
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType override;
 
-    [[nodiscard]] auto find_timestamp_last_occurrence(clp::ir::epoch_time_ms_t input_timestamp)
-            -> std::ptrdiff_t override;
+    [[nodiscard]] auto find_timestamp_last_occurrence(clp::ir::epoch_time_ms_t input_timestamp
+    ) -> std::ptrdiff_t override;
 
 private:
     // Constructor

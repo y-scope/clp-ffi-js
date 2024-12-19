@@ -5,6 +5,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
+#include <ir/types.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -15,7 +16,6 @@
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
-#include <ir/types.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/constants.hpp>
@@ -125,8 +125,10 @@ public:
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
 
-    [[nodiscard]] virtual auto find_timestamp_last_occurrence(clp::ir::epoch_time_ms_t input_timestamp)
-            -> std::ptrdiff_t = 0;
+    [[nodiscard]] virtual auto find_timestamp_last_occurrence(
+            clp::ir::epoch_time_ms_t input_timestamp
+    ) -> std::ptrdiff_t = 0;
+
 protected:
     explicit StreamReader() = default;
 

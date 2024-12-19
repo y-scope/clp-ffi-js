@@ -146,8 +146,10 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
             .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
-            .function("getLogEventIndexByTimestamp",
-                      &clp_ffi_js::ir::StreamReader::find_timestamp_last_occurrence);
+            .function(
+                    "getLogEventIndexByTimestamp",
+                    &clp_ffi_js::ir::StreamReader::find_timestamp_last_occurrence
+            );
 }
 }  // namespace
 
