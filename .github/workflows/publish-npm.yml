@@ -1,0 +1,64 @@
+name: "publish-npm"
+
+on:
+  release:
+    types: ["created"]
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          submodules: "recursive"
+
+      - name: "Install task"
+        run: "npm install -g @go-task/cli"
+
+      - name: "Run package task"
+        run: "task package"
+
+      - name: "Upload build artifacts"
+        uses: "actions/upload-artifact@v4"
+        with:
+          path: "dist/"
+
+  publish-npm:
+    needs: ["build"]
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "actions/download-artifact@v4"
+
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org/"
+
+      - run: "npm publish"
+        env:
+          NODE_AUTH_TOKEN: "${{secrets.NPM_TOKEN}}"
+
+  create-branch:
+    needs: ["publish-npm"]
+    runs-on: "ubuntu-latest"
+    permissions:
+      # For creating a new branch
+      contents: "write"
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+
+      - name: "Configure Git"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: "Create and push branch"
+        run: |
+          git checkout -b "${{github.ref_name}}"
+          git push origin "refs/heads/${{github.ref_name}}"
