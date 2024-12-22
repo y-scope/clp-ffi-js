@@ -45,6 +45,9 @@ jobs:
   create-branch:
     needs: ["publish-npm"]
     runs-on: "ubuntu-latest"
+    permissions:
+      # For creating a new branch
+      contents: write
     steps:
       - uses: "actions/checkout@v4"
         with:
