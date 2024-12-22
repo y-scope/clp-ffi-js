@@ -41,3 +41,21 @@ jobs:
       - run: "npm publish"
         env:
           NODE_AUTH_TOKEN: "${{secrets.NPM_TOKEN}}"
+
+  create-branch:
+    needs: ["publish-npm"]
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          fetch-depth: 0
+
+      - name: "Configure Git"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: "Create and push branch"
+        run: |
+          git checkout -b ${{github.ref_name}}
+          git push origin ${{github.ref_name}}
