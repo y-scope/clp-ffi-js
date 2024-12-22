@@ -150,7 +150,25 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 auto StructuredIrStreamReader::find_timestamp_last_occurrence(
         clp::ir::epoch_time_ms_t input_timestamp
 ) -> std::ptrdiff_t {
-    return 0;
+    // Use std::lower_bound with a custom comparator
+    auto it = std::lower_bound(
+            m_deserialized_log_events->begin(),
+            m_deserialized_log_events->end(),
+            input_timestamp,
+            [](const LogEventWithFilterData<StructuredLogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
+                return event.get_timestamp() <= timestamp;
+            }
+    );
+
+    // Adjust the iterator to find the last valid index
+    if (it == m_deserialized_log_events->end() || it->get_timestamp() > input_timestamp) {
+        if (it == m_deserialized_log_events->begin()) {
+            return -1;  // No element satisfies the condition
+        }
+        --it;
+    }
+
+    return std::distance(m_deserialized_log_events->begin(), it);
 }
 
 StructuredIrStreamReader::StructuredIrStreamReader(
