@@ -30,7 +30,7 @@ constexpr LogLevel cValidLogLevelsBeginIdx{LogLevel::Trace};
 constexpr std::array<std::string_view, clp::enum_to_underlying_type(LogLevel::LogLevelLength)>
         cLogLevelNames{
                 "NONE",  // This isn't a valid log level.
-                "Trace",
+                "TRACE",
                 "DEBUG",
                 "INFO",
                 "WARN",
