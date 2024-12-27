@@ -1,4 +1,4 @@
-name: "publish-npm"
+name: "publish-to-npm"
 
 on:
   release:
@@ -27,7 +27,7 @@ jobs:
           if-no-files-found: "error"
           retention-days: 1
 
-  publish-npm:
+  publish-to-npm:
     needs: ["build"]
     runs-on: "ubuntu-latest"
     steps:
