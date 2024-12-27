@@ -10,7 +10,11 @@ Emscripten.cmake"
 endif()
 
 # Extract the project name & version from package.json
-file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" PACKAGE_JSON_CONTENT)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/package.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" PACKAGE_JSON_CONTENT)
+else()
+    message(FATAL_ERROR "`package.json` not found in ${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
 if(${PACKAGE_JSON_CONTENT} MATCHES "\"name\":[ ]*\"([^\"]+)\"")
     set(CLP_FFI_JS_PROJECT_NAME
             ${CMAKE_MATCH_1}
