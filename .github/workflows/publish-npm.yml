@@ -25,6 +25,8 @@ jobs:
         uses: "actions/upload-artifact@v4"
         with:
           path: "dist/"
+          if-no-files-found: "error"
+          retention-days: 1
 
   publish-npm:
     needs: ["build"]
