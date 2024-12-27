@@ -37,7 +37,7 @@ else()
 endif()
 
 project(
-    ${CLP_FFI_JS_PROJECT_NAME}
+    "${CLP_FFI_JS_PROJECT_NAME}"
     LANGUAGES
         C
         CXX
