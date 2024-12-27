@@ -5,7 +5,7 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
-#include <ir/types.hpp>
+#include <clp/ir/types.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -30,6 +30,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventIdxTsType);
 
 enum class StreamType : uint8_t {
     Structured,
@@ -124,10 +125,15 @@ public:
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
-
-    [[nodiscard]] virtual auto find_timestamp_last_occurrence(
-            clp::ir::epoch_time_ms_t input_timestamp
-    ) -> std::ptrdiff_t = 0;
+    /**
+     * Retrieves the last index of the log event that matches the given timestamp.
+     *
+     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
+     * @return The index of the log event with the specified timestamp, or null value if not found.
+     */
+    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(
+            clp::ir::epoch_time_ms_t timestamp
+    ) -> LogEventIdxTsType = 0;
 
 protected:
     explicit StreamReader() = default;

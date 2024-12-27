@@ -129,6 +129,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             "Array<[string, bigint, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
+    emscripten::register_type<clp_ffi_js::ir::LogEventIdxTsType>("number | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,
@@ -148,7 +149,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function(
                     "getLogEventIndexByTimestamp",
-                    &clp_ffi_js::ir::StreamReader::find_timestamp_last_occurrence
+                    &clp_ffi_js::ir::StreamReader::get_log_event_index_by_timestamp
             );
 }
 }  // namespace

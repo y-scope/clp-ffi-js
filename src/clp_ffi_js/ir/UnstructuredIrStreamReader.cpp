@@ -158,9 +158,9 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
     );
 }
 
-auto UnstructuredIrStreamReader::find_timestamp_last_occurrence(
+auto UnstructuredIrStreamReader::get_log_event_index_by_timestamp(
         clp::ir::epoch_time_ms_t input_timestamp
-) -> std::ptrdiff_t {
+) -> LogEventIdxTsType {
     // Use std::lower_bound with a custom comparator
     auto it = std::lower_bound(
             m_encoded_log_events.begin(),
@@ -173,12 +173,12 @@ auto UnstructuredIrStreamReader::find_timestamp_last_occurrence(
     // Adjust the iterator to find the last valid index
     if (it == m_encoded_log_events.end() || it->get_timestamp() > input_timestamp) {
         if (it == m_encoded_log_events.begin()) {
-            return -1;  // No element satisfies the condition
+            return LogEventIdxTsType{emscripten::val::null()};
         }
         --it;
     }
 
-    return std::distance(m_encoded_log_events.begin(), it);
+    return LogEventIdxTsType{emscripten::val(std::distance(m_encoded_log_events.begin(), it))};
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
