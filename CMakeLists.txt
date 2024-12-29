@@ -11,11 +11,11 @@ endif()
 
 # Extract the project name & version from package.json
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/package.json")
-    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" PACKAGE_JSON_CONTENT)
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" CLP_FFI_JS_PACKAGE_JSON_CONTENT)
 else()
     message(FATAL_ERROR "`package.json` not found in ${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
-if("${PACKAGE_JSON_CONTENT}" MATCHES "\"name\":[ ]*\"([^\"]+)\"")
+if("${CLP_FFI_JS_PACKAGE_JSON_CONTENT}" MATCHES "\"name\":[ ]*\"([^\"]+)\"")
     set(CLP_FFI_JS_PROJECT_NAME
             "${CMAKE_MATCH_1}"
             CACHE STRING
@@ -25,7 +25,7 @@ if("${PACKAGE_JSON_CONTENT}" MATCHES "\"name\":[ ]*\"([^\"]+)\"")
 else()
     set(CLP_FFI_JS_PROJECT_NAME "clp-ffi-js" CACHE STRING "Use a placeholder project name." FORCE)
 endif()
-if("${PACKAGE_JSON_CONTENT}" MATCHES "\"version\":[ ]*\"([^\"]+)\"")
+if("${CLP_FFI_JS_PACKAGE_JSON_CONTENT}" MATCHES "\"version\":[ ]*\"([^\"]+)\"")
     set(CLP_FFI_JS_VERSION
         "${CMAKE_MATCH_1}"
         CACHE STRING
