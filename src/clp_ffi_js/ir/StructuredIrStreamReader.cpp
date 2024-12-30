@@ -148,12 +148,12 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 }
 
 auto StructuredIrStreamReader::get_log_event_index_by_timestamp(
-        const clp::ir::epoch_time_ms_t timestamp
+        clp::ir::epoch_time_ms_t const timestamp
 ) -> LogEventIdxTsType {
     return generic_get_log_event_index_by_timestamp<StructuredLogEvent>(
-        m_deserialized_log_events->begin(),
-        m_deserialized_log_events->end(),
-        timestamp
+            m_deserialized_log_events->begin(),
+            m_deserialized_log_events->end(),
+            timestamp
     );
 }
 

@@ -5,13 +5,13 @@
 #include <concepts>
 #include <cstddef>
 #include <cstdint>
-#include <clp/ir/types.hpp>
 #include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
 #include <vector>
 
+#include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
@@ -131,8 +131,7 @@ public:
      * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
      * @return The index of the log event with the specified timestamp, or null value if not found.
      */
-    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(
-            clp::ir::epoch_time_ms_t timestamp
+    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType = 0;
 
 protected:
@@ -191,7 +190,10 @@ protected:
      * @return The index of the last matched log event, or null value if not found.
      */
     template <typename LogEvent, typename Iterator>
-    requires requires(const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
+    requires requires(
+                     LogEventWithFilterData<LogEvent> const& event,
+                     clp::ir::epoch_time_ms_t timestamp
+             ) {
         {
             event.get_timestamp()
         } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
@@ -287,8 +289,12 @@ auto StreamReader::generic_filter_log_events(
         }
     }
 }
+
 template <typename LogEvent, typename Iterator>
-requires requires(const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
+requires requires(
+                 LogEventWithFilterData<LogEvent> const& event,
+                 clp::ir::epoch_time_ms_t timestamp
+         ) {
     {
         event.get_timestamp()
     } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
@@ -305,7 +311,7 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
             begin,
             end,
             timestamp,
-            [](const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t ts) {
+            [](LogEventWithFilterData<LogEvent> const& event, clp::ir::epoch_time_ms_t ts) {
                 return event.get_timestamp() > ts;
             }
     );
