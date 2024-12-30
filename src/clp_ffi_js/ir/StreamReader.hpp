@@ -174,7 +174,6 @@ protected:
      * @tparam LogEvent
      * @param log_level_filter
      * @param log_events Derived class's log events.
-     * @param log_events
      * @param[out] filtered_log_event_map Returns the filtered log events.
      */
     template <typename LogEvent>
@@ -183,6 +182,25 @@ protected:
             LogLevelFilterTsType const& log_level_filter,
             LogEvents<LogEvent> const& log_events
     ) -> void;
+
+    /**
+     * Retrieves the index of the last log event that matches the given timestamp.
+     *
+     * @tparam LogEvent
+     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
+     * @return The index of the last matched log event, or null value if not found.
+     */
+    template <typename LogEvent, typename Iterator>
+    requires requires(const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
+        {
+            event.get_timestamp()
+        } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
+    }
+    static auto generic_get_log_event_index_by_timestamp(
+            Iterator begin,
+            Iterator end,
+            clp::ir::epoch_time_ms_t timestamp
+    ) -> LogEventIdxTsType;
 };
 
 template <typename LogEvent, typename ToStringFunc>
@@ -268,6 +286,38 @@ auto StreamReader::generic_filter_log_events(
             filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
+}
+template <typename LogEvent, typename Iterator>
+requires requires(const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t timestamp) {
+    {
+        event.get_timestamp()
+    } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
+}
+auto StreamReader::generic_get_log_event_index_by_timestamp(
+        Iterator begin,
+        Iterator end,
+        clp::ir::epoch_time_ms_t timestamp
+) -> LogEventIdxTsType {
+    if (begin == end) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
+    auto it = std::upper_bound(
+            begin,
+            end,
+            timestamp,
+            [](const LogEventWithFilterData<LogEvent>& event, clp::ir::epoch_time_ms_t ts) {
+                return event.get_timestamp() > ts;
+            }
+    );
+
+    // it points to first element that is larger than timestamp,
+    // adjust the iterator to find the last valid index.
+    --it;
+    if (it->get_timestamp() < timestamp) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
+
+    return LogEventIdxTsType{emscripten::val(std::distance(begin, it))};
 }
 }  // namespace clp_ffi_js::ir
 
