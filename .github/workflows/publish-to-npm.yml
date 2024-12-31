@@ -5,6 +5,9 @@ on:
     types: ["created"]
   workflow_dispatch:
 
+env:
+  G_CLP_FFI_JS_DIST_ARTIFACT_NAME: "clp-ffi-js-dist-${{github.sha}}"
+
 permissions: {}
 
 jobs:
@@ -23,6 +26,7 @@ jobs:
       - name: "Upload build artifacts"
         uses: "actions/upload-artifact@v4"
         with:
+          name: "${{env.G_CLP_FFI_JS_DIST_ARTIFACT_NAME}}"
           path: "dist/"
           if-no-files-found: "error"
           retention-days: 1
@@ -33,6 +37,9 @@ jobs:
     steps:
       - uses: "actions/checkout@v4"
       - uses: "actions/download-artifact@v4"
+        with:
+          name: "${{env.G_CLP_FFI_JS_DIST_ARTIFACT_NAME}}"
+          path: "dist/"
 
       - uses: "actions/setup-node@v4"
         with:
