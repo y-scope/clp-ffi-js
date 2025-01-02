@@ -151,8 +151,7 @@ auto StructuredIrStreamReader::get_log_event_index_by_timestamp(
         clp::ir::epoch_time_ms_t const timestamp
 ) -> LogEventIdxTsType {
     return generic_get_log_event_index_by_timestamp<StructuredLogEvent>(
-            m_deserialized_log_events->begin(),
-            m_deserialized_log_events->end(),
+            *m_deserialized_log_events,
             timestamp
     );
 }

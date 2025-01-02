@@ -189,7 +189,7 @@ protected:
      * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
      * @return The index of the last matched log event, or null value if not found.
      */
-    template <typename LogEvent, typename Iterator>
+    template <typename LogEvent>
     requires requires(
                      LogEventWithFilterData<LogEvent> const& event,
                      clp::ir::epoch_time_ms_t timestamp
@@ -199,8 +199,7 @@ protected:
         } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
     }
     static auto generic_get_log_event_index_by_timestamp(
-            Iterator begin,
-            Iterator end,
+            LogEvents<LogEvent> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType;
 };
@@ -290,7 +289,7 @@ auto StreamReader::generic_filter_log_events(
     }
 }
 
-template <typename LogEvent, typename Iterator>
+template <typename LogEvent>
 requires requires(
                  LogEventWithFilterData<LogEvent> const& event,
                  clp::ir::epoch_time_ms_t timestamp
@@ -300,22 +299,23 @@ requires requires(
     } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
 }
 auto StreamReader::generic_get_log_event_index_by_timestamp(
-        Iterator begin,
-        Iterator end,
+        LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t timestamp
 ) -> LogEventIdxTsType {
-    if (begin == end) {
+    if (log_events.empty()) {
         return LogEventIdxTsType{emscripten::val::null()};
     }
-    auto it = std::upper_bound(
-            begin,
-            end,
-            timestamp,
-            [](LogEventWithFilterData<LogEvent> const& event, clp::ir::epoch_time_ms_t ts) {
-                return event.get_timestamp() > ts;
-            }
+    auto it = std::ranges::upper_bound(
+        log_events,
+        timestamp,
+        [](const LogEventWithFilterData<LogEvent>& log_event, const clp::ir::epoch_time_ms_t& ts) {
+            return ts < log_event.get_timestamp();
+        }
     );
 
+    if (it == log_events.begin()) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
     // it points to first element that is larger than timestamp,
     // adjust the iterator to find the last valid index.
     --it;
@@ -323,7 +323,7 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
         return LogEventIdxTsType{emscripten::val::null()};
     }
 
-    return LogEventIdxTsType{emscripten::val(std::distance(begin, it))};
+    return LogEventIdxTsType{emscripten::val(std::distance(log_events.begin(), it))};
 }
 }  // namespace clp_ffi_js::ir
 
