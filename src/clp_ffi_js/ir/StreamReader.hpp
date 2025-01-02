@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
@@ -29,6 +30,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventIdxTsType);
 
 enum class StreamType : uint8_t {
     Structured,
@@ -123,6 +125,14 @@ public:
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
+    /**
+     * Retrieves the last index of the log event that matches the given timestamp.
+     *
+     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
+     * @return The index of the log event with the specified timestamp, or null value if not found.
+     */
+    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp
+    ) -> LogEventIdxTsType = 0;
 
 protected:
     explicit StreamReader() = default;
@@ -163,7 +173,6 @@ protected:
      * @tparam LogEvent
      * @param log_level_filter
      * @param log_events Derived class's log events.
-     * @param log_events
      * @param[out] filtered_log_event_map Returns the filtered log events.
      */
     template <typename LogEvent>
@@ -172,6 +181,27 @@ protected:
             LogLevelFilterTsType const& log_level_filter,
             LogEvents<LogEvent> const& log_events
     ) -> void;
+
+    /**
+     * Retrieves the index of the last log event that matches the given timestamp.
+     *
+     * @tparam LogEvent
+     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
+     * @return The index of the last matched log event, or null value if not found.
+     */
+    template <typename LogEvent>
+    requires requires(
+                     LogEventWithFilterData<LogEvent> const& event,
+                     clp::ir::epoch_time_ms_t timestamp
+             ) {
+        {
+            event.get_timestamp()
+        } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
+    }
+    static auto generic_get_log_event_index_by_timestamp(
+            LogEvents<LogEvent> const& log_events,
+            clp::ir::epoch_time_ms_t timestamp
+    ) -> LogEventIdxTsType;
 };
 
 template <typename LogEvent, typename ToStringFunc>
@@ -257,6 +287,43 @@ auto StreamReader::generic_filter_log_events(
             filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
+}
+
+template <typename LogEvent>
+requires requires(
+                 LogEventWithFilterData<LogEvent> const& event,
+                 clp::ir::epoch_time_ms_t timestamp
+         ) {
+    {
+        event.get_timestamp()
+    } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
+}
+auto StreamReader::generic_get_log_event_index_by_timestamp(
+        LogEvents<LogEvent> const& log_events,
+        clp::ir::epoch_time_ms_t timestamp
+) -> LogEventIdxTsType {
+    if (log_events.empty()) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
+    auto it = std::ranges::upper_bound(
+        log_events,
+        timestamp,
+        [](const LogEventWithFilterData<LogEvent>& log_event, const clp::ir::epoch_time_ms_t& ts) {
+            return ts < log_event.get_timestamp();
+        }
+    );
+
+    if (it == log_events.begin()) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
+    // it points to first element that is larger than timestamp,
+    // adjust the iterator to find the last valid index.
+    --it;
+    if (it->get_timestamp() < timestamp) {
+        return LogEventIdxTsType{emscripten::val::null()};
+    }
+
+    return LogEventIdxTsType{emscripten::val(std::distance(log_events.begin(), it))};
 }
 }  // namespace clp_ffi_js::ir
 
