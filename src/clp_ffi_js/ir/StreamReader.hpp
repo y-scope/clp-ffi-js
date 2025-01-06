@@ -62,9 +62,10 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto
-    create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
-            -> std::unique_ptr<StreamReader>;
+    [[nodiscard]] static auto create(
+            DataArrayTsType const& data_array,
+            ReaderOptions const& reader_options
+    ) -> std::unique_ptr<StreamReader>;
 
     // Destructor
     virtual ~StreamReader() = default;
@@ -123,8 +124,7 @@ public:
      * @throw ClpFfiJsException if a message cannot be decoded.
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
-            -> DecodedResultsTsType
-            = 0;
+            -> DecodedResultsTsType = 0;
     /**
      * Retrieves the index of the last log event that matches the given timestamp.
      *
@@ -135,9 +135,8 @@ public:
      * @return the last index smaller than the timestamp if no exact timestamp match, unless all log
      * event timestamps are larger than the target. In that case, return the first log event index.
      */
-    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp)
-            -> LogEventIdxTsType
-            = 0;
+    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp
+    ) -> LogEventIdxTsType = 0;
 
 protected:
     explicit StreamReader() = default;
@@ -199,9 +198,9 @@ protected:
      */
     template <typename LogEvent>
     requires requires(
-            LogEventWithFilterData<LogEvent> const& event,
-            clp::ir::epoch_time_ms_t timestamp
-    ) {
+                     LogEventWithFilterData<LogEvent> const& event,
+                     clp::ir::epoch_time_ms_t timestamp
+             ) {
         {
             event.get_timestamp()
         } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
@@ -299,9 +298,9 @@ auto StreamReader::generic_filter_log_events(
 
 template <typename LogEvent>
 requires requires(
-        LogEventWithFilterData<LogEvent> const& event,
-        clp::ir::epoch_time_ms_t timestamp
-) {
+                 LogEventWithFilterData<LogEvent> const& event,
+                 clp::ir::epoch_time_ms_t timestamp
+         ) {
     {
         event.get_timestamp()
     } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
