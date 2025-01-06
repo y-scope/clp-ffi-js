@@ -11,6 +11,7 @@
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
+#include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
