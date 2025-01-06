@@ -305,10 +305,11 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
     if (log_events.empty()) {
         return LogEventIdxTsType{emscripten::val::null()};
     }
-    auto it = std::ranges::upper_bound(
-        log_events,
+    auto it = std::upper_bound(
+        log_events.begin(),
+        log_events.end(),
         timestamp,
-        [](const LogEventWithFilterData<LogEvent>& log_event, const clp::ir::epoch_time_ms_t& ts) {
+        [](clp::ir::epoch_time_ms_t ts, LogEventWithFilterData<LogEvent> const& log_event) {
             return ts < log_event.get_timestamp();
         }
     );
