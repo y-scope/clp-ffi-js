@@ -126,14 +126,13 @@ public:
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
     /**
-     * Retrieves the index of the last log event that matches the given timestamp.
+     * Finds the index of the last log event that matches or next to the given timestamp.
      *
      * @tparam LogEvent
      * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
-     * @return The index of the last matched log event.
-     * @return null value if log events are empty.
-     * @return the last index smaller than the timestamp if no exact timestamp match, unless all log
-     * event timestamps are larger than the target. In that case, return the first log event index.
+     * @return The last index of the log event whose timestamp is smaller than or equal to the `timestamp`.
+     * @return `0` if all log event timestamps are larger than the target.
+     * @return null if no log event exists in the stream.
      */
     [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType = 0;
@@ -190,10 +189,7 @@ protected:
      * Templated implementation of `get_log_event_index_by_timestamp`.
      *
      * @tparam LogEvent
-     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
-     * @return The index of the last matched log event.
-     * @return null value if log events are empty.
-     * @return the last index smaller than the timestamp if no exact timestamp match, unless all log
+     * @param timestamp
      * event timestamps are larger than the target. In that case, return the first log event index.
      */
     template <typename LogEvent>
@@ -312,6 +308,7 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
     if (log_events.empty()) {
         return LogEventIdxTsType{emscripten::val::null()};
     }
+
     auto it = std::upper_bound(
             log_events.begin(),
             log_events.end(),
@@ -321,12 +318,14 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
             }
     );
 
-    // If the iterator is not pointing to the beginning, decrement it so that it points to
-    // first element that is larger than timestamp.
-    if (it != log_events.begin()) {
-        --it;
+    if (upper == log_events.begin()) {
+        return LogEventIdxTsType{0};
     }
-    return LogEventIdxTsType{emscripten::val(std::distance(log_events.begin(), it))};
+
+    size_t upper_index{std::distance(log_events.begin(), upper)};
+    const auto index{upper_index - 1};
+
+    return LogEventIdxTsType{emscripten::val(index)};
 }
 }  // namespace clp_ffi_js::ir
 
