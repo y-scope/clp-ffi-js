@@ -46,6 +46,23 @@ using LogEvents = std::vector<LogEventWithFilterData<LogEvent>>;
  */
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
+template <typename LogEvent>
+concept GetLogEventIdxInterface = requires(
+        LogEventWithFilterData<LogEvent> const& event,
+        clp::ir::epoch_time_ms_t timestamp
+) {
+    {
+        event.get_timestamp()
+    } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
+};
+
+template <typename LogEvent, typename ToStringFunc>
+concept DecodeRangeInterface = requires(ToStringFunc func, LogEvent const& log_event) {
+    {
+        func(log_event)
+    } -> std::convertible_to<std::string>;
+};
+
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
@@ -130,7 +147,8 @@ public:
      *
      * @tparam LogEvent
      * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
-     * @return The last index of the log event whose timestamp is smaller than or equal to the `timestamp`.
+     * @return The last index of the log event whose timestamp is smaller than or equal to the
+     * `timestamp`.
      * @return `0` if all log event timestamps are larger than the target.
      * @return null if no log event exists in the stream.
      */
@@ -155,12 +173,7 @@ protected:
      * @return See `decode_range`.
      * @throws Propagates `ToStringFunc`'s exceptions.
      */
-    template <typename LogEvent, typename ToStringFunc>
-    requires requires(ToStringFunc func, LogEvent const& log_event) {
-        {
-            func(log_event)
-        } -> std::convertible_to<std::string>;
-    }
+    template <DecodeRangeInterface LogEvent, DecodeRangeInterface ToStringFunc>
     static auto generic_decode_range(
             size_t begin_idx,
             size_t end_idx,
@@ -192,27 +205,14 @@ protected:
      * @param timestamp
      * event timestamps are larger than the target. In that case, return the first log event index.
      */
-    template <typename LogEvent>
-    requires requires(
-                     LogEventWithFilterData<LogEvent> const& event,
-                     clp::ir::epoch_time_ms_t timestamp
-             ) {
-        {
-            event.get_timestamp()
-        } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
-    }
-    static auto generic_get_log_event_index_by_timestamp(
-            LogEvents<LogEvent> const& log_events,
+    template <GetLogEventIdxInterface LogEvent>
+    auto generic_get_log_event_index_by_timestamp(
+            std::vector<LogEventWithFilterData<LogEvent>> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType;
 };
 
-template <typename LogEvent, typename ToStringFunc>
-requires requires(ToStringFunc func, LogEvent const& log_event) {
-    {
-        func(log_event)
-    } -> std::convertible_to<std::string>;
-}
+template <DecodeRangeInterface LogEvent, DecodeRangeInterface ToStringFunc>
 auto StreamReader::generic_decode_range(
         size_t begin_idx,
         size_t end_idx,
@@ -292,15 +292,7 @@ auto StreamReader::generic_filter_log_events(
     }
 }
 
-template <typename LogEvent>
-requires requires(
-                 LogEventWithFilterData<LogEvent> const& event,
-                 clp::ir::epoch_time_ms_t timestamp
-         ) {
-    {
-        event.get_timestamp()
-    } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
-}
+template <GetLogEventIdxInterface LogEvent>
 auto StreamReader::generic_get_log_event_index_by_timestamp(
         LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t timestamp
@@ -309,21 +301,21 @@ auto StreamReader::generic_get_log_event_index_by_timestamp(
         return LogEventIdxTsType{emscripten::val::null()};
     }
 
-    auto it = std::upper_bound(
+    auto upper{std::upper_bound(
             log_events.begin(),
             log_events.end(),
             timestamp,
             [](clp::ir::epoch_time_ms_t ts, LogEventWithFilterData<LogEvent> const& log_event) {
                 return ts < log_event.get_timestamp();
             }
-    );
+    )};
 
     if (upper == log_events.begin()) {
-        return LogEventIdxTsType{0};
+        return LogEventIdxTsType{emscripten::val(0)};
     }
 
-    size_t upper_index{std::distance(log_events.begin(), upper)};
-    const auto index{upper_index - 1};
+    auto const upper_index{std::distance(log_events.begin(), upper)};
+    auto const index{upper_index - 1};
 
     return LogEventIdxTsType{emscripten::val(index)};
 }
