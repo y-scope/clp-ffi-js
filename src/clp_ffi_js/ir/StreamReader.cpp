@@ -149,7 +149,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function(
                     "getLogEventIndexByTimestamp",
-                    &clp_ffi_js::ir::StreamReader::get_log_event_index_by_timestamp
+                    &clp_ffi_js::ir::StreamReader::get_log_event_idx_by_timestamp
             );
 }
 }  // namespace

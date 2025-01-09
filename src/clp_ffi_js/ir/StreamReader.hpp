@@ -152,7 +152,7 @@ public:
      * @return `0` if all log event timestamps are larger than the target.
      * @return null if no log event exists in the stream.
      */
-    [[nodiscard]] virtual auto get_log_event_index_by_timestamp(clp::ir::epoch_time_ms_t timestamp
+    [[nodiscard]] virtual auto get_log_event_idx_by_timestamp(clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType = 0;
 
 protected:
@@ -200,14 +200,14 @@ protected:
     ) -> void;
 
     /**
-     * Templated implementation of `get_log_event_index_by_timestamp`.
+     * Templated implementation of `get_log_event_idx_by_timestamp`.
      *
      * @tparam LogEvent
      * @param timestamp
      * event timestamps are larger than the target. In that case, return the first log event index.
      */
     template <GetLogEventIdxInterface LogEvent>
-    auto generic_get_log_event_index_by_timestamp(
+    auto generic_get_log_event_idx_by_timestamp(
             std::vector<LogEventWithFilterData<LogEvent>> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType;
@@ -295,7 +295,7 @@ auto StreamReader::generic_filter_log_events(
 }
 
 template <GetLogEventIdxInterface LogEvent>
-auto StreamReader::generic_get_log_event_index_by_timestamp(
+auto StreamReader::generic_get_log_event_idx_by_timestamp(
         LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t timestamp
 ) -> LogEventIdxTsType {
