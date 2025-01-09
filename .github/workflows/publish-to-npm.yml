@@ -1,0 +1,51 @@
+name: "publish-to-npm"
+
+on:
+  release:
+    types: ["created"]
+  workflow_dispatch:
+
+env:
+  G_CLP_FFI_JS_DIST_ARTIFACT_NAME: "clp-ffi-js-dist-${{github.sha}}"
+
+permissions: {}
+
+jobs:
+  build:
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+        with:
+          submodules: "recursive"
+
+      - name: "Install task"
+        run: "npm install --global @go-task/cli"
+
+      - run: "task package"
+
+      - name: "Upload build artifacts"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "${{env.G_CLP_FFI_JS_DIST_ARTIFACT_NAME}}"
+          path: "dist/"
+          if-no-files-found: "error"
+          retention-days: 1
+
+  publish-to-npm:
+    needs: ["build"]
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "actions/download-artifact@v4"
+        with:
+          name: "${{env.G_CLP_FFI_JS_DIST_ARTIFACT_NAME}}"
+          path: "dist/"
+
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org/"
+
+      - run: "npm publish"
+        env:
+          NODE_AUTH_TOKEN: "${{secrets.NPM_TOKEN}}"

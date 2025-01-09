@@ -9,12 +9,29 @@ Emscripten.cmake"
     )
 endif()
 
+# Extract the project name & version from package.json
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/package.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/package.json" CLP_FFI_JS_PACKAGE_JSON_CONTENT)
+else()
+    message(FATAL_ERROR "`package.json` not found in ${CMAKE_CURRENT_SOURCE_DIR}")
+endif()
+if("${CLP_FFI_JS_PACKAGE_JSON_CONTENT}" MATCHES "\"name\":[ ]*\"([^\"]+)\"")
+    set(CLP_FFI_JS_PROJECT_NAME "${CMAKE_MATCH_1}")
+else()
+    set(CLP_FFI_JS_PROJECT_NAME "clp-ffi-js")
+endif()
+if("${CLP_FFI_JS_PACKAGE_JSON_CONTENT}" MATCHES "\"version\":[ ]*\"([^\"]+)\"")
+    set(CLP_FFI_JS_VERSION "${CMAKE_MATCH_1}")
+else()
+    set(CLP_FFI_JS_VERSION "0.0.0")
+endif()
+
 project(
-    clp-ffi-js
+    "${CLP_FFI_JS_PROJECT_NAME}"
     LANGUAGES
         C
         CXX
-    VERSION 0.3.1
+    VERSION "${CLP_FFI_JS_VERSION}"
 )
 
 # Enable exporting compile commands
