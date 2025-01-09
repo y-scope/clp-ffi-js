@@ -173,7 +173,8 @@ protected:
      * @return See `decode_range`.
      * @throws Propagates `ToStringFunc`'s exceptions.
      */
-    template <DecodeRangeInterface LogEvent, DecodeRangeInterface ToStringFunc>
+    template <typename LogEvent, typename ToStringFunc>
+    requires DecodeRangeInterface<LogEvent, ToStringFunc>
     static auto generic_decode_range(
             size_t begin_idx,
             size_t end_idx,
@@ -212,7 +213,8 @@ protected:
     ) -> LogEventIdxTsType;
 };
 
-template <DecodeRangeInterface LogEvent, DecodeRangeInterface ToStringFunc>
+template <typename LogEvent, typename ToStringFunc>
+requires DecodeRangeInterface<LogEvent, ToStringFunc>
 auto StreamReader::generic_decode_range(
         size_t begin_idx,
         size_t end_idx,
