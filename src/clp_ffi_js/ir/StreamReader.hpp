@@ -190,7 +190,7 @@ protected:
      * @tparam LogEvent
      * @param log_level_filter
      * @param log_events Derived class's log events.
-    * @param log_events
+     * @param log_events
      * @param[out] filtered_log_event_map Returns the filtered log events.
      */
     template <typename LogEvent>
