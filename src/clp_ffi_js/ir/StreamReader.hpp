@@ -56,13 +56,6 @@ concept GetLogEventIdxInterface = requires(
     } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
 };
 
-template <typename LogEvent, typename ToStringFunc>
-concept DecodeRangeInterface = requires(ToStringFunc func, LogEvent const& log_event) {
-    {
-        func(log_event)
-    } -> std::convertible_to<std::string>;
-};
-
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
@@ -174,7 +167,11 @@ protected:
      * @throws Propagates `ToStringFunc`'s exceptions.
      */
     template <typename LogEvent, typename ToStringFunc>
-    requires DecodeRangeInterface<LogEvent, ToStringFunc>
+    requires requires(ToStringFunc func, LogEvent const& log_event) {
+        {
+            func(log_event)
+        } -> std::convertible_to<std::string>;
+    }
     static auto generic_decode_range(
             size_t begin_idx,
             size_t end_idx,
@@ -215,7 +212,11 @@ protected:
 };
 
 template <typename LogEvent, typename ToStringFunc>
-requires DecodeRangeInterface<LogEvent, ToStringFunc>
+requires requires(ToStringFunc func, LogEvent const& log_event) {
+    {
+        func(log_event)
+    } -> std::convertible_to<std::string>;
+}
 auto StreamReader::generic_decode_range(
         size_t begin_idx,
         size_t end_idx,
