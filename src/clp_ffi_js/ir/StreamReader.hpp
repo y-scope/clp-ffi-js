@@ -202,11 +202,11 @@ protected:
      *
      * @tparam LogEvent
      * @param timestamp
-     * event timestamps are larger than the target. In that case, return the first log event index.
+     * @return the best matched log event index.
      */
     template <GetLogEventIdxInterface LogEvent>
     auto generic_get_log_event_idx_by_timestamp(
-            std::vector<LogEventWithFilterData<LogEvent>> const& log_events,
+            LogEvents<LogEvent> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType;
 };
