@@ -46,16 +46,6 @@ using LogEvents = std::vector<LogEventWithFilterData<LogEvent>>;
  */
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
-template <typename LogEvent>
-concept GetLogEventIdxInterface = requires(
-        LogEventWithFilterData<LogEvent> const& event,
-        clp::ir::epoch_time_ms_t timestamp
-) {
-    {
-        event.get_timestamp()
-    } -> std::convertible_to<clp::ir::epoch_time_ms_t>;
-};
-
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
@@ -204,7 +194,7 @@ protected:
      * @param timestamp
      * @return the best matched log event index.
      */
-    template <GetLogEventIdxInterface LogEvent>
+    template <typename LogEvent>
     auto generic_get_log_event_idx_by_timestamp(
             LogEvents<LogEvent> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
@@ -296,7 +286,7 @@ auto StreamReader::generic_filter_log_events(
     }
 }
 
-template <GetLogEventIdxInterface LogEvent>
+template <typename LogEvent>
 auto StreamReader::generic_get_log_event_idx_by_timestamp(
         LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t timestamp
