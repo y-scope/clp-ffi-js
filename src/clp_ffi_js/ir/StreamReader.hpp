@@ -295,7 +295,7 @@ auto StreamReader::generic_get_log_event_idx_by_timestamp(
         return LogEventIdxTsType{emscripten::val::null()};
     }
 
-    auto upper{std::upper_bound(
+    auto first_greater_it{std::upper_bound(
             log_events.begin(),
             log_events.end(),
             timestamp,
@@ -304,14 +304,13 @@ auto StreamReader::generic_get_log_event_idx_by_timestamp(
             }
     )};
 
-    if (upper == log_events.begin()) {
+    if (first_greater_it == log_events.begin()) {
         return LogEventIdxTsType{emscripten::val(0)};
     }
 
-    auto const upper_index{std::distance(log_events.begin(), upper)};
-    auto const index{upper_index - 1};
+    auto const first_greater_idx{std::distance(log_events.begin(), first_greater_it)};
 
-    return LogEventIdxTsType{emscripten::val(index)};
+    return LogEventIdxTsType{emscripten::val(first_greater_idx - 1)};
 }
 }  // namespace clp_ffi_js::ir
 
