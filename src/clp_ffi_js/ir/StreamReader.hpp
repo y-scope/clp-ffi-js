@@ -128,7 +128,6 @@ public:
     /**
      * Finds the index of the last log event that matches or next to the given timestamp.
      *
-     * @tparam LogEvent
      * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
      * @return The last index of the log event whose timestamp is smaller than or equal to the
      * `timestamp`.
@@ -191,6 +190,7 @@ protected:
      * Templated implementation of `get_log_event_idx_by_timestamp`.
      *
      * @tparam LogEvent
+     * @param log_events
      * @param timestamp
      * @return the best matched log event index.
      */
