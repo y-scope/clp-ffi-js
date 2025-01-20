@@ -1,6 +1,6 @@
 {
   "name": "clp-ffi-js",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "clp-ffi-js is a JavaScript FFI library for CLP.",
   "author": "YScope Inc. <dev@yscope.com>",
   "license": "Apache-2.0",
