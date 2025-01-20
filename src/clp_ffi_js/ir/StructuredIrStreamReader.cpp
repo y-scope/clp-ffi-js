@@ -13,6 +13,7 @@
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
@@ -26,6 +27,20 @@ namespace {
 constexpr std::string_view cEmptyJsonStr{"{}"};
 constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
+
+/**
+ * @see nlohmann::basic_json::dump
+ * Serializes a JSON value into a string with invalid UTF-8 sequences replaced rather than
+ * throwing an exception.
+ * @param json
+ * @return Serialized JSON.
+ */
+auto dump_json_with_replace(nlohmann::json const& json) -> std::string;
+
+auto dump_json_with_replace(nlohmann::json const& json) -> std::string {
+    return json.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
+}
+
 }  // namespace
 
 auto StructuredIrStreamReader::create(
@@ -132,7 +147,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             );
             json_str = std::string(cEmptyJsonStr);
         } else {
-            json_str = json_result.value().dump();
+            json_str = dump_json_with_replace(json_result.value());
         }
         return json_str;
     };
