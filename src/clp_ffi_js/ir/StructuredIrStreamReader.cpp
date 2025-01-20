@@ -13,6 +13,7 @@
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
