@@ -132,7 +132,8 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             );
             json_str = std::string(cEmptyJsonStr);
         } else {
-            json_str = json_result.value().dump();
+            json_str = json_result.value()
+                               .dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
         }
         return json_str;
     };
