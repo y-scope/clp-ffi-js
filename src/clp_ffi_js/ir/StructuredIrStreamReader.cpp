@@ -27,6 +27,20 @@ namespace {
 constexpr std::string_view cEmptyJsonStr{"{}"};
 constexpr std::string_view cReaderOptionsLogLevelKey{"logLevelKey"};
 constexpr std::string_view cReaderOptionsTimestampKey{"timestampKey"};
+
+/**
+ * @see nlohmann::basic_json::dump
+ * Dumps a JSON value with error handling set to replace invalid UTF-8 characters rather than
+ * throwing an exception.
+ * @param json
+ * @return Serialized JSON.
+ */
+auto json_dump_with_replace(nlohmann::json const& json) -> std::string;
+
+auto json_dump_with_replace(nlohmann::json const& json) -> std::string {
+    return json.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
+}
+
 }  // namespace
 
 auto StructuredIrStreamReader::create(
@@ -133,8 +147,7 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
             );
             json_str = std::string(cEmptyJsonStr);
         } else {
-            json_str = json_result.value()
-                               .dump(-1, ' ', false, nlohmann::detail::error_handler_t::replace);
+            json_str = json_dump_with_replace(json_result.value());
         }
         return json_str;
     };
