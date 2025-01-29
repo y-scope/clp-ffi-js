@@ -148,8 +148,8 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
             .function(
-                    "getLogEventIdxByTimestamp",
-                    &clp_ffi_js::ir::StreamReader::get_log_event_idx_by_timestamp
+                    "getLogEventIdxWithNearestTimestamp",
+                    &clp_ffi_js::ir::StreamReader::get_log_event_idx_with_nearest_timestamp
             );
 }
 }  // namespace

@@ -126,15 +126,15 @@ public:
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
     /**
-     * Finds the index of the last log event that matches or next to the given timestamp.
-     *
-     * @param timestamp The timestamp to search for, in milliseconds since the Unix epoch.
-     * @return The last index of the log event whose timestamp is smaller than or equal to the
-     * `timestamp`.
-     * @return `0` if all log event timestamps are larger than the target.
+     * Finds the log event with the timestamp that's nearest to the `target_ts`.
+     * @param target_ts
+     * @return The index of the log event with:
+     * - the largest timestamp less than or equal to `target_ts`,
+     * - or the index `0` if all timestamps are greater than `target_ts`.
      * @return null if no log event exists in the stream.
      */
-    [[nodiscard]] virtual auto get_log_event_idx_by_timestamp(clp::ir::epoch_time_ms_t timestamp
+    [[nodiscard]] virtual auto get_log_event_idx_with_nearest_timestamp(
+            clp::ir::epoch_time_ms_t target_ts
     ) -> LogEventIdxTsType = 0;
 
 protected:
@@ -187,7 +187,7 @@ protected:
     ) -> void;
 
     /**
-     * Templated implementation of `get_log_event_idx_by_timestamp`.
+     * Templated implementation of `get_log_event_idx_with_nearest_timestamp`.
      *
      * @tparam LogEvent
      * @param log_events
@@ -195,7 +195,7 @@ protected:
      * @return the best matched log event index.
      */
     template <typename LogEvent>
-    auto generic_get_log_event_idx_by_timestamp(
+    auto generic_get_log_event_idx_with_nearest_timestamp(
             LogEvents<LogEvent> const& log_events,
             clp::ir::epoch_time_ms_t timestamp
     ) -> LogEventIdxTsType;
@@ -287,7 +287,7 @@ auto StreamReader::generic_filter_log_events(
 }
 
 template <typename LogEvent>
-auto StreamReader::generic_get_log_event_idx_by_timestamp(
+auto StreamReader::generic_get_log_event_idx_with_nearest_timestamp(
         LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t timestamp
 ) -> LogEventIdxTsType {
