@@ -75,8 +75,8 @@ public:
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType override;
 
-    [[nodiscard]] auto get_log_event_idx_with_nearest_timestamp(clp::ir::epoch_time_ms_t target_ts
-    ) -> LogEventIdxTsType override;
+    [[nodiscard]] auto find_nearest_log_event_idx_by_timestamp(clp::ir::epoch_time_ms_t target_ts
+    ) -> NullableLogEventIdx override;
 
 private:
     // Constructor

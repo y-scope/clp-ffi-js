@@ -30,7 +30,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventIdxTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 
 enum class StreamType : uint8_t {
     Structured,
@@ -125,17 +125,24 @@ public:
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
+
     /**
-     * Finds the log event with the timestamp that's nearest to the `target_ts`.
+     * Finds the log event, L, where if we assume:
+     *
+     * - the collection of log events is sorted in ascending timestamp order;
+     * - and we insert a marker log event, M, with timestamp `target_ts` into the collection (if log
+     *   events with timestamp `target_ts` already exist in the collection, M should be inserted
+     *   after them).
+     *
+     * L is the event just before M, if M is not the first event in the collection; otherwise L is
+     * the event just after M.
+     *
      * @param target_ts
-     * @return The index of the log event with:
-     * - the largest timestamp less than or equal to `target_ts`,
-     * - or the index `0` if all timestamps are greater than `target_ts`.
-     * @return null if no log event exists in the stream.
+     * @return The index of the log event L.
      */
-    [[nodiscard]] virtual auto get_log_event_idx_with_nearest_timestamp(
+    [[nodiscard]] virtual auto find_nearest_log_event_idx_by_timestamp(
             clp::ir::epoch_time_ms_t target_ts
-    ) -> LogEventIdxTsType = 0;
+    ) -> NullableLogEventIdx = 0;
 
 protected:
     explicit StreamReader() = default;
@@ -187,18 +194,18 @@ protected:
     ) -> void;
 
     /**
-     * Templated implementation of `get_log_event_idx_with_nearest_timestamp`.
+     * Templated implementation of `find_nearest_log_event_idx_by_timestamp`.
      *
      * @tparam LogEvent
      * @param log_events
-     * @param timestamp
-     * @return the best matched log event index.
+     * @param target_ts
+     * @return See `find_nearest_log_event_idx_by_timestamp`.
      */
     template <typename LogEvent>
-    auto generic_get_log_event_idx_with_nearest_timestamp(
+    auto generic_find_nearest_log_event_idx_by_timestamp(
             LogEvents<LogEvent> const& log_events,
-            clp::ir::epoch_time_ms_t timestamp
-    ) -> LogEventIdxTsType;
+            clp::ir::epoch_time_ms_t target_ts
+    ) -> NullableLogEventIdx;
 };
 
 template <typename LogEvent, typename ToStringFunc>
@@ -287,30 +294,31 @@ auto StreamReader::generic_filter_log_events(
 }
 
 template <typename LogEvent>
-auto StreamReader::generic_get_log_event_idx_with_nearest_timestamp(
+auto StreamReader::generic_find_nearest_log_event_idx_by_timestamp(
         LogEvents<LogEvent> const& log_events,
-        clp::ir::epoch_time_ms_t timestamp
-) -> LogEventIdxTsType {
+        clp::ir::epoch_time_ms_t target_ts
+) -> NullableLogEventIdx {
     if (log_events.empty()) {
-        return LogEventIdxTsType{emscripten::val::null()};
+        return NullableLogEventIdx{emscripten::val::null()};
     }
 
+    // Find the log event whose timestamp is just after `target_ts`
     auto first_greater_it{std::upper_bound(
             log_events.begin(),
             log_events.end(),
-            timestamp,
+            target_ts,
             [](clp::ir::epoch_time_ms_t ts, LogEventWithFilterData<LogEvent> const& log_event) {
                 return ts < log_event.get_timestamp();
             }
     )};
 
     if (first_greater_it == log_events.begin()) {
-        return LogEventIdxTsType{emscripten::val(0)};
+        return NullableLogEventIdx{emscripten::val(0)};
     }
 
     auto const first_greater_idx{std::distance(log_events.begin(), first_greater_it)};
 
-    return LogEventIdxTsType{emscripten::val(first_greater_idx - 1)};
+    return NullableLogEventIdx{emscripten::val(first_greater_idx - 1)};
 }
 }  // namespace clp_ffi_js::ir
 
