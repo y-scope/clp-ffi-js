@@ -148,10 +148,10 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
     );
 }
 
-auto StructuredIrStreamReader::find_nearest_log_event_idx_by_timestamp(
+auto StructuredIrStreamReader::find_nearest_log_event_by_timestamp(
         clp::ir::epoch_time_ms_t const target_ts
 ) -> NullableLogEventIdx {
-    return generic_find_nearest_log_event_idx_by_timestamp(*m_deserialized_log_events, target_ts);
+    return generic_find_nearest_log_event_by_timestamp(*m_deserialized_log_events, target_ts);
 }
 
 StructuredIrStreamReader::StructuredIrStreamReader(

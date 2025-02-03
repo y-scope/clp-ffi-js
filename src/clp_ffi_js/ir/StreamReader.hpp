@@ -140,7 +140,7 @@ public:
      * @param target_ts
      * @return The index of the log event L.
      */
-    [[nodiscard]] virtual auto find_nearest_log_event_idx_by_timestamp(
+    [[nodiscard]] virtual auto find_nearest_log_event_by_timestamp(
             clp::ir::epoch_time_ms_t target_ts
     ) -> NullableLogEventIdx = 0;
 
@@ -194,15 +194,15 @@ protected:
     ) -> void;
 
     /**
-     * Templated implementation of `find_nearest_log_event_idx_by_timestamp`.
+     * Templated implementation of `find_nearest_log_event_by_timestamp`.
      *
      * @tparam LogEvent
      * @param log_events
      * @param target_ts
-     * @return See `find_nearest_log_event_idx_by_timestamp`.
+     * @return See `find_nearest_log_event_by_timestamp`.
      */
     template <typename LogEvent>
-    auto generic_find_nearest_log_event_idx_by_timestamp(
+    auto generic_find_nearest_log_event_by_timestamp(
             LogEvents<LogEvent> const& log_events,
             clp::ir::epoch_time_ms_t target_ts
     ) -> NullableLogEventIdx;
@@ -294,7 +294,7 @@ auto StreamReader::generic_filter_log_events(
 }
 
 template <typename LogEvent>
-auto StreamReader::generic_find_nearest_log_event_idx_by_timestamp(
+auto StreamReader::generic_find_nearest_log_event_by_timestamp(
         LogEvents<LogEvent> const& log_events,
         clp::ir::epoch_time_ms_t target_ts
 ) -> NullableLogEventIdx {
