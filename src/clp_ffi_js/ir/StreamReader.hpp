@@ -129,7 +129,7 @@ public:
     /**
      * Finds the log event, L, where if we assume:
      *
-     * - the collection of log events is sorted in ascending timestamp order;
+     * - the collection of log events is sorted in chronological order, or the search won't work;
      * - and we insert a marker log event, M, with timestamp `target_ts` into the collection (if log
      *   events with timestamp `target_ts` already exist in the collection, M should be inserted
      *   after them).
