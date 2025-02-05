@@ -129,13 +129,16 @@ public:
     /**
      * Finds the log event, L, where if we assume:
      *
-     * - the collection of log events is sorted in chronological order, or the search won't work;
+     * - the collection of log events is sorted in chronological order;
      * - and we insert a marker log event, M, with timestamp `target_ts` into the collection (if log
      *   events with timestamp `target_ts` already exist in the collection, M should be inserted
      *   after them).
      *
      * L is the event just before M, if M is not the first event in the collection; otherwise L is
      * the event just after M.
+     *
+     * NOTE: If the collection of log events isn't in chronological order, this method has undefined
+     * behaviour.
      *
      * @param target_ts
      * @return The index of the log event L.
