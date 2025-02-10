@@ -129,6 +129,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             "Array<[string, bigint, number, number]>"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
+    emscripten::register_type<clp_ffi_js::ir::NullableLogEventIdx>("number | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,
@@ -145,7 +146,11 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             )
             .function("filterLogEvents", &clp_ffi_js::ir::StreamReader::filter_log_events)
             .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
-            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range);
+            .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
+            .function(
+                    "findNearestLogEventByTimestamp",
+                    &clp_ffi_js::ir::StreamReader::find_nearest_log_event_by_timestamp
+            );
 }
 }  // namespace
 

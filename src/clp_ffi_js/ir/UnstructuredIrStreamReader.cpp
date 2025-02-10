@@ -158,6 +158,12 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
     );
 }
 
+auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
+        clp::ir::epoch_time_ms_t const target_ts
+) -> NullableLogEventIdx {
+    return generic_find_nearest_log_event_by_timestamp(m_encoded_log_events, target_ts);
+}
+
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
 )
