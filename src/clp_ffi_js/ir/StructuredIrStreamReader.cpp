@@ -137,20 +137,22 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
 auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
         -> DecodedResultsTsType {
     auto log_event_to_string = [](StructuredLogEvent const& log_event) -> std::string {
-        std::string json_str;
-        auto const json_result{log_event.serialize_to_json()};
-        if (false == json_result.has_value()) {
-            auto error_code{json_result.error()};
+        auto json_result{log_event.serialize_to_json()};
+        if (json_result.has_error()) {
+            auto const error_code{json_result.error()};
             SPDLOG_ERROR(
                     "Failed to deserialize log event to JSON: {}:{}",
                     error_code.category().name(),
                     error_code.message()
             );
-            json_str = std::string(cEmptyJsonStr);
-        } else {
-            json_str = dump_json_with_replace(json_result.value());
+            return std::string{cEmptyJsonStr};
         }
-        return json_str;
+
+        auto& [auto_generated, user_generated] = json_result.value();
+        nlohmann::json const packed_kv_pairs
+                = {{"auto-generated", std::move(auto_generated)},
+                   {"user-generated", std::move(user_generated)}};
+        return dump_json_with_replace(packed_kv_pairs);
     };
 
     return generic_decode_range(

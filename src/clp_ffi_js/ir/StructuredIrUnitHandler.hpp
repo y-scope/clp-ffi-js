@@ -65,10 +65,12 @@ public:
     /**
      * Saves the node's ID if it corresponds to events' authoritative log level or timestamp
      * kv-pair.
+     * @param is_auto_generated
      * @param schema_tree_node_locator
      * @return IRErrorCode::IRErrorCode_Success
      */
     [[nodiscard]] auto handle_schema_tree_node_insertion(
+            bool is_auto_generated,
             clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
     ) -> clp::ffi::ir_stream::IRErrorCode;
 
