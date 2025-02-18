@@ -75,9 +75,14 @@ auto StructuredIrUnitHandler::handle_utc_offset_change(
 }
 
 auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
-        [[maybe_unused]] bool is_auto_generated,
+        bool is_auto_generated,
         clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
 ) -> clp::ffi::ir_stream::IRErrorCode {
+    if (is_auto_generated) {
+        // TODO: Currently, all auto-generated keys are ignored.
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+
     ++m_current_node_id;
 
     auto const& key_name{schema_tree_node_locator.get_key_name()};
