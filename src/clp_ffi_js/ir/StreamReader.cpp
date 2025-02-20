@@ -118,7 +118,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
     emscripten::register_type<clp_ffi_js::ir::DataArrayTsType>("Uint8Array");
     emscripten::register_type<clp_ffi_js::ir::LogLevelFilterTsType>("number[] | null");
     emscripten::register_type<clp_ffi_js::ir::ReaderOptions>(
-            "{logLevelKey: string, timestampKey: string} | null"
+            "{logLevelKey: [bool, Array<string>], timestampKey: [bool, Array<string>]} | null"
     );
 
     // JS types used as outputs

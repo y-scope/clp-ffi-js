@@ -55,11 +55,52 @@ auto parse_log_level(std::string_view str) -> LogLevel {
 }
 }  // namespace
 
+auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
+        clp::ffi::SchemaTree const& schema_tree,
+        clp::ffi::SchemaTree::NodeLocator const& leaf_locator
+) const -> bool {
+    if (leaf_locator.get_type() != m_leaf_type) {
+        return false;
+    }
+
+    auto const optional_id{schema_tree.try_get_node_id(leaf_locator)};
+    if (false == optional_id.has_value()) {
+        return false;
+    }
+    auto node_id{optional_id.value()};
+    size_t matched_depth{0};
+    for (auto const& key : m_leaf_to_root_path) {
+        auto const& node{schema_tree.get_node(node_id)};
+        if (node.get_key_name() != key) {
+            return false;
+        }
+        ++matched_depth;
+        auto const optional_parent_id{node.get_parent_id()};
+        if (false == optional_parent_id.has_value()) {
+            break;
+        }
+        node_id = optional_parent_id.value();
+    }
+
+    if (matched_depth != m_leaf_to_root_path.size()) {
+        return false;
+    }
+
+    return clp::ffi::SchemaTree::cRootId == node_id;
+}
+
 auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
 ) -> clp::ffi::ir_stream::IRErrorCode {
-    auto const& id_value_pairs{log_event.get_user_gen_node_id_value_pairs()};
-    auto const timestamp = get_timestamp(id_value_pairs);
-    auto const log_level = get_log_level(id_value_pairs);
+    auto const timestamp = get_timestamp(
+            m_timestamp_full_branch.is_auto_generated()
+                    ? log_event.get_auto_gen_node_id_value_pairs()
+                    : log_event.get_user_gen_node_id_value_pairs()
+    );
+    auto const log_level = get_log_level(
+            m_log_level_full_branch.is_auto_generated()
+                    ? log_event.get_auto_gen_node_id_value_pairs()
+                    : log_event.get_user_gen_node_id_value_pairs()
+    );
 
     m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
 
@@ -78,18 +119,33 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         bool is_auto_generated,
         clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
 ) -> clp::ffi::ir_stream::IRErrorCode {
-    if (is_auto_generated) {
-        // TODO: Currently, all auto-generated keys are ignored.
-        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    auto const inserted_node_id{
+            is_auto_generated ? m_auto_generated_schema_tree.insert_node(schema_tree_node_locator)
+                              : m_user_generated_schema_tree.insert_node(schema_tree_node_locator)
+    };
+
+    if (false == m_log_level_node_id.has_value()
+        && is_auto_generated == m_log_level_full_branch.is_auto_generated())
+    {
+        if (m_log_level_full_branch.match(
+                    is_auto_generated ? m_auto_generated_schema_tree : m_user_generated_schema_tree,
+                    schema_tree_node_locator
+            ))
+        {
+            m_log_level_node_id.emplace(inserted_node_id);
+        }
     }
 
-    ++m_current_node_id;
-
-    auto const& key_name{schema_tree_node_locator.get_key_name()};
-    if (key_name == m_log_level_key) {
-        m_log_level_node_id.emplace(m_current_node_id);
-    } else if (key_name == m_timestamp_key) {
-        m_timestamp_node_id.emplace(m_current_node_id);
+    if (false == m_timestamp_node_id.has_value()
+        && is_auto_generated == m_timestamp_full_branch.is_auto_generated())
+    {
+        if (m_timestamp_full_branch.match(
+                    is_auto_generated ? m_auto_generated_schema_tree : m_user_generated_schema_tree,
+                    schema_tree_node_locator
+            ))
+        {
+            m_timestamp_node_id.emplace(inserted_node_id);
+        }
     }
 
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
@@ -116,6 +172,7 @@ auto StructuredIrUnitHandler::get_log_level(
     if (log_level_value.is<std::string>()) {
         auto const& log_level_str = log_level_value.get_immutable_view<std::string>();
         log_level = parse_log_level(log_level_str);
+        SPDLOG_INFO("Parsed log level: {}", log_level_str);
     } else if (log_level_value.is<clp::ffi::value_int_t>()) {
         auto const& log_level_int = log_level_value.get_immutable_view<clp::ffi::value_int_t>();
         if (log_level_int >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
@@ -129,6 +186,7 @@ auto StructuredIrUnitHandler::get_log_level(
                 "Authoritative log level's value is not an int or string for log event index {}",
                 log_event_idx
         );
+        // TODO: This should be no longer possible
     }
 
     return log_level;
@@ -159,6 +217,7 @@ auto StructuredIrUnitHandler::get_timestamp(
                 "Authoritative timestamp's value is not an int for log event index {}",
                 log_event_idx
         );
+        // TODO: This should be no longer possible
     }
 
     return timestamp;
