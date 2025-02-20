@@ -57,7 +57,7 @@ auto parse_log_level(std::string_view str) -> LogLevel {
 
 auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
 ) -> clp::ffi::ir_stream::IRErrorCode {
-    auto const& id_value_pairs{log_event.get_node_id_value_pairs()};
+    auto const& id_value_pairs{log_event.get_user_gen_node_id_value_pairs()};
     auto const timestamp = get_timestamp(id_value_pairs);
     auto const log_level = get_log_level(id_value_pairs);
 
@@ -75,8 +75,14 @@ auto StructuredIrUnitHandler::handle_utc_offset_change(
 }
 
 auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
+        bool is_auto_generated,
         clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
 ) -> clp::ffi::ir_stream::IRErrorCode {
+    if (is_auto_generated) {
+        // TODO: Currently, all auto-generated keys are ignored.
+        return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
+    }
+
     ++m_current_node_id;
 
     auto const& key_name{schema_tree_node_locator.get_key_name()};
