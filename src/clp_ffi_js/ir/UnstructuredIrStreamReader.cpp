@@ -160,9 +160,10 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
 )
-        : m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<UnstructuredIrDeserializer>>(
-                  std::move(stream_reader_data_context)
-          )} {}
+        : m_stream_reader_data_context{
+                  std::make_unique<StreamReaderDataContext<UnstructuredIrDeserializer>>(
+                          std::move(stream_reader_data_context)
+                  )
+          } {}
 
 }  // namespace clp_ffi_js::ir

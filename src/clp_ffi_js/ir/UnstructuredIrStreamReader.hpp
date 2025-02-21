@@ -7,7 +7,6 @@
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
