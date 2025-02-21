@@ -144,7 +144,6 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
             };
         }
         message = parsed.value();
-        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
         return message;
     };
 
@@ -164,7 +163,6 @@ UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         : m_stream_reader_data_context{std::make_unique<
                   StreamReaderDataContext<UnstructuredIrDeserializer>>(
                   std::move(stream_reader_data_context)
-          )},
-          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+          )} {}
 
 }  // namespace clp_ffi_js::ir
