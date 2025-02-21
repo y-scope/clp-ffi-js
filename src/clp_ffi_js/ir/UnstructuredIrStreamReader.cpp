@@ -133,7 +133,6 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
 auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
         const -> DecodedResultsTsType {
     auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
-        std::string message;
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             throw ClpFfiJsException{
@@ -143,8 +142,7 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
                     "Failed to decode message"
             };
         }
-        message = parsed.value();
-        return message;
+        return parsed.value();
     };
 
     return generic_decode_range(
