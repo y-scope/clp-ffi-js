@@ -124,11 +124,13 @@ public:
      * kv-pair.
      * @param is_auto_generated
      * @param schema_tree_node_locator
+     * @param schema_tree
      * @return IRErrorCode::IRErrorCode_Success
      */
     [[nodiscard]] auto handle_schema_tree_node_insertion(
             bool is_auto_generated,
-            clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
+            clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator,
+            std::shared_ptr<clp::ffi::SchemaTree const> const& schema_tree
     ) -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
@@ -160,9 +162,6 @@ private:
     // Variables
     SchemaTreeFullBranch m_log_level_full_branch;
     SchemaTreeFullBranch m_timestamp_full_branch;
-
-    clp::ffi::SchemaTree m_auto_generated_schema_tree;
-    clp::ffi::SchemaTree m_user_generated_schema_tree;
 
     schema_tree_node_id_t m_log_level_node_id;
     schema_tree_node_id_t m_timestamp_node_id;

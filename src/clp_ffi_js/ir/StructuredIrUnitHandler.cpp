@@ -117,21 +117,19 @@ auto StructuredIrUnitHandler::handle_utc_offset_change(
 
 auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         bool is_auto_generated,
-        clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator
+        clp::ffi::SchemaTree::NodeLocator schema_tree_node_locator,
+        std::shared_ptr<clp::ffi::SchemaTree const> const& schema_tree
 ) -> clp::ffi::ir_stream::IRErrorCode {
-    auto const inserted_node_id{
-            is_auto_generated ? m_auto_generated_schema_tree.insert_node(schema_tree_node_locator)
-                              : m_user_generated_schema_tree.insert_node(schema_tree_node_locator)
-    };
+    auto const optional_inserted_node_id{schema_tree->try_get_node_id(schema_tree_node_locator)};
+    if (false == optional_inserted_node_id.has_value()) {
+        return clp::ffi::ir_stream::IRErrorCode_Corrupted_IR;
+    }
+    auto const inserted_node_id{optional_inserted_node_id.value()};
 
     if (false == m_log_level_node_id.has_value()
         && is_auto_generated == m_log_level_full_branch.is_auto_generated())
     {
-        if (m_log_level_full_branch.match(
-                    is_auto_generated ? m_auto_generated_schema_tree : m_user_generated_schema_tree,
-                    schema_tree_node_locator
-            ))
-        {
+        if (m_log_level_full_branch.match(*schema_tree, schema_tree_node_locator)) {
             m_log_level_node_id.emplace(inserted_node_id);
         }
     }
@@ -139,11 +137,7 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     if (false == m_timestamp_node_id.has_value()
         && is_auto_generated == m_timestamp_full_branch.is_auto_generated())
     {
-        if (m_timestamp_full_branch.match(
-                    is_auto_generated ? m_auto_generated_schema_tree : m_user_generated_schema_tree,
-                    schema_tree_node_locator
-            ))
-        {
+        if (m_timestamp_full_branch.match(*schema_tree, schema_tree_node_locator)) {
             m_timestamp_node_id.emplace(inserted_node_id);
         }
     }
@@ -195,31 +189,22 @@ auto StructuredIrUnitHandler::get_log_level(
 auto StructuredIrUnitHandler::get_timestamp(
         StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
 ) const -> clp::ir::epoch_time_ms_t {
-    clp::ir::epoch_time_ms_t timestamp{0};
-
+    constexpr clp::ir::epoch_time_ms_t cDefaultTimestamp{0};
     if (false == m_timestamp_node_id.has_value()) {
-        return timestamp;
+        return cDefaultTimestamp;
     }
-    auto const& optional_timestamp_value{id_value_pairs.at(m_timestamp_node_id.value())};
-    if (false == optional_timestamp_value.has_value()) {
-        return timestamp;
+    auto const& optional_timestmap{id_value_pairs.at(m_timestamp_node_id.value())};
+    if (false == optional_timestmap.has_value()) {
+        return cDefaultTimestamp;
     }
-    auto const timestamp_value = optional_timestamp_value.value();
-
-    if (timestamp_value.is<clp::ffi::value_int_t>()) {
-        timestamp = static_cast<clp::ir::epoch_time_ms_t>(
-                timestamp_value.get_immutable_view<clp::ffi::value_int_t>()
-        );
-    } else {
-        // TODO: Add support for parsing string-type timestamp values.
-        auto log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_ERROR(
-                "Authoritative timestamp's value is not an int for log event index {}",
-                log_event_idx
-        );
-        // TODO: This should be no longer possible
+    auto const& timestamp{optional_timestmap.value()};
+    if (false == timestamp.is<clp::ffi::value_int_t>()) {
+        // TODO: We need to log this branch as an internal error, or we could just let
+        // `get_immutable_view` throw
+        return cDefaultTimestamp;
     }
-
-    return timestamp;
+    return static_cast<clp::ir::epoch_time_ms_t>(
+            timestamp.get_immutable_view<clp::ffi::value_int_t>()
+    );
 }
 }  // namespace clp_ffi_js::ir
