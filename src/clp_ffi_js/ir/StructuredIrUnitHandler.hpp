@@ -19,8 +19,6 @@
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 
 namespace clp_ffi_js::ir {
-using schema_tree_node_id_t = std::optional<clp::ffi::SchemaTree::Node::id_t>;
-
 /**
  * Class that implements the `clp::ffi::ir_stream::IrUnitHandlerInterface` to buffer log events and
  * determine the schema-tree node IDs of the log level and timestamp kv-pairs.
@@ -29,7 +27,9 @@ class StructuredIrUnitHandler {
 public:
     // Types
     /**
-     * Struct that contains a branch of keys from the root to a leaf node in a schema tree.
+     * Class to represent a full branch from the root to a leaf node in a schema tree.
+     * A branch is uniquely identified by the sequence of key names along the path and the type of
+     * the leaf node. All non-leaf nodes are implicitly of type `Obj`.
      */
     class SchemaTreeFullBranch {
     public:
@@ -55,22 +55,22 @@ public:
         auto operator=(SchemaTreeFullBranch&&) -> SchemaTreeFullBranch& = default;
 
         // Delete copy constructor and assignment operator
-        SchemaTreeFullBranch(SchemaTreeFullBranch const&) = default;
-        auto operator=(SchemaTreeFullBranch const&) -> SchemaTreeFullBranch& = default;
+        SchemaTreeFullBranch(SchemaTreeFullBranch const&) = delete;
+        auto operator=(SchemaTreeFullBranch const&) -> SchemaTreeFullBranch& = delete;
 
         // Destructor
         ~SchemaTreeFullBranch() = default;
 
         /**
-         * @return Whether this branch is from the auto-generated schema tree.
+         * @return Whether this branch belongs to the auto-generated schema tree.
          */
         [[nodiscard]] auto is_auto_generated() const -> bool { return m_is_auto_generated; }
 
         /**
          * @param schema_tree
          * @param leaf_locator
-         * @return Whether the underlying full branch matches the root-to-leaf branch in the given
-         * schema tree.
+         * @return Whether the underlying full branch matches the branch from the `schema_tree`'s
+         * root to the leaf located by `leaf_locator`.
          */
         [[nodiscard]] auto match(
                 clp::ffi::SchemaTree const& schema_tree,
@@ -143,18 +143,22 @@ private:
     // Methods
     /**
      * @param id_value_pairs
-     * @return `LogLevel::NONE` if `m_log_level_node_id` is unset, the node has no value, or the
-     * node's value is not an integer or string.
-     * @return `LogLevel` from node with id `m_log_level_node_id` otherwise.
+     * @return Forwards `parse_log_level_from_value`'s return values on success.
+     * @return LogLevel::None by default if:
+     * - `m_optional_log_level_node_id` is unset.
+     * - `m_optional_log_level_node_id` is set but not appearing in the given node-id-value pairs.
+     * - `parse_log_level_from_value` fails.
      */
     [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> LogLevel;
 
     /**
      * @param id_value_pairs
-     * @return 0 if `m_timestamp_node_id` is unset, the node has no value, or the node's value is
-     * not an integer.
-     * @return Timestamp from node with ID `m_timestamp_node_id` otherwise.
+     * @return Timestamp from node with ID `m_optional_timestamp_node_id` on success.
+     * @return 0 by default if:
+     * - `m_optional_timestamp_id` is unset.
+     * - `m_optional_timestamp_id` is set but not appearing in the given node-id-value pairs.
+     * - The value is not a valid integer.
      */
     [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
     ) const -> clp::ir::epoch_time_ms_t;
@@ -163,8 +167,8 @@ private:
     SchemaTreeFullBranch m_log_level_full_branch;
     SchemaTreeFullBranch m_timestamp_full_branch;
 
-    schema_tree_node_id_t m_log_level_node_id;
-    schema_tree_node_id_t m_timestamp_node_id;
+    std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_log_level_node_id;
+    std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_timestamp_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
     // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add

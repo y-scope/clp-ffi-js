@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <iterator>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <type_utils.hpp>
@@ -70,14 +71,18 @@ auto parse_log_level(std::string_view str) -> std::optional<LogLevel> {
 auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<LogLevel> {
     if (value.is<std::string>()) {
         return parse_log_level(value.get_immutable_view<std::string>());
-    } else if (value.is<clp::ir::FourByteEncodedTextAst>()) {
+    }
+
+    if (value.is<clp::ir::FourByteEncodedTextAst>()) {
         auto const optional_log_level
                 = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
         if (false == optional_log_level.has_value()) {
             return std::nullopt;
         }
         return parse_log_level(optional_log_level.value());
-    } else if (value.is<clp::ir::EightByteEncodedTextAst>()) {
+    }
+
+    if (value.is<clp::ir::EightByteEncodedTextAst>()) {
         auto const optional_log_level
                 = value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
         if (false == optional_log_level.has_value()) {
@@ -85,7 +90,8 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
         }
         return parse_log_level(optional_log_level.value());
     }
-    // TODO: We may need to log here since the type should always match
+
+    SPDLOG_ERROR("Protocol Error: The log level value must be a valid string-convertible type.");
     return std::nullopt;
 }
 }  // namespace
@@ -98,30 +104,32 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
         return false;
     }
 
-    auto const optional_id{schema_tree.try_get_node_id(leaf_locator)};
-    if (false == optional_id.has_value()) {
-        return false;
-    }
-    auto node_id{optional_id.value()};
+    auto optional_node_id{schema_tree.try_get_node_id(leaf_locator)};
     size_t matched_depth{0};
     for (auto const& key : m_leaf_to_root_path) {
-        auto const& node{schema_tree.get_node(node_id)};
+        if (false == optional_node_id.has_value()) {
+            break;
+        }
+        auto const& node{schema_tree.get_node(optional_node_id.value())};
         if (node.get_key_name() != key) {
             return false;
         }
         ++matched_depth;
-        auto const optional_parent_id{node.get_parent_id()};
-        if (false == optional_parent_id.has_value()) {
-            break;
-        }
-        node_id = optional_parent_id.value();
+        optional_node_id = node.get_parent_id();
     }
 
     if (matched_depth != m_leaf_to_root_path.size()) {
+        // The given leaf-to-root path is shorter than the expected one.
         return false;
     }
 
-    return clp::ffi::SchemaTree::cRootId == node_id;
+    if (optional_node_id.has_value()) {
+        // The root is not reached yet.
+        // The given leaf-to-root path is longer than the expected one.
+        return false;
+    }
+
+    return true;
 }
 
 auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
@@ -161,19 +169,19 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     }
     auto const inserted_node_id{optional_inserted_node_id.value()};
 
-    if (false == m_log_level_node_id.has_value()
+    if (false == m_optional_log_level_node_id.has_value()
         && is_auto_generated == m_log_level_full_branch.is_auto_generated())
     {
         if (m_log_level_full_branch.match(*schema_tree, schema_tree_node_locator)) {
-            m_log_level_node_id.emplace(inserted_node_id);
+            m_optional_log_level_node_id.emplace(inserted_node_id);
         }
     }
 
-    if (false == m_timestamp_node_id.has_value()
+    if (false == m_optional_timestamp_node_id.has_value()
         && is_auto_generated == m_timestamp_full_branch.is_auto_generated())
     {
         if (m_timestamp_full_branch.match(*schema_tree, schema_tree_node_locator)) {
-            m_timestamp_node_id.emplace(inserted_node_id);
+            m_optional_timestamp_node_id.emplace(inserted_node_id);
         }
     }
 
@@ -189,21 +197,25 @@ auto StructuredIrUnitHandler::get_log_level(
 ) const -> LogLevel {
     constexpr LogLevel cDefaultLogLevel{LogLevel::NONE};
 
-    if (false == m_log_level_node_id.has_value()) {
-        return cDefaultLogLevel;
-    }
-    auto const& optional_log_level_value{id_value_pairs.at(m_log_level_node_id.value())};
-    if (false == optional_log_level_value.has_value()) {
+    if (false == m_optional_log_level_node_id.has_value()) {
         return cDefaultLogLevel;
     }
 
-    auto const optional_log_level{parse_log_level_from_value(optional_log_level_value.value())};
+    auto const log_level_node_id = m_optional_log_level_node_id.value();
+    if (false == id_value_pairs.contains(log_level_node_id)) {
+        return cDefaultLogLevel;
+    }
+
+    auto const& optional_log_level_value = id_value_pairs.at(log_level_node_id);
     if (false == optional_log_level_value.has_value()) {
+        SPDLOG_ERROR("Protocol error: The log level cannot be an empty value.");
+        return cDefaultLogLevel;
+    }
+
+    auto const optional_log_level = parse_log_level_from_value(optional_log_level_value.value());
+    if (false == optional_log_level.has_value()) {
         auto const log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_INFO(
-                "Failed to decode the log level as a string for log event index {}",
-                log_event_idx
-        );
+        SPDLOG_INFO("Failed to parse log level for log event index {}", log_event_idx);
         return cDefaultLogLevel;
     }
 
@@ -214,17 +226,24 @@ auto StructuredIrUnitHandler::get_timestamp(
         StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
 ) const -> clp::ir::epoch_time_ms_t {
     constexpr clp::ir::epoch_time_ms_t cDefaultTimestamp{0};
-    if (false == m_timestamp_node_id.has_value()) {
+    if (false == m_optional_timestamp_node_id.has_value()) {
         return cDefaultTimestamp;
     }
-    auto const& optional_timestmap{id_value_pairs.at(m_timestamp_node_id.value())};
-    if (false == optional_timestmap.has_value()) {
+
+    auto const timestamp_node_id = m_optional_timestamp_node_id.value();
+    if (false == id_value_pairs.contains(timestamp_node_id)) {
         return cDefaultTimestamp;
     }
-    auto const& timestamp{optional_timestmap.value()};
+
+    auto const& optional_ts = id_value_pairs.at(timestamp_node_id);
+    if (false == optional_ts.has_value()) {
+        SPDLOG_ERROR("Protocol error: The timestamp cannot be an empty value.");
+        return cDefaultTimestamp;
+    }
+
+    auto const& timestamp{optional_ts.value()};
     if (false == timestamp.is<clp::ffi::value_int_t>()) {
-        // TODO: We need to log this branch as an internal error, or we could just let
-        // `get_immutable_view` throw
+        SPDLOG_ERROR("Protocol error: The timestamp value must be a valid integer.");
         return cDefaultTimestamp;
     }
     return static_cast<clp::ir::epoch_time_ms_t>(
