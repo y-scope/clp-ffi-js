@@ -13,8 +13,8 @@
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
-#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ffi/Value.hpp>
+#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
 #include <emscripten/val.h>
@@ -29,9 +29,9 @@ namespace {
  * Parses a string to determine the corresponding `LogLevel` enum value.
  * @param str
  * @return `LogLevel` enum corresponding to `str` if `str` matches a string in `cLogLevelNames`.
- * @return `LogLevel::NONE` otherwise.
+ * @return std::nullopt otherwise.
  */
-auto parse_log_level(std::string_view str) -> LogLevel;
+[[nodiscard]] auto parse_log_level(std::string_view str) -> std::optional<LogLevel>;
 
 /**
  * Parses the log level from the given value.
@@ -40,10 +40,12 @@ auto parse_log_level(std::string_view str) -> LogLevel;
  * @return std::nullopt on failures:
  * - The given value's type cannot be decoded as a string.
  * - Forwards `clp::ir::EncodedTextAst::decode_and_unparse`'s return values.
+ * - Forwards `parse_log_level`'s return values.
  */
-[[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<LogLevel>;
+[[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value
+) -> std::optional<LogLevel>;
 
-auto parse_log_level(std::string_view str) -> LogLevel {
+auto parse_log_level(std::string_view str) -> std::optional<LogLevel> {
     // Convert the string to uppercase.
     std::string log_level_name_upper_case{str};
     std::ranges::transform(
@@ -59,7 +61,7 @@ auto parse_log_level(std::string_view str) -> LogLevel {
             log_level_name_upper_case
     );
     if (it == cLogLevelNames.end()) {
-        return LogLevel::NONE;
+        return std::nullopt;
     }
 
     return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));
@@ -69,17 +71,21 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
     if (value.is<std::string>()) {
         return parse_log_level(value.get_immutable_view<std::string>());
     } else if (value.is<clp::ir::FourByteEncodedTextAst>()) {
-        auto const optional_log_level = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
+        auto const optional_log_level
+                = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
         if (false == optional_log_level.has_value()) {
             return std::nullopt;
         }
+        return parse_log_level(optional_log_level.value());
     } else if (value.is<clp::ir::EightByteEncodedTextAst>()) {
+        auto const optional_log_level
+                = value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
         if (false == optional_log_level.has_value()) {
             return std::nullopt;
         }
-        return value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
+        return parse_log_level(optional_log_level.value());
     }
-    // TODO: We may need to log here
+    // TODO: We may need to log here since the type should always match
     return std::nullopt;
 }
 }  // namespace
@@ -191,35 +197,17 @@ auto StructuredIrUnitHandler::get_log_level(
         return cDefaultLogLevel;
     }
 
-    auto const optional_log_level{decode_as_str(optional_log_level_value.value())};
+    auto const optional_log_level{parse_log_level_from_value(optional_log_level_value.value())};
     if (false == optional_log_level_value.has_value()) {
         auto const log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_INFO("Failed to decode the log level as a string for log event index {}", log_event_idx);
+        SPDLOG_INFO(
+                "Failed to decode the log level as a string for log event index {}",
+                log_event_idx
+        );
         return cDefaultLogLevel;
     }
 
-    auto const log_level_str = log_level_value.get_immutable_view<std::string>();
-    log_level = parse_log_level(log_level_str);
-    SPDLOG_INFO("Parsed log level: {}", log_level_str);
-
-    if (log_level_value.is<std::string>()) {
-    } else if (log_level_value.is<clp::ffi::value_int_t>()) {
-        auto const& log_level_int = log_level_value.get_immutable_view<clp::ffi::value_int_t>();
-        if (log_level_int >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
-            && log_level_int < clp::enum_to_underlying_type(LogLevel::LENGTH))
-        {
-            log_level = static_cast<LogLevel>(log_level_int);
-        }
-    } else {
-        auto log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_ERROR(
-                "Authoritative log level's value is not an int or string for log event index {}",
-                log_event_idx
-        );
-        // TODO: This should be no longer possible
-    }
-
-    return log_level;
+    return optional_log_level.value();
 }
 
 auto StructuredIrUnitHandler::get_timestamp(
