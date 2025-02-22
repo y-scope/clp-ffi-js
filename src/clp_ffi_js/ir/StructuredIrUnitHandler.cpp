@@ -13,6 +13,7 @@
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
+#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ffi/Value.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
@@ -31,6 +32,16 @@ namespace {
  * @return `LogLevel::NONE` otherwise.
  */
 auto parse_log_level(std::string_view str) -> LogLevel;
+
+/**
+ * Parses the log level from the given value.
+ * @param value
+ * @return The parsed log level forwarded from `parse_log_level`.
+ * @return std::nullopt on failures:
+ * - The given value's type cannot be decoded as a string.
+ * - Forwards `clp::ir::EncodedTextAst::decode_and_unparse`'s return values.
+ */
+[[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<LogLevel>;
 
 auto parse_log_level(std::string_view str) -> LogLevel {
     // Convert the string to uppercase.
@@ -52,6 +63,24 @@ auto parse_log_level(std::string_view str) -> LogLevel {
     }
 
     return static_cast<LogLevel>(std::distance(cLogLevelNames.begin(), it));
+}
+
+auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<LogLevel> {
+    if (value.is<std::string>()) {
+        return parse_log_level(value.get_immutable_view<std::string>());
+    } else if (value.is<clp::ir::FourByteEncodedTextAst>()) {
+        auto const optional_log_level = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
+        if (false == optional_log_level.has_value()) {
+            return std::nullopt;
+        }
+    } else if (value.is<clp::ir::EightByteEncodedTextAst>()) {
+        if (false == optional_log_level.has_value()) {
+            return std::nullopt;
+        }
+        return value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
+    }
+    // TODO: We may need to log here
+    return std::nullopt;
 }
 }  // namespace
 
@@ -152,21 +181,28 @@ auto StructuredIrUnitHandler::handle_end_of_stream() -> clp::ffi::ir_stream::IRE
 auto StructuredIrUnitHandler::get_log_level(
         StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
 ) const -> LogLevel {
-    LogLevel log_level{LogLevel::NONE};
+    constexpr LogLevel cDefaultLogLevel{LogLevel::NONE};
 
     if (false == m_log_level_node_id.has_value()) {
-        return log_level;
+        return cDefaultLogLevel;
     }
     auto const& optional_log_level_value{id_value_pairs.at(m_log_level_node_id.value())};
     if (false == optional_log_level_value.has_value()) {
-        return log_level;
+        return cDefaultLogLevel;
     }
-    auto const log_level_value = optional_log_level_value.value();
+
+    auto const optional_log_level{decode_as_str(optional_log_level_value.value())};
+    if (false == optional_log_level_value.has_value()) {
+        auto const log_event_idx = m_deserialized_log_events->size();
+        SPDLOG_INFO("Failed to decode the log level as a string for log event index {}", log_event_idx);
+        return cDefaultLogLevel;
+    }
+
+    auto const log_level_str = log_level_value.get_immutable_view<std::string>();
+    log_level = parse_log_level(log_level_str);
+    SPDLOG_INFO("Parsed log level: {}", log_level_str);
 
     if (log_level_value.is<std::string>()) {
-        auto const& log_level_str = log_level_value.get_immutable_view<std::string>();
-        log_level = parse_log_level(log_level_str);
-        SPDLOG_INFO("Parsed log level: {}", log_level_str);
     } else if (log_level_value.is<clp::ffi::value_int_t>()) {
         auto const& log_level_int = log_level_value.get_immutable_view<clp::ffi::value_int_t>();
         if (log_level_int >= clp::enum_to_underlying_type(cValidLogLevelsBeginIdx)
