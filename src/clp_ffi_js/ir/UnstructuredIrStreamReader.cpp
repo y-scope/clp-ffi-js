@@ -133,7 +133,6 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
 auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
         const -> DecodedResultsTsType {
     auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
-        std::string message;
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
             throw ClpFfiJsException{
@@ -143,9 +142,7 @@ auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, 
                     "Failed to decode message"
             };
         }
-        message = parsed.value();
-        m_ts_pattern.insert_formatted_timestamp(log_event.get_timestamp(), message);
-        return message;
+        return parsed.value();
     };
 
     return generic_decode_range(
@@ -167,10 +164,10 @@ auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
 )
-        : m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<UnstructuredIrDeserializer>>(
-                  std::move(stream_reader_data_context)
-          )},
-          m_ts_pattern{m_stream_reader_data_context->get_deserializer().get_timestamp_pattern()} {}
+        : m_stream_reader_data_context{
+                  std::make_unique<StreamReaderDataContext<UnstructuredIrDeserializer>>(
+                          std::move(stream_reader_data_context)
+                  )
+          } {}
 
 }  // namespace clp_ffi_js::ir

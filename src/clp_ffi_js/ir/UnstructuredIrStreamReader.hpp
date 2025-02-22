@@ -7,7 +7,6 @@
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
@@ -85,7 +84,6 @@ private:
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
-    clp::TimestampPattern m_ts_pattern;
 };
 }  // namespace clp_ffi_js::ir
 
