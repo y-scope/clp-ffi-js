@@ -142,25 +142,26 @@ public:
 private:
     // Methods
     /**
-     * @param id_value_pairs
+     * Gets the log level of the given unstructured log event.
+     * @param log_event
      * @return Forwards `parse_log_level_from_value`'s return values on success.
      * @return LogLevel::None by default if:
      * - `m_optional_log_level_node_id` is unset.
      * - `m_optional_log_level_node_id` is set but not appearing in the given node-id-value pairs.
      * - `parse_log_level_from_value` fails.
      */
-    [[nodiscard]] auto get_log_level(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
-    ) const -> LogLevel;
+    [[nodiscard]] auto get_log_level(StructuredLogEvent const& log_event) const -> LogLevel;
 
     /**
-     * @param id_value_pairs
+     * Gets the timestamp of the given unstructured log event.
+     * @param log_event
      * @return Timestamp from node with ID `m_optional_timestamp_node_id` on success.
      * @return 0 by default if:
      * - `m_optional_timestamp_id` is unset.
      * - `m_optional_timestamp_id` is set but not appearing in the given node-id-value pairs.
      * - The value is not a valid integer.
      */
-    [[nodiscard]] auto get_timestamp(StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+    [[nodiscard]] auto get_timestamp(StructuredLogEvent const& log_event
     ) const -> clp::ir::epoch_time_ms_t;
 
     // Variables

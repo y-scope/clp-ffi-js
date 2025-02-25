@@ -104,28 +104,26 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
         return false;
     }
 
-    auto optional_node_id{schema_tree.try_get_node_id(leaf_locator)};
-    size_t matched_depth{0};
+    auto const optional_node_id{schema_tree.try_get_node_id(leaf_locator)};
+    if (false == optional_node_id.has_value()) {
+        return false;
+    }
+    auto node_id{optional_node_id.value()};
     for (auto const& key : m_leaf_to_root_path) {
-        if (false == optional_node_id.has_value()) {
-            break;
+        auto const& node{schema_tree.get_node(node_id)};
+        if (node.is_root()) {
+            // Reaching root before matching all the keys in the expected path.
+            return false;
         }
-        auto const& node{schema_tree.get_node(optional_node_id.value())};
         if (node.get_key_name() != key) {
             return false;
         }
-        ++matched_depth;
-        optional_node_id = node.get_parent_id();
+        node_id = node.get_parent_id_unsafe();
     }
 
-    if (matched_depth != m_leaf_to_root_path.size()) {
-        // The given leaf-to-root path is shorter than the expected one.
-        return false;
-    }
-
-    if (optional_node_id.has_value()) {
+    if (false == schema_tree.get_node(node_id).is_root()) {
         // The root is not reached yet.
-        // The given leaf-to-root path is longer than the expected one.
+        // The expected leaf-to-root path only matches the bottom branch from the leaf.
         return false;
     }
 
@@ -134,16 +132,8 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
 
 auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
 ) -> clp::ffi::ir_stream::IRErrorCode {
-    auto const timestamp = get_timestamp(
-            m_timestamp_full_branch.is_auto_generated()
-                    ? log_event.get_auto_gen_node_id_value_pairs()
-                    : log_event.get_user_gen_node_id_value_pairs()
-    );
-    auto const log_level = get_log_level(
-            m_log_level_full_branch.is_auto_generated()
-                    ? log_event.get_auto_gen_node_id_value_pairs()
-                    : log_event.get_user_gen_node_id_value_pairs()
-    );
+    auto const timestamp = get_timestamp(log_event);
+    auto const log_level = get_log_level(log_event);
 
     m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
 
@@ -192,21 +182,21 @@ auto StructuredIrUnitHandler::handle_end_of_stream() -> clp::ffi::ir_stream::IRE
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
-auto StructuredIrUnitHandler::get_log_level(
-        StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
-) const -> LogLevel {
+auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent const& log_event) const -> LogLevel {
     constexpr LogLevel cDefaultLogLevel{LogLevel::NONE};
-
     if (false == m_optional_log_level_node_id.has_value()) {
         return cDefaultLogLevel;
     }
 
     auto const log_level_node_id = m_optional_log_level_node_id.value();
-    if (false == id_value_pairs.contains(log_level_node_id)) {
+    auto const& node_id_value_pairs = m_log_level_full_branch.is_auto_generated()
+                                              ? log_event.get_auto_gen_node_id_value_pairs()
+                                              : log_event.get_user_gen_node_id_value_pairs();
+    if (false == node_id_value_pairs.contains(log_level_node_id)) {
         return cDefaultLogLevel;
     }
 
-    auto const& optional_log_level_value = id_value_pairs.at(log_level_node_id);
+    auto const& optional_log_level_value = node_id_value_pairs.at(log_level_node_id);
     if (false == optional_log_level_value.has_value()) {
         SPDLOG_ERROR("Protocol error: The log level cannot be an empty value.");
         return cDefaultLogLevel;
@@ -222,8 +212,7 @@ auto StructuredIrUnitHandler::get_log_level(
     return optional_log_level.value();
 }
 
-auto StructuredIrUnitHandler::get_timestamp(
-        StructuredLogEvent::NodeIdValuePairs const& id_value_pairs
+auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event
 ) const -> clp::ir::epoch_time_ms_t {
     constexpr clp::ir::epoch_time_ms_t cDefaultTimestamp{0};
     if (false == m_optional_timestamp_node_id.has_value()) {
@@ -231,11 +220,14 @@ auto StructuredIrUnitHandler::get_timestamp(
     }
 
     auto const timestamp_node_id = m_optional_timestamp_node_id.value();
-    if (false == id_value_pairs.contains(timestamp_node_id)) {
+    auto const& node_id_value_pairs = m_timestamp_full_branch.is_auto_generated()
+                                              ? log_event.get_auto_gen_node_id_value_pairs()
+                                              : log_event.get_user_gen_node_id_value_pairs();
+    if (false == node_id_value_pairs.contains(timestamp_node_id)) {
         return cDefaultTimestamp;
     }
 
-    auto const& optional_ts = id_value_pairs.at(timestamp_node_id);
+    auto const& optional_ts = node_id_value_pairs.at(timestamp_node_id);
     if (false == optional_ts.has_value()) {
         SPDLOG_ERROR("Protocol error: The timestamp cannot be an empty value.");
         return cDefaultTimestamp;
