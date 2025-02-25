@@ -11,6 +11,7 @@
 #include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
+#include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
@@ -63,12 +64,20 @@ auto StructuredIrStreamReader::create(
         ReaderOptions const& reader_options
 ) -> StructuredIrStreamReader {
     auto deserialized_log_events{std::make_shared<StructuredLogEvents>()};
+
+    auto const& log_level_config = reader_options[cReaderOptionsLogLevelKey.data()];
+    auto const& timestamp_config = reader_options[cReaderOptionsTimestampKey.data()];
+
     auto result{StructuredIrDeserializer::create(
             *zstd_decompressor,
             StructuredIrUnitHandler{
                     deserialized_log_events,
-                    reader_options[cReaderOptionsLogLevelKey.data()].as<std::string>(),
-                    reader_options[cReaderOptionsTimestampKey.data()].as<std::string>()
+                    {log_level_config[0].as<bool>(),
+                     emscripten::vecFromJSArray<std::string>(log_level_config[1]),
+                     clp::ffi::SchemaTree::Node::Type::Str},
+                    {timestamp_config[0].as<bool>(),
+                     emscripten::vecFromJSArray<std::string>(timestamp_config[1]),
+                     clp::ffi::SchemaTree::Node::Type::Int}
             }
     )};
     if (result.has_error()) {
