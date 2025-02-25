@@ -68,8 +68,8 @@ public:
         /**
          * @param schema_tree
          * @param leaf_locator
-         * @return Whether the underlying full branch matches the branch from the `schema_tree`'s
-         * root to the leaf located by `leaf_locator`.
+         * @return Whether the branch from root to the leaf located by `leaf_locator`
+         * matches the underlying full branch.
          */
         [[nodiscard]] auto match(
                 clp::ffi::SchemaTree const& schema_tree,
@@ -141,9 +141,8 @@ public:
 private:
     // Methods
     /**
-     * Gets the log level of the given unstructured log event.
      * @param log_event
-     * @return Forwards `parse_log_level_from_value`'s return values on success.
+     * @return `LogLevel` of the given `log_event` on success.
      * @return LogLevel::None by default if:
      * - `m_optional_log_level_node_id` is unset.
      * - `m_optional_log_level_node_id` is set but not appearing in the given node-id-value pairs.
@@ -152,9 +151,8 @@ private:
     [[nodiscard]] auto get_log_level(StructuredLogEvent const& log_event) const -> LogLevel;
 
     /**
-     * Gets the timestamp of the given unstructured log event.
      * @param log_event
-     * @return Timestamp from node with ID `m_optional_timestamp_node_id` on success.
+     * @return Timestamp from the given `log_event` on success.
      * @return 0 by default if:
      * - `m_optional_timestamp_id` is unset.
      * - `m_optional_timestamp_id` is set but not appearing in the given node-id-value pairs.
