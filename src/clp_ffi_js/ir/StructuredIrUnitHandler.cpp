@@ -12,7 +12,6 @@
 #include <utility>
 
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
 #include <clp/ir/EncodedTextAst.hpp>

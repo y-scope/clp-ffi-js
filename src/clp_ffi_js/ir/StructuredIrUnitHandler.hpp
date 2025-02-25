@@ -10,7 +10,6 @@
 #include <vector>
 
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
-#include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
