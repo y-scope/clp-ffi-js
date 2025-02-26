@@ -204,14 +204,19 @@ auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent const& log_event)
 
     auto const& optional_log_level_value = node_id_value_pairs.at(log_level_node_id);
     if (false == optional_log_level_value.has_value()) {
-        SPDLOG_ERROR("Protocol error: The log level cannot be an empty value.");
+        SPDLOG_ERROR(
+                "Protocol error: The log level cannot be an empty value. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
         return cDefaultLogLevel;
     }
 
     auto const optional_log_level = parse_log_level_from_value(optional_log_level_value.value());
     if (false == optional_log_level.has_value()) {
-        auto const log_event_idx = m_deserialized_log_events->size();
-        SPDLOG_INFO("Failed to parse log level for log event index {}", log_event_idx);
+        SPDLOG_DEBUG(
+                "Failed to parse log level for log event index {}",
+                m_deserialized_log_events->size()
+        );
         return cDefaultLogLevel;
     }
 
@@ -240,13 +245,19 @@ auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event
 
     auto const& optional_ts = node_id_value_pairs.at(timestamp_node_id);
     if (false == optional_ts.has_value()) {
-        SPDLOG_ERROR("Protocol error: The timestamp cannot be an empty value.");
+        SPDLOG_ERROR(
+                "Protocol error: The timestamp cannot be an empty value. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
         return cDefaultTimestamp;
     }
 
     auto const& timestamp{optional_ts.value()};
     if (false == timestamp.is<clp::ffi::value_int_t>()) {
-        SPDLOG_ERROR("Protocol error: The timestamp value must be a valid integer.");
+        SPDLOG_ERROR(
+                "Protocol error: The timestamp value must be a valid integer. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
         return cDefaultTimestamp;
     }
     return static_cast<clp::ir::epoch_time_ms_t>(
