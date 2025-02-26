@@ -91,11 +91,11 @@ public:
     StructuredIrUnitHandler(
             std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
                     deserialized_log_events,
-            SchemaTreeFullBranch log_level_full_branch,
-            SchemaTreeFullBranch timestamp_full_branch
+            std::optional<SchemaTreeFullBranch> log_level_full_branch,
+            std::optional<SchemaTreeFullBranch> timestamp_full_branch
     )
-            : m_log_level_full_branch{std::move(log_level_full_branch)},
-              m_timestamp_full_branch{std::move(timestamp_full_branch)},
+            : m_optional_log_level_full_branch{std::move(log_level_full_branch)},
+              m_optional_timestamp_full_branch{std::move(timestamp_full_branch)},
               m_deserialized_log_events{std::move(deserialized_log_events)} {}
 
     // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
@@ -162,8 +162,8 @@ private:
     ) const -> clp::ir::epoch_time_ms_t;
 
     // Variables
-    SchemaTreeFullBranch m_log_level_full_branch;
-    SchemaTreeFullBranch m_timestamp_full_branch;
+    std::optional<SchemaTreeFullBranch> m_optional_log_level_full_branch;
+    std::optional<SchemaTreeFullBranch> m_optional_timestamp_full_branch;
 
     std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_log_level_node_id;
     std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_timestamp_node_id;

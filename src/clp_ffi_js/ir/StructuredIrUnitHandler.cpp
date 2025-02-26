@@ -159,17 +159,19 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     auto const inserted_node_id{optional_inserted_node_id.value()};
 
     if (false == m_optional_log_level_node_id.has_value()
-        && is_auto_generated == m_log_level_full_branch.is_auto_generated())
+        && m_optional_log_level_full_branch.has_value()
+        && is_auto_generated == m_optional_log_level_full_branch->is_auto_generated())
     {
-        if (m_log_level_full_branch.match(*schema_tree, schema_tree_node_locator)) {
+        if (m_optional_log_level_full_branch->match(*schema_tree, schema_tree_node_locator)) {
             m_optional_log_level_node_id.emplace(inserted_node_id);
         }
     }
 
     if (false == m_optional_timestamp_node_id.has_value()
-        && is_auto_generated == m_timestamp_full_branch.is_auto_generated())
+        && m_optional_timestamp_full_branch.has_value()
+        && is_auto_generated == m_optional_timestamp_full_branch->is_auto_generated())
     {
-        if (m_timestamp_full_branch.match(*schema_tree, schema_tree_node_locator)) {
+        if (m_optional_timestamp_full_branch->match(*schema_tree, schema_tree_node_locator)) {
             m_optional_timestamp_node_id.emplace(inserted_node_id);
         }
     }
@@ -183,12 +185,17 @@ auto StructuredIrUnitHandler::handle_end_of_stream() -> clp::ffi::ir_stream::IRE
 
 auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent const& log_event) const -> LogLevel {
     constexpr LogLevel cDefaultLogLevel{LogLevel::NONE};
+
+    if (false == m_optional_log_level_full_branch.has_value()) {
+        return cDefaultLogLevel;
+    }
+
     if (false == m_optional_log_level_node_id.has_value()) {
         return cDefaultLogLevel;
     }
 
     auto const log_level_node_id = m_optional_log_level_node_id.value();
-    auto const& node_id_value_pairs = m_log_level_full_branch.is_auto_generated()
+    auto const& node_id_value_pairs = m_optional_log_level_full_branch->is_auto_generated()
                                               ? log_event.get_auto_gen_node_id_value_pairs()
                                               : log_event.get_user_gen_node_id_value_pairs();
     if (false == node_id_value_pairs.contains(log_level_node_id)) {
@@ -214,12 +221,17 @@ auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent const& log_event)
 auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event
 ) const -> clp::ir::epoch_time_ms_t {
     constexpr clp::ir::epoch_time_ms_t cDefaultTimestamp{0};
+
+    if (false == m_optional_timestamp_full_branch.has_value()) {
+        return cDefaultTimestamp;
+    }
+
     if (false == m_optional_timestamp_node_id.has_value()) {
         return cDefaultTimestamp;
     }
 
     auto const timestamp_node_id = m_optional_timestamp_node_id.value();
-    auto const& node_id_value_pairs = m_timestamp_full_branch.is_auto_generated()
+    auto const& node_id_value_pairs = m_optional_timestamp_full_branch->is_auto_generated()
                                               ? log_event.get_auto_gen_node_id_value_pairs()
                                               : log_event.get_user_gen_node_id_value_pairs();
     if (false == node_id_value_pairs.contains(timestamp_node_id)) {
