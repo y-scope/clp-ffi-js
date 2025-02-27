@@ -51,7 +51,7 @@ constexpr std::string_view cMergedKvPairsUserGeneratedKey{"user-generated"};
  * @return A schema tree full branch constructed based on the provided reader option.
  * @return std::nullopt if `option` is `null`.
  */
-[[nodiscard]] auto get_schema_tree_full_path_from_filter_option(
+[[nodiscard]] auto get_schema_tree_full_branch_from_filter_option(
         emscripten::val const& filter_option,
         clp::ffi::SchemaTree::Node::Type leaf_node_type
 ) -> std::optional<StructuredIrUnitHandler::SchemaTreeFullBranch>;
@@ -60,7 +60,7 @@ auto dump_json_with_replace(nlohmann::json const& json) -> std::string {
     return json.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
 }
 
-auto get_schema_tree_full_path_from_filter_option(
+auto get_schema_tree_full_branch_from_filter_option(
         emscripten::val const& filter_option,
         clp::ffi::SchemaTree::Node::Type leaf_node_type
 ) -> std::optional<StructuredIrUnitHandler::SchemaTreeFullBranch> {
@@ -96,11 +96,11 @@ auto StructuredIrStreamReader::create(
             *zstd_decompressor,
             StructuredIrUnitHandler{
                     deserialized_log_events,
-                    get_schema_tree_full_path_from_filter_option(
+                    get_schema_tree_full_branch_from_filter_option(
                             reader_options[cReaderOptionsLogLevelKey.data()],
                             clp::ffi::SchemaTree::Node::Type::Str
                     ),
-                    get_schema_tree_full_path_from_filter_option(
+                    get_schema_tree_full_branch_from_filter_option(
                             reader_options[cReaderOptionsTimestampKey.data()],
                             clp::ffi::SchemaTree::Node::Type::Int
                     )
