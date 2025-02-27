@@ -85,8 +85,8 @@ public:
     // Constructors
     /**
      * @param deserialized_log_events The vector in which to store deserialized log events.
-     * @param log_level_key Key name of schema-tree node that contains the authoritative log level.
-     * @param timestamp_key Key name of schema-tree node that contains the authoritative timestamp.
+     * @param log_level_full_branch A schema tree full branch for the authoritative log level.
+     * @param timestamp_full_branch A schema tree full branch for the  the authoritative timestamp.
      */
     StructuredIrUnitHandler(
             std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
