@@ -25,7 +25,6 @@ namespace clp_ffi_js::ir {
 // JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOption);
 EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
 // JS types used as outputs
