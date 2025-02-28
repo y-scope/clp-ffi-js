@@ -133,10 +133,10 @@ public:
     ) -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
-     * Dummy implementation that does nothing but conforms to the interface.
+     * Handles end-of-stream IR unit.
      * @return IRErrorCode::IRErrorCode_Success
      */
-    [[nodiscard]] static auto handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode;
+    [[nodiscard]] auto handle_end_of_stream() const -> clp::ffi::ir_stream::IRErrorCode;
 
 private:
     // Methods

@@ -179,7 +179,17 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
-auto StructuredIrUnitHandler::handle_end_of_stream() -> clp::ffi::ir_stream::IRErrorCode {
+auto StructuredIrUnitHandler::handle_end_of_stream() const -> clp::ffi::ir_stream::IRErrorCode {
+    if (m_optional_log_level_full_branch.has_value()
+        && false == m_optional_log_level_node_id.has_value())
+    {
+        SPDLOG_WARN("Log-level filter option is given, but the key is not found in the IR stream.");
+    }
+    if (m_optional_timestamp_full_branch.has_value()
+        && false == m_optional_timestamp_node_id.has_value())
+    {
+        SPDLOG_WARN("Timestamp filter option is given, but the key is not found in the IR stream.");
+    }
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
