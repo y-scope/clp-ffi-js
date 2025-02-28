@@ -46,6 +46,7 @@ constexpr std::string_view cMergedKvPairsUserGeneratedKey{"user-generated"};
 [[nodiscard]] auto dump_json_with_replace(nlohmann::json const& json) -> std::string;
 
 /**
+ * @param filter_option The JavaScript object representing a filter option.
  * @param leaf_node_type The type of the leaf node for the schema tree full branch.
  * @return A schema tree full branch constructed based on the provided filter option and leaf node
  * type.
