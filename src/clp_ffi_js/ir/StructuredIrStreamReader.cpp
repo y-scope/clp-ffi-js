@@ -64,7 +64,7 @@ auto get_schema_tree_full_branch_from_filter_option(
         emscripten::val const& filter_option,
         clp::ffi::SchemaTree::Node::Type leaf_node_type
 ) -> std::optional<StructuredIrUnitHandler::SchemaTreeFullBranch> {
-    if (filter_option.isNull()) {
+    if (filter_option.isNull() || filter_option.isUndefined()) {
         return std::nullopt;
     }
     return StructuredIrUnitHandler::SchemaTreeFullBranch{
