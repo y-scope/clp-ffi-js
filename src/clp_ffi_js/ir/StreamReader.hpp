@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <vector>
 
+#include <clp/ir/types.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
@@ -29,6 +30,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 
 enum class StreamType : uint8_t {
     Structured,
@@ -124,6 +126,27 @@ public:
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType = 0;
 
+    /**
+     * Finds the log event, L, where if we assume:
+     *
+     * - the collection of log events is sorted in chronological order;
+     * - and we insert a marker log event, M, with timestamp `target_ts` into the collection (if log
+     *   events with timestamp `target_ts` already exist in the collection, M should be inserted
+     *   after them).
+     *
+     * L is the event just before M, if M is not the first event in the collection; otherwise L is
+     * the event just after M.
+     *
+     * NOTE: If the collection of log events isn't in chronological order, this method has undefined
+     * behaviour.
+     *
+     * @param target_ts
+     * @return The index of the log event L.
+     */
+    [[nodiscard]] virtual auto find_nearest_log_event_by_timestamp(
+            clp::ir::epoch_time_ms_t target_ts
+    ) -> NullableLogEventIdx = 0;
+
 protected:
     explicit StreamReader() = default;
 
@@ -172,6 +195,20 @@ protected:
             LogLevelFilterTsType const& log_level_filter,
             LogEvents<LogEvent> const& log_events
     ) -> void;
+
+    /**
+     * Templated implementation of `find_nearest_log_event_by_timestamp`.
+     *
+     * @tparam LogEvent
+     * @param log_events
+     * @param target_ts
+     * @return See `find_nearest_log_event_by_timestamp`.
+     */
+    template <typename LogEvent>
+    auto generic_find_nearest_log_event_by_timestamp(
+            LogEvents<LogEvent> const& log_events,
+            clp::ir::epoch_time_ms_t target_ts
+    ) -> NullableLogEventIdx;
 };
 
 template <typename LogEvent, typename ToStringFunc>
@@ -257,6 +294,34 @@ auto StreamReader::generic_filter_log_events(
             filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
+}
+
+template <typename LogEvent>
+auto StreamReader::generic_find_nearest_log_event_by_timestamp(
+        LogEvents<LogEvent> const& log_events,
+        clp::ir::epoch_time_ms_t target_ts
+) -> NullableLogEventIdx {
+    if (log_events.empty()) {
+        return NullableLogEventIdx{emscripten::val::null()};
+    }
+
+    // Find the log event whose timestamp is just after `target_ts`
+    auto first_greater_it{std::upper_bound(
+            log_events.begin(),
+            log_events.end(),
+            target_ts,
+            [](clp::ir::epoch_time_ms_t ts, LogEventWithFilterData<LogEvent> const& log_event) {
+                return ts < log_event.get_timestamp();
+            }
+    )};
+
+    if (first_greater_it == log_events.begin()) {
+        return NullableLogEventIdx{emscripten::val(0)};
+    }
+
+    auto const first_greater_idx{std::distance(log_events.begin(), first_greater_it)};
+
+    return NullableLogEventIdx{emscripten::val(first_greater_idx - 1)};
 }
 }  // namespace clp_ffi_js::ir
 

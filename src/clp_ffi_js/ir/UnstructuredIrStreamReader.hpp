@@ -7,7 +7,6 @@
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/TimestampPattern.hpp>
 #include <emscripten/val.h>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
@@ -71,6 +70,9 @@ public:
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType override;
 
+    [[nodiscard]] auto find_nearest_log_event_by_timestamp(clp::ir::epoch_time_ms_t target_ts
+    ) -> NullableLogEventIdx override;
+
 private:
     // Constructor
     explicit UnstructuredIrStreamReader(
@@ -82,7 +84,6 @@ private:
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;
-    clp::TimestampPattern m_ts_pattern;
 };
 }  // namespace clp_ffi_js::ir
 
