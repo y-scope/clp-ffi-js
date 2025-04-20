@@ -32,5 +32,8 @@
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
     }
+  },
+  "dependencies": {
+    "@mongodb-js/zstd": "^2.0.1"
   }
 }

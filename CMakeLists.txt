@@ -102,7 +102,9 @@ endif()
 
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/StreamReader.cpp
+    src/clp_ffi_js/ir/StreamWriter.cpp
     src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
+    src/clp_ffi_js/ir/StructuredIrStreamWriter.cpp
     src/clp_ffi_js/ir/StructuredIrUnitHandler.cpp
     src/clp_ffi_js/ir/UnstructuredIrStreamReader.cpp
 )
@@ -119,6 +121,10 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
     src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
+
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/Serializer.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/encoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ir/parsing.cpp
 )
 
 set(CLP_FFI_JS_SRC_FMT src/submodules/fmt/src/format.cc)
@@ -183,6 +189,7 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         src/submodules/clp/components/core/src/clp
         src/submodules/clp/components/core/submodules
         src/submodules/fmt/include
+        src/submodules/msgpack/include
         src/submodules/spdlog/include
         src/submodules/zstd/lib
     )
