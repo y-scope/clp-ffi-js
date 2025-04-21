@@ -61,8 +61,7 @@ private:
 namespace clp_ffi_js::ir {
 StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val const& stream)
         : StreamWriter{},
-          m_output_writer{std::make_unique<WebStreamWriter>(stream)},
-          m_num_total_bytes_serialized{0} {
+          m_output_writer{std::make_unique<WebStreamWriter>(stream)} {
     m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
 
     // TODO: make compression level configurable
@@ -155,7 +154,6 @@ auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
     // FIXME: this should come from the arg 'chunk' as well
     msgpack::object_map auto_gen_map{0, nullptr};
 
-    auto const buffer_size_before_serialization{get_ir_buf_size()};
     auto const serializer_result{
             m_serializer->serialize_msgpack_map(auto_gen_map, unpacked_user_gen_map)
     };
@@ -168,13 +166,7 @@ auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
         };
     }
 
-    auto const buffer_size_after_serialization{get_ir_buf_size()};
-    auto const num_bytes_serialized{
-            buffer_size_after_serialization - buffer_size_before_serialization
-    };
-    m_num_total_bytes_serialized += num_bytes_serialized;
-
-    if (cDefaultIrBufferSizeLimit < buffer_size_after_serialization) {
+    if (cDefaultIrBufferSizeLimit < get_ir_buf_size()) {
         write_ir_buf_to_output_stream();
     }
 }

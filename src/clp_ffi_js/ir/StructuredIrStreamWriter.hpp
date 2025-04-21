@@ -47,7 +47,6 @@ private:
     std::unique_ptr<ClpIrSerializer> m_serializer;
 
     std::vector<u_int8_t> m_msgpack_buf;
-    size_t m_num_total_bytes_serialized;
 };
 }  // namespace clp_ffi_js::ir
 
