@@ -30,11 +30,8 @@ public:
 
     void write(char const* data, size_t data_length) override {
         auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
-        auto const memoryView{emscripten::val::module_property("HEAPU8").call<emscripten::val>(
-                "subarray",
-                reinterpret_cast<uintptr_t>(data),
-                reinterpret_cast<uintptr_t>(data) + data_length
-        )};
+        emscripten::val memoryView{
+            emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
         m_writer.call<void>("write", uint8Array);
