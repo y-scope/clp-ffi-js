@@ -34,6 +34,6 @@
     }
   },
   "dependencies": {
-    "@mongodb-js/zstd": "^2.0.1"
+    "msgpackr": "^1.11.2"
   }
 }

@@ -1,15 +1,74 @@
 #include <msgpack.hpp>
+#include <streaming_compression/zstd/Compressor.hpp>
+
+#include <emscripten/em_asm.h>
+#include <emscripten/em_macros.h>
+#include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/StreamWriter.hpp>
 #include <clp_ffi_js/ir/StructuredIrStreamWriter.hpp>
 
-namespace clp_ffi_js::ir
-{
+namespace {
+class WebStreamWriter : public clp::WriterInterface {
+public:
+    // Delete default constructor to disable direct instantiation.
+    WebStreamWriter() = delete;
 
-StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val stream): StreamWriter{},
-                                                                            m_output_writer{stream.call<emscripten::val>("getWriter")}
-{
+    explicit WebStreamWriter(emscripten::val stream)
+            : WriterInterface{},
+              m_writer{stream.call<emscripten::val>("getWriter")} {}
+
+    // Delete copy & move constructors and assignment operators
+    WebStreamWriter(WebStreamWriter const&) = delete;
+    WebStreamWriter(WebStreamWriter&&) = delete;
+    auto operator=(WebStreamWriter const&) -> WebStreamWriter& = delete;
+    auto operator=(WebStreamWriter&&) -> WebStreamWriter& = delete;
+
+    // Destructor
+    ~WebStreamWriter() override = default;
+
+    void write(char const* data, size_t data_length) override {
+        auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
+        auto const memoryView{emscripten::val::module_property("HEAPU8").call<emscripten::val>(
+                "subarray",
+                reinterpret_cast<uintptr_t>(data),
+                reinterpret_cast<uintptr_t>(data) + data_length
+        )};
+
+        uint8Array.call<void>("set", memoryView);
+        m_writer.call<void>("write", uint8Array);
+    }
+
+    void flush() override {
+        std::cout << "hello from flush" << std::endl;
+        return;
+    }
+
+    clp::ErrorCode try_seek_from_begin(size_t pos) override { return clp::ErrorCode_Unsupported; }
+
+    clp::ErrorCode try_seek_from_current(off_t offset) override {
+        return clp::ErrorCode_Unsupported;
+    }
+
+    clp::ErrorCode try_get_pos(size_t& pos) const override { return clp::ErrorCode_Unsupported; }
+
+private:
+    emscripten::val m_writer;
+};
+}  // namespace
+
+namespace clp_ffi_js::ir {
+StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val const& stream)
+        : StreamWriter{},
+          m_output_writer{std::make_unique<WebStreamWriter>(stream)},
+          m_num_total_bytes_serialized{0} {
+    m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
+
+    // TODO: make compression level configurable
+    m_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
+    m_writer->open(*m_output_writer);
+
     auto serializer_result{ClpIrSerializer::create()};
     if (serializer_result.has_error()) {
         throw ClpFfiJsException{
@@ -26,47 +85,37 @@ StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val stream): Stre
     m_serializer = std::make_unique<ClpIrSerializer>(std::move(serializer_result.value()));
 }
 
-template<typename Buffer>
-auto encode_js_object_to_msgpack(emscripten::val object, msgpack::packer<Buffer>& packer) -> bool
-{
+template <typename Buffer>
+auto encode_js_object_to_msgpack(emscripten::val object, msgpack::packer<Buffer>& packer) -> bool {
     if (object.isNull() || object.isUndefined()) {
         packer.pack_nil();
-    }
-    else if (object.isString())
-    {
-        const auto str{object.as<std::string>()};
+    } else if (object.isString()) {
+        auto const str{object.as<std::string>()};
         packer.pack(str);
-    }
-    else if (object.isNumber())
-    {
-        const auto num{object.as<std::int64_t>()};
+    } else if (object.isNumber()) {
+        auto const num{object.as<std::int64_t>()};
         packer.pack(num);
-    }
-    else if (object.isTrue() || object.isFalse())
-    {
-        const auto boolean{object.as<bool>()};
+    } else if (object.isTrue() || object.isFalse()) {
+        auto const boolean{object.as<bool>()};
         packer.pack(boolean);
-    }
-    else if (object.isArray())
-    {
-        size_t length = object["length"].as<size_t>();
+    } else if (object.isArray()) {
+        auto const length{object["length"].as<size_t>()};
         packer.pack_array(length);
 
-        for (size_t i = 0; i < length; ++i) {
+        for (size_t i{0}; i < length; ++i) {
             if (false == encode_js_object_to_msgpack(object[i], packer)) {
                 return false;
             }
         }
-    }
-    else
-    {
+    } else {
         // assume isObject
-        emscripten::val keys = emscripten::val::global("Object").call<emscripten::val>("getOwnPropertyNames", object);
-        size_t length = keys["length"].as<size_t>();
+        auto const keys{emscripten::val::global("Object")
+                                .call<emscripten::val>("getOwnPropertyNames", object)};
+        auto const length{keys["length"].as<size_t>()};
         packer.pack_map(length);
 
-        for (size_t i = 0; i < length; ++i) {
-            std::string key = keys[i].as<std::string>();
+        for (size_t i{0}; i < length; ++i) {
+            auto key{keys[i].as<std::string>()};
             packer.pack(key);
 
             if (false == encode_js_object_to_msgpack(object[key], packer)) {
@@ -78,79 +127,74 @@ auto encode_js_object_to_msgpack(emscripten::val object, msgpack::packer<Buffer>
     return true;
 }
 
-auto printBuffer(const uint8_t* buffer, size_t size) -> void {
-    for (size_t i = 0; i < size; ++i) {
-        std::cout
-                  << std::hex << std::setw(2) << std::setfill('0')
-                  << static_cast<int>(buffer[i]) << " ";
+extern "C" {
+    EMSCRIPTEN_KEEPALIVE
+    void fill_buffer_from_js(std::vector<uint8_t> buffer, uintptr_t ptr, size_t count) {
+        uint8_t* src = reinterpret_cast<uint8_t*>(ptr);
+        buffer.assign(src, src + count);
     }
-    std::cout << std::dec << std::endl; // reset to decimal output
 }
 
-auto spanToUint8Array(const std::span<const int8_t> &span)-> emscripten::val  {
-    const auto* data = reinterpret_cast<const uint8_t*>(span.data());
-    size_t length = span.size();
+auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
+    emscripten::val packed_user_gen_handle = emscripten::val::global("_msgpackr_pack")(chunk);
 
-    // Allocate JS Uint8Array and copy data in
-    emscripten::val uint8Array = emscripten::val::global("Uint8Array").new_(length);
-    emscripten::val memoryView = emscripten::val::module_property("HEAPU8")
-        .call<emscripten::val>("subarray",
-            reinterpret_cast<uintptr_t>(data),
-            reinterpret_cast<uintptr_t>(data) + length
-        );
+    size_t packed_user_gen_handle_length = packed_user_gen_handle["length"].as<int>();
+    m_msgpack_buf.resize(packed_user_gen_handle_length);
+    emscripten::val memoryView{
+            emscripten::typed_memory_view(packed_user_gen_handle_length, m_msgpack_buf.data())
+    };
+    memoryView.call<void>("set", packed_user_gen_handle);
 
-    uint8Array.call<void>("set", memoryView);
-    return uint8Array;
-}
+    auto const unpacked_user_gen_handle{msgpack::unpack(
+            reinterpret_cast<char const*>(m_msgpack_buf.data()),
+            m_msgpack_buf.size()
+    )};
+    auto const unpacked_user_gen_map{unpacked_user_gen_handle.get().via.map};
+    m_msgpack_buf.clear();
 
-auto StructuredIrStreamWriter::write(emscripten::val chunk)-> void
-{
-    if (chunk.isNull()) {
+    // FIXME: this should come from the arg 'chunk' as well
+    msgpack::object_map auto_gen_map{0, nullptr};
+
+    auto const buffer_size_before_serialization{get_ir_buf_size()};
+    auto const serializer_result{
+            m_serializer->serialize_msgpack_map(auto_gen_map, unpacked_user_gen_map)
+    };
+    if (false == serializer_result) {
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
                 __LINE__,
-                "Chunk is null."
+                std::format("Failed to serialize msgpack map")
         };
     }
 
-    msgpack::sbuffer buffer;
-    msgpack::packer packer(buffer);
-
-    auto pack_result{encode_js_object_to_msgpack(chunk, packer)};
-    std::cout<<pack_result<<std::endl;
-
-    auto unpacked {
-        msgpack::unpack(
-                buffer.data(),
-                buffer.size()
-        )
+    auto const buffer_size_after_serialization{get_ir_buf_size()};
+    auto const num_bytes_serialized{
+            buffer_size_after_serialization - buffer_size_before_serialization
     };
+    m_num_total_bytes_serialized += num_bytes_serialized;
 
-    auto unpacked_map {unpacked.get().via.map};
-    auto serializer_result{
-        // FIXME
-        m_serializer->serialize_msgpack_map(unpacked_map, unpacked_map)
-    };
+    if (cDefaultIrBufferSizeLimit < buffer_size_after_serialization) {
+        write_ir_buf_to_output_stream();
+    }
+}
 
-    std::cout<<"serializer_result="<<serializer_result<<std::endl;
-    m_output_writer.call<emscripten::val>("write",
-        spanToUint8Array(m_serializer->get_ir_buf_view())
-    );
+auto StructuredIrStreamWriter::flush() -> void {
+    write_ir_buf_to_output_stream();
+    m_writer->flush();
+}
+
+auto StructuredIrStreamWriter::close() -> void {
+    write_ir_buf_to_output_stream();
+    m_writer->close();
+
+    // FIXME: handle any read on this after close()
+    m_serializer.reset(nullptr);
+}
+
+auto StructuredIrStreamWriter::write_ir_buf_to_output_stream() const -> void {
+    auto const ir_buf_view{m_serializer->get_ir_buf_view()};
+    m_writer->write(reinterpret_cast<char const*>(ir_buf_view.data()), ir_buf_view.size());
     m_serializer->clear_ir_buf();
 }
-
-auto StructuredIrStreamWriter::flush() -> void
-{
-
-}
-
-auto StructuredIrStreamWriter::close() -> void
-{
-}
-
-auto StructuredIrStreamWriter::write_ir_buf_to_output_stream()-> bool
-{
-    return false;
-}
-} // clp_ffi_js
+}  // namespace clp_ffi_js::ir

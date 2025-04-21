@@ -89,6 +89,7 @@ set(CLP_FFI_JS_COMMON_LINK_OPTIONS
     -sMAXIMUM_MEMORY=4GB
     -sMODULARIZE
     -sWASM_BIGINT
+    --pre-js "${CMAKE_CURRENT_SOURCE_DIR}/src/pre.js"
 )
 if(CMAKE_BUILD_TYPE MATCHES "Release")
     list(APPEND CLP_FFI_JS_COMMON_COMPILE_OPTIONS
@@ -125,6 +126,7 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/Serializer.cpp
     src/submodules/clp/components/core/src/clp/ffi/ir_stream/encoding_methods.cpp
     src/submodules/clp/components/core/src/clp/ir/parsing.cpp
+    src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Compressor.cpp
 )
 
 set(CLP_FFI_JS_SRC_FMT src/submodules/fmt/src/format.cc)
@@ -140,6 +142,19 @@ set(CLP_FFI_JS_SRC_ZSTD
     src/submodules/zstd/lib/decompress/zstd_ddict.c
     src/submodules/zstd/lib/decompress/zstd_decompress_block.c
     src/submodules/zstd/lib/decompress/zstd_decompress.c
+
+    src/submodules/zstd/lib/compress/fse_compress.c
+    src/submodules/zstd/lib/compress/hist.c
+    src/submodules/zstd/lib/compress/huf_compress.c
+    src/submodules/zstd/lib/compress/zstd_compress.c
+    src/submodules/zstd/lib/compress/zstd_compress_literals.c
+    src/submodules/zstd/lib/compress/zstd_compress_sequences.c
+    src/submodules/zstd/lib/compress/zstd_compress_superblock.c
+    src/submodules/zstd/lib/compress/zstd_double_fast.c
+    src/submodules/zstd/lib/compress/zstd_fast.c
+    src/submodules/zstd/lib/compress/zstd_lazy.c
+    src/submodules/zstd/lib/compress/zstd_ldm.c
+    src/submodules/zstd/lib/compress/zstd_opt.c
 )
 
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS

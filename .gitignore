@@ -4,6 +4,10 @@ build
 cmake-build-*
 dist
 
+# Node.js
+node_modules
+package-lock.json
+
 # Generated lint configs
 .clang-format
 .clang-tidy
@@ -11,3 +15,4 @@ dist
 # IDEs
 .idea
 .vscode
+

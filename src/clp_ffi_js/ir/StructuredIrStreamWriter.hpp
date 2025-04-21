@@ -1,35 +1,54 @@
 #ifndef CLP_FFI_JS_IR_STRUCTUREDIRSTREAMWRITER_HPP
 #define CLP_FFI_JS_IR_STRUCTUREDIRSTREAMWRITER_HPP
 
-namespace clp_ffi_js::ir
-{
-    class StructuredIrStreamWriter : public StreamWriter
-    {
-    public:
-        // Delete default constructor to disable direct instantiation.
-        StructuredIrStreamWriter() = delete;
+#include <clp/streaming_compression/zstd/Compressor.hpp>
+#include <clp/WriterInterface.hpp>
 
-        // Delete copy & move constructors and assignment operators
-        StructuredIrStreamWriter(StructuredIrStreamWriter const&) = delete;
-        StructuredIrStreamWriter(StructuredIrStreamWriter&&) = delete;
-        auto operator=(StructuredIrStreamWriter const&) -> StructuredIrStreamWriter& = delete;
-        auto operator=(StructuredIrStreamWriter&&) -> StructuredIrStreamWriter& = delete;
+namespace clp_ffi_js::ir {
+class StructuredIrStreamWriter : public StreamWriter {
+public:
+    /**
+     * The default Msgpack buffer size limit.
+     */
+    static constexpr size_t cDefaultMsgpackBufferSizeLimit{4096};
 
-        // Destructor
-        ~StructuredIrStreamWriter() override = default;
+    /**
+     * The default IR buffer size limit.
+     */
+    static constexpr size_t cDefaultIrBufferSizeLimit{65'536};
 
-        StructuredIrStreamWriter(emscripten::val stream);
-        auto write(::emscripten::val chunk) -> void override;
-        auto flush() -> void override;
-        auto close() -> void override;
+    // Delete default constructor to disable direct instantiation.
+    StructuredIrStreamWriter() = delete;
 
-    private:
-        [[nodiscard]] auto write_ir_buf_to_output_stream() -> bool;
+    // Delete copy & move constructors and assignment operators
+    StructuredIrStreamWriter(StructuredIrStreamWriter const&) = delete;
+    StructuredIrStreamWriter(StructuredIrStreamWriter&&) = delete;
+    auto operator=(StructuredIrStreamWriter const&) -> StructuredIrStreamWriter& = delete;
+    auto operator=(StructuredIrStreamWriter&&) -> StructuredIrStreamWriter& = delete;
 
-        // Variables
-        emscripten::val m_output_writer;
-        std::unique_ptr<ClpIrSerializer> m_serializer;
-    };
-} // clp_ffi_js::ir
+    // Destructor
+    ~StructuredIrStreamWriter() override = default;
 
-#endif // CLP_FFI_JS_IR_STRUCTUREDIRSTREAMWRITER_HPP
+    StructuredIrStreamWriter(emscripten::val const& stream);
+    auto write(::emscripten::val chunk) -> void override;
+    auto flush() -> void override;
+    auto close() -> void override;
+
+private:
+    auto write_ir_buf_to_output_stream() const -> void;
+
+    [[nodiscard]] auto get_ir_buf_size() const -> size_t {
+        return m_serializer->get_ir_buf_view().size();
+    }
+
+    // Variables
+    std::unique_ptr<clp::WriterInterface> m_output_writer;
+    std::unique_ptr<clp::streaming_compression::zstd::Compressor> m_writer;
+    std::unique_ptr<ClpIrSerializer> m_serializer;
+
+    std::vector<u_int8_t> m_msgpack_buf;
+    size_t m_num_total_bytes_serialized;
+};
+}  // namespace clp_ffi_js::ir
+
+#endif  // CLP_FFI_JS_IR_STRUCTUREDIRSTREAMWRITER_HPP
