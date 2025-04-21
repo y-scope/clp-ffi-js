@@ -33,7 +33,7 @@
       "types": "./dist/ClpFfiJs-worker.d.ts"
     }
   },
-  "dependencies": {
+  "devDependencies": {
     "msgpackr": "^1.11.2"
   }
 }

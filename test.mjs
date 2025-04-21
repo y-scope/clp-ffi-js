@@ -1,4 +1,4 @@
-import ModuleInit from "./cmake-build-debug/ClpFfiJs-node.js"
+import ModuleInit from "./cmake-build-release/ClpFfiJs-node.js"
 import {createWriteStream} from "node:fs"
 import {pack} from "msgpackr"
 
@@ -33,6 +33,7 @@ const main = async () => {
         compressionLevel: 3
     })
 
+    // TODO: add NaN and Finite cases.
     const obj = {
         "int": 1,
         "float": 0.5,
