@@ -1,7 +1,5 @@
 import ModuleInit from "./cmake-build-debug/ClpFfiJs-node.js"
 import {createWriteStream} from "node:fs"
-import {compress} from '@mongodb-js/zstd';
-import {pack} from 'msgpackr'
 
 const main = async () => {
     const module = await ModuleInit()
@@ -33,13 +31,19 @@ const main = async () => {
     const streamWriter = new module.StreamWriter(stream)
 
     const obj = {
-        message: 'hello',
-        ts: 123,
-        data: [1, 2, 3],
-        isObject: true,
-        isArray: false,
-        undefined: null,
-        null: null
+        "int": 1,
+        "float": 0.5,
+        "boolean": true,
+        "null": null,
+        "string": "foo bar",
+        "array": [
+            "foo",
+            "bar"
+        ],
+        "object": {
+            "foo": 1,
+            "baz": 0.5
+        }
     }
     for (let i = 0; i < 1000000; i++) {
         streamWriter.write(obj)
