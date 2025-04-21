@@ -88,7 +88,7 @@ StructuredIrStreamWriter::StructuredIrStreamWriter(
 }
 
 auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
-    emscripten::val packed_user_gen_handle = emscripten::val::global("_msgpackr_pack")(chunk);
+    emscripten::val packed_user_gen_handle = emscripten::val::global("msgpackr").call<emscripten::val>("pack", chunk);
 
     size_t const packed_user_gen_handle_length = packed_user_gen_handle["length"].as<int>();
     m_msgpack_buf.resize(packed_user_gen_handle_length);

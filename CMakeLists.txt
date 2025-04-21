@@ -89,7 +89,7 @@ set(CLP_FFI_JS_COMMON_LINK_OPTIONS
     -sMAXIMUM_MEMORY=4GB
     -sMODULARIZE
     -sWASM_BIGINT
-    --pre-js "${CMAKE_CURRENT_SOURCE_DIR}/src/pre.js"
+    --pre-js "${CMAKE_CURRENT_SOURCE_DIR}/node_modules/msgpackr/dist/index.js"
 )
 if(CMAKE_BUILD_TYPE MATCHES "Release")
     list(APPEND CLP_FFI_JS_COMMON_COMPILE_OPTIONS
