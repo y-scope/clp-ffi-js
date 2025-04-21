@@ -84,56 +84,6 @@ StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val const& stream
     m_serializer = std::make_unique<ClpIrSerializer>(std::move(serializer_result.value()));
 }
 
-template <typename Buffer>
-auto encode_js_object_to_msgpack(emscripten::val object, msgpack::packer<Buffer>& packer) -> bool {
-    if (object.isNull() || object.isUndefined()) {
-        packer.pack_nil();
-    } else if (object.isString()) {
-        auto const str{object.as<std::string>()};
-        packer.pack(str);
-    } else if (object.isNumber()) {
-        auto const num{object.as<std::int64_t>()};
-        packer.pack(num);
-    } else if (object.isTrue() || object.isFalse()) {
-        auto const boolean{object.as<bool>()};
-        packer.pack(boolean);
-    } else if (object.isArray()) {
-        auto const length{object["length"].as<size_t>()};
-        packer.pack_array(length);
-
-        for (size_t i{0}; i < length; ++i) {
-            if (false == encode_js_object_to_msgpack(object[i], packer)) {
-                return false;
-            }
-        }
-    } else {
-        // assume isObject
-        auto const keys{emscripten::val::global("Object")
-                                .call<emscripten::val>("getOwnPropertyNames", object)};
-        auto const length{keys["length"].as<size_t>()};
-        packer.pack_map(length);
-
-        for (size_t i{0}; i < length; ++i) {
-            auto key{keys[i].as<std::string>()};
-            packer.pack(key);
-
-            if (false == encode_js_object_to_msgpack(object[key], packer)) {
-                return false;
-            }
-        }
-    }
-
-    return true;
-}
-
-extern "C" {
-    EMSCRIPTEN_KEEPALIVE
-    void fill_buffer_from_js(std::vector<uint8_t> buffer, uintptr_t ptr, size_t count) {
-        uint8_t* src = reinterpret_cast<uint8_t*>(ptr);
-        buffer.assign(src, src + count);
-    }
-}
-
 auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
     emscripten::val packed_user_gen_handle = emscripten::val::global("_msgpackr_pack")(chunk);
 
