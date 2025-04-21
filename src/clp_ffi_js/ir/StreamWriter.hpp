@@ -15,7 +15,7 @@ public:
     using BufferView = ClpIrSerializer::BufferView;
 
     /**
-     * Creates a `StreamWriter` to read from the given array.
+     * Creates a `StreamWriter` to write to a give string.
      *
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
