@@ -38,7 +38,6 @@ public:
     }
 
     void flush() override {
-        std::cout << "hello from flush" << std::endl;
         return;
     }
 
