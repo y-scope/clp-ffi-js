@@ -1,8 +1,6 @@
 #include <msgpack.hpp>
 #include <streaming_compression/zstd/Compressor.hpp>
 
-#include <emscripten/em_asm.h>
-#include <emscripten/em_macros.h>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
