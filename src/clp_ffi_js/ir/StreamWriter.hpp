@@ -6,6 +6,9 @@
 #include <emscripten/val.h>
 
 namespace clp_ffi_js::ir {
+// JS types used as inputs
+EMSCRIPTEN_DECLARE_VAL_TYPE(WriterOptions);
+
 class StreamWriter {
 public:
     using ClpIrSerializer = clp::ffi::ir_stream::Serializer<clp::ir::four_byte_encoded_variable_t>;
@@ -17,7 +20,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(emscripten::val stream) -> std::unique_ptr<StreamWriter>;
+    [[nodiscard]] static auto
+    create(emscripten::val const& stream, WriterOptions const& writer_options)
+            -> std::unique_ptr<StreamWriter>;
 
     // Delete copy & move constructors and assignment operators
     StreamWriter(StreamWriter const&) = delete;

@@ -28,7 +28,9 @@ const main = async () => {
         },
         queueingStrategy
     )
-    const streamWriter = new module.StreamWriter(stream)
+    const streamWriter = new module.StreamWriter(stream, {
+        compressionLevel: 3
+    })
 
     const obj = {
         "int": 1,

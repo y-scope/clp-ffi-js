@@ -7,8 +7,10 @@
 namespace {
 EMSCRIPTEN_BINDINGS(ClpStreamWriter) {
     // JS types used as inputs
+    emscripten::register_type<clp_ffi_js::ir::WriterOptions>("{compressionLevel: number | undefined}");
 
     // JS types used as outputs
+
     emscripten::class_<clp_ffi_js::ir::StreamWriter>("StreamWriter")
             .constructor(
                     &clp_ffi_js::ir::StreamWriter::create,
@@ -20,7 +22,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamWriter) {
 }  // namespace
 
 namespace clp_ffi_js::ir {
-auto StreamWriter::create(emscripten::val stream) -> std::unique_ptr<StreamWriter> {
-    return std::make_unique<StructuredIrStreamWriter>(stream);
+auto StreamWriter::create(emscripten::val const& stream, WriterOptions const& writer_options) -> std::unique_ptr<StreamWriter> {
+    return std::make_unique<StructuredIrStreamWriter>(stream, writer_options);
 }
 }  // namespace clp_ffi_js::ir

@@ -9,7 +9,10 @@
 #include <clp_ffi_js/ir/StreamWriter.hpp>
 #include <clp_ffi_js/ir/StructuredIrStreamWriter.hpp>
 
+namespace clp_ffi_js::ir {
 namespace {
+constexpr std::string_view cWriterOptionsCompressionLevel{"compressionLevel"};
+
 class WebStreamWriter : public clp::WriterInterface {
 public:
     // Delete default constructor to disable direct instantiation.
@@ -30,16 +33,13 @@ public:
 
     void write(char const* data, size_t data_length) override {
         auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
-        emscripten::val memoryView{
-            emscripten::typed_memory_view(data_length, data)};
+        emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
         m_writer.call<void>("write", uint8Array);
     }
 
-    void flush() override {
-        return;
-    }
+    void flush() override { return; }
 
     clp::ErrorCode try_seek_from_begin(size_t pos) override { return clp::ErrorCode_Unsupported; }
 
@@ -54,15 +54,25 @@ private:
 };
 }  // namespace
 
-namespace clp_ffi_js::ir {
-StructuredIrStreamWriter::StructuredIrStreamWriter(emscripten::val const& stream)
+StructuredIrStreamWriter::StructuredIrStreamWriter(
+        emscripten::val const& stream,
+        WriterOptions const& writer_options
+)
         : StreamWriter{},
           m_output_writer{std::make_unique<WebStreamWriter>(stream)} {
+    int compression_level{clp::streaming_compression::zstd::cDefaultCompressionLevel};
+    if (writer_options.hasOwnProperty(cWriterOptionsCompressionLevel.data())) {
+        compression_level = writer_options[cWriterOptionsCompressionLevel.data()].as<int>();
+    }
+
     m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
 
     // TODO: make compression level configurable
     m_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
-    m_writer->open(*m_output_writer);
+    m_writer->open(
+            *m_output_writer,
+            compression_level
+    );
 
     auto serializer_result{ClpIrSerializer::create()};
     if (serializer_result.has_error()) {

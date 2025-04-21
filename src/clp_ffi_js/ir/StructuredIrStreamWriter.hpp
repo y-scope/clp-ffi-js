@@ -4,6 +4,8 @@
 #include <clp/streaming_compression/zstd/Compressor.hpp>
 #include <clp/WriterInterface.hpp>
 
+#include <clp_ffi_js/ir/StreamWriter.hpp>
+
 namespace clp_ffi_js::ir {
 class StructuredIrStreamWriter : public StreamWriter {
 public:
@@ -29,7 +31,7 @@ public:
     // Destructor
     ~StructuredIrStreamWriter() override = default;
 
-    StructuredIrStreamWriter(emscripten::val const& stream);
+    StructuredIrStreamWriter(emscripten::val const& stream, WriterOptions const& writer_options);
     auto write(::emscripten::val chunk) -> void override;
     auto flush() -> void override;
     auto close() -> void override;
