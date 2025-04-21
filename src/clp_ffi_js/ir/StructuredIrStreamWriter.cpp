@@ -65,7 +65,6 @@ StructuredIrStreamWriter::StructuredIrStreamWriter(
 
     m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
 
-    // TODO: make compression level configurable
     m_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
     m_writer->open(
             *m_output_writer,
