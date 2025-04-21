@@ -11,7 +11,7 @@ namespace clp_ffi_js::ir {
 namespace {
 constexpr std::string_view cWriterOptionsCompressionLevel{"compressionLevel"};
 
-class WebStreamWriter : public clp::WriterInterface {
+class WebStreamWriter final: public clp::WriterInterface {
 public:
     // Delete default constructor to disable direct instantiation.
     WebStreamWriter() = delete;
