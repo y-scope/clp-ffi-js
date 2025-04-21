@@ -1,5 +1,6 @@
 import ModuleInit from "./cmake-build-debug/ClpFfiJs-node.js"
 import {createWriteStream} from "node:fs"
+import {pack} from "msgpackr"
 
 const main = async () => {
     const module = await ModuleInit()
@@ -48,7 +49,7 @@ const main = async () => {
         }
     }
     for (let i = 0; i < 1000000; i++) {
-        streamWriter.write(obj)
+        streamWriter.write(pack(obj))
     }
     streamWriter.close()
 
