@@ -16,3 +16,9 @@ package-lock.json
 .idea
 .vscode
 
+# Apple
+.DS_Store
+
+# Test
+test/clp-ffi-js
+test/assets

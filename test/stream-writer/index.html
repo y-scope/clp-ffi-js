@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ClpFfiJs-worker Web Test</title>
+</head>
+<body>
+<h1>Testing ClpFfiJs-worker in Web Worker</h1>
+<script type="module">
+  const worker = new Worker('./test-worker.js', { type: 'module' });
+
+  worker.onmessage = (event) => {
+    console.log('[main] Worker finished:', event.data);
+  };
+
+  worker.onerror = (err) => {
+    console.error('[main] Worker error:', err);
+  };
+</script>
+</body>
+</html>

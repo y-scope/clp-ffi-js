@@ -219,3 +219,22 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_SRC_ZSTD}
     )
 endforeach()
+
+# Copy final JS and WASM outputs to the test directory
+foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
+    set(bin_name "ClpFfiJs-${env}")
+    set(js_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.js")
+    set(wasm_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.wasm")
+    set(tsd_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.d.ts")
+    set(test_output_dir "${CMAKE_CURRENT_SOURCE_DIR}/test/clp-ffi-js")
+
+    add_custom_command(
+            TARGET ${bin_name}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${test_output_dir}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${js_output} ${test_output_dir}/${bin_name}.js
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${wasm_output} ${test_output_dir}/${bin_name}.wasm
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${tsd_output} ${test_output_dir}/${bin_name}.d.ts
+            COMMENT "Copying ${bin_name} build output to test/clp-ffi-js directory"
+    )
+endforeach()
