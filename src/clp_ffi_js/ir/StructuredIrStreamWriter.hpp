@@ -38,6 +38,8 @@ public:
     auto flush() -> void override;
     auto close() -> void override;
 
+    auto get_desired_size() const -> const int& override;
+
 private:
     auto write_ir_buf_to_output_stream() const -> void;
 
@@ -51,6 +53,7 @@ private:
     std::unique_ptr<ClpIrSerializer> m_serializer;
 
     std::vector<u_int8_t> m_msgpack_buf;
+    mutable int m_desired_size{0};
 };
 }  // namespace clp_ffi_js::ir
 

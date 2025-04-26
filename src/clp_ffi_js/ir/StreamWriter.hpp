@@ -53,6 +53,12 @@ public:
      */
     virtual auto close() -> void = 0;
 
+    /**
+     * Get the desiredSize property from the writer
+     * @return desiredSize
+     */
+    virtual auto get_desired_size() const -> const int& = 0;
+
 protected:
     // TODO: add docs
     StreamWriter() = default;

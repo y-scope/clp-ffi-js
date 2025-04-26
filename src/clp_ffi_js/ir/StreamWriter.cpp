@@ -17,7 +17,8 @@ EMSCRIPTEN_BINDINGS(ClpStreamWriter) {
                     emscripten::return_value_policy::take_ownership()
             )
             .function("write", &clp_ffi_js::ir::StreamWriter::write)
-            .function("close", &clp_ffi_js::ir::StreamWriter::close);
+            .function("close", &clp_ffi_js::ir::StreamWriter::close)
+            .property("desiredSize", &clp_ffi_js::ir::StreamWriter::get_desired_size);
 }
 }  // namespace
 

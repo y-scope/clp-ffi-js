@@ -32,7 +32,10 @@ public:
         // @zzxthehappiest: I think await_ready is the same as desiredSize > 0
         // however if I remove this check, it has an out-of-bound index error
         while (get_desired_size() <= 0) {
-            std::cout << "size: " << data_length << std::endl;
+            std::cout << "size: " << data_length << "desired size: " << get_desired_size() << ", "
+                                                                                            "data" <<
+            static_cast<const void*>(data)
+            << std::endl;
             await_ready();
         }
 
@@ -143,15 +146,29 @@ auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
 auto StructuredIrStreamWriter::flush() -> void {
     write_ir_buf_to_output_stream();
     m_zstd_writer->flush();
+    m_output_writer->flush();
 }
 
 auto StructuredIrStreamWriter::close() -> void {
     write_ir_buf_to_output_stream();
-    m_output_writer->flush();
     m_zstd_writer->close();
 
     // FIXME: handle any read on this after close()
     m_serializer.reset(nullptr);
+}
+
+auto StructuredIrStreamWriter::get_desired_size() const -> const int& {
+    auto web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+    m_desired_size = web_stream_writer->get_desired_size();
+    return m_desired_size;
 }
 
 auto StructuredIrStreamWriter::write_ir_buf_to_output_stream() const -> void {
