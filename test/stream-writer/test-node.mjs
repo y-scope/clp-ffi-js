@@ -29,7 +29,8 @@ const createTestWritableStream = (queueingStrategy) =>
 const main = async () => {
     const nodeModule = await NodeModuleInit();
 
-    const queueingStrategy = new ByteLengthQueuingStrategy({highWaterMark: 1024000000});
+    const queueingStrategy = new ByteLengthQueuingStrategy({highWaterMark: 10000});
+    const queueingStrategyWithLowHighWaterMark = new ByteLengthQueuingStrategy({highWaterMark: 6290});
     // TODO: add NaN and Finite cases.
     const obj = {
         "int": 1,
@@ -47,17 +48,29 @@ const main = async () => {
         }
     };
 
-    console.time("node-compress");
-    const nodeStream = createTestWritableStream(queueingStrategy);
-    const nodeStreamWriter = new nodeModule.StreamWriter(nodeStream, {
+    // console.time("node-compress");
+    // const nodeStream = createTestWritableStream(queueingStrategy);
+    // const nodeStreamWriter = new nodeModule.StreamWriter(nodeStream, {
+    //     compressionLevel: 3
+    // });
+    // for (let i = 0; i < 1000000; i++) {
+    //     nodeStreamWriter.write(pack(obj));
+    // }
+    // nodeStreamWriter.close();
+    //
+    // console.timeEnd("node-compress");
+
+    console.time("node-compress-with-low-high-water-mark");
+    const nodeStreamWithLowHighWaterMark = createTestWritableStream(queueingStrategyWithLowHighWaterMark);
+    const nodeStreamWriterWithLowHighWaterMark = new nodeModule.StreamWriter(nodeStreamWithLowHighWaterMark, {
         compressionLevel: 3
     });
     for (let i = 0; i < 1000000; i++) {
-        nodeStreamWriter.write(pack(obj));
+        nodeStreamWriterWithLowHighWaterMark.write(pack(obj));
     }
-    nodeStreamWriter.close();
+    nodeStreamWriterWithLowHighWaterMark.close();
 
-    console.timeEnd("node-compress");
+    console.timeEnd("node-compress-with-low-high-water-mark");
 
     // console.log(await streamWriter.desiredSize)
 }

@@ -32,7 +32,9 @@ public:
     ~StructuredIrStreamWriter() override = default;
 
     StructuredIrStreamWriter(emscripten::val const& stream, WriterOptions const& writer_options);
+
     auto write(::emscripten::val chunk) -> void override;
+
     auto flush() -> void override;
     auto close() -> void override;
 
@@ -45,7 +47,7 @@ private:
 
     // Variables
     std::unique_ptr<clp::WriterInterface> m_output_writer;
-    std::unique_ptr<clp::streaming_compression::zstd::Compressor> m_writer;
+    std::unique_ptr<clp::streaming_compression::zstd::Compressor> m_zstd_writer;
     std::unique_ptr<ClpIrSerializer> m_serializer;
 
     std::vector<u_int8_t> m_msgpack_buf;

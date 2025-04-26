@@ -1,11 +1,10 @@
 #include <msgpack.hpp>
 #include <streaming_compression/zstd/Compressor.hpp>
 
-#include <spdlog/spdlog.h>
-
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/StreamWriter.hpp>
 #include <clp_ffi_js/ir/StructuredIrStreamWriter.hpp>
+#include <emscripten.h>
 
 namespace clp_ffi_js::ir {
 namespace {
@@ -18,7 +17,7 @@ public:
 
     explicit WebStreamWriter(emscripten::val stream)
             : WriterInterface{},
-              m_writer{stream.call<emscripten::val>("getWriter")} {}
+              m_writable_stream_writer{stream.call<emscripten::val>("getWriter")} {}
 
     // Delete copy & move constructors and assignment operators
     WebStreamWriter(WebStreamWriter const&) = delete;
@@ -30,14 +29,33 @@ public:
     ~WebStreamWriter() override = default;
 
     void write(char const* data, size_t data_length) override {
+        // @zzxthehappiest: I think await_ready is the same as desiredSize > 0
+        // however if I remove this check, it has an out-of-bound index error
+        while (get_desired_size() <= 0) {
+            std::cout << "size: " << data_length << std::endl;
+            await_ready();
+        }
+
         auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
         emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
-        m_writer.call<void>("write", uint8Array);
+        m_writable_stream_writer.call<void>("write", uint8Array);
     }
 
-    void flush() override { return; }
+    void flush() override {
+        await_ready();
+    }
+
+    auto get_desired_size() const -> int {
+        auto desired_size = m_writable_stream_writer["desiredSize"].as<int>();
+        return desired_size;
+    }
+
+    auto await_ready() -> void {
+        auto ready_promise = m_writable_stream_writer["ready"];
+        ready_promise.await();
+    }
 
     clp::ErrorCode try_seek_from_begin(size_t pos) override { return clp::ErrorCode_Unsupported; }
 
@@ -48,7 +66,7 @@ public:
     clp::ErrorCode try_get_pos(size_t& pos) const override { return clp::ErrorCode_Unsupported; }
 
 private:
-    emscripten::val m_writer;
+    emscripten::val m_writable_stream_writer;
 };
 }  // namespace
 
@@ -65,8 +83,8 @@ StructuredIrStreamWriter::StructuredIrStreamWriter(
 
     m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
 
-    m_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
-    m_writer->open(
+    m_zstd_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
+    m_zstd_writer->open(
             *m_output_writer,
             compression_level
     );
@@ -124,12 +142,13 @@ auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
 
 auto StructuredIrStreamWriter::flush() -> void {
     write_ir_buf_to_output_stream();
-    m_writer->flush();
+    m_zstd_writer->flush();
 }
 
 auto StructuredIrStreamWriter::close() -> void {
     write_ir_buf_to_output_stream();
-    m_writer->close();
+    m_output_writer->flush();
+    m_zstd_writer->close();
 
     // FIXME: handle any read on this after close()
     m_serializer.reset(nullptr);
@@ -137,7 +156,7 @@ auto StructuredIrStreamWriter::close() -> void {
 
 auto StructuredIrStreamWriter::write_ir_buf_to_output_stream() const -> void {
     auto const ir_buf_view{m_serializer->get_ir_buf_view()};
-    m_writer->write(reinterpret_cast<char const*>(ir_buf_view.data()), ir_buf_view.size());
+    m_zstd_writer->write(reinterpret_cast<char const*>(ir_buf_view.data()), ir_buf_view.size());
     m_serializer->clear_ir_buf();
 }
 }  // namespace clp_ffi_js::ir

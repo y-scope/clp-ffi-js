@@ -83,12 +83,13 @@ set(CLP_FFI_JS_COMMON_COMPILE_OPTIONS
     -fwasm-exceptions
 )
 set(CLP_FFI_JS_COMMON_LINK_OPTIONS
-    -fwasm-exceptions
+#    -fwasm-exceptions
     -sALLOW_MEMORY_GROWTH
     -sEXPORT_ES6
     -sMAXIMUM_MEMORY=4GB
     -sMODULARIZE
     -sWASM_BIGINT
+    -sASYNCIFY=1
 )
 if(CMAKE_BUILD_TYPE MATCHES "Release")
     list(APPEND CLP_FFI_JS_COMMON_COMPILE_OPTIONS
