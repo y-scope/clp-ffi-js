@@ -59,6 +59,8 @@ public:
      */
     virtual auto get_desired_size() const -> const int& = 0;
 
+    virtual auto get_last_write_promise() -> emscripten::val = 0;
+
 protected:
     // TODO: add docs
     StreamWriter() = default;

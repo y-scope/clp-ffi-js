@@ -39,6 +39,7 @@ public:
     auto close() -> void override;
 
     auto get_desired_size() const -> const int& override;
+    auto get_last_write_promise() -> emscripten::val override;
 
 private:
     auto write_ir_buf_to_output_stream() const -> void;

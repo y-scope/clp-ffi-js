@@ -30,7 +30,7 @@ const main = async () => {
     const nodeModule = await NodeModuleInit();
 
     const queueingStrategy = new ByteLengthQueuingStrategy({highWaterMark: 10000});
-    const queueingStrategyWithLowHighWaterMark = new ByteLengthQueuingStrategy({highWaterMark: 6289});
+    const queueingStrategyWithLowHighWaterMark = new ByteLengthQueuingStrategy({highWaterMark: 5000});
     // TODO: add NaN and Finite cases.
     const obj = {
         "int": 1,
@@ -48,32 +48,29 @@ const main = async () => {
         }
     };
 
-    // console.time("node-compress");
-    // const nodeStream = createTestWritableStream(queueingStrategy);
-    // const nodeStreamWriter = new nodeModule.StreamWriter(nodeStream, {
-    //     compressionLevel: 3
-    // });
-    // for (let i = 0; i < 1000000; i++) {
-    //     nodeStreamWriter.write(pack(obj));
-    // }
-    // nodeStreamWriter.close();
-    //
-    // console.timeEnd("node-compress");
+    console.time("node-compress");
+    const nodeStream = createTestWritableStream(queueingStrategy);
+    const nodeStreamWriter = new nodeModule.StreamWriter(nodeStream, {
+        compressionLevel: 3
+    });
+    for (let i = 0; i < 1000000; i++) {
+        nodeStreamWriter.write(pack(obj));
+    }
+    nodeStreamWriter.close();
+
+    console.timeEnd("node-compress");
 
     console.time("node-compress-with-low-high-water-mark");
     const nodeStreamWithLowHighWaterMark = createTestWritableStream(queueingStrategyWithLowHighWaterMark);
     const nodeStreamWriterWithLowHighWaterMark = new nodeModule.StreamWriter(nodeStreamWithLowHighWaterMark, {
         compressionLevel: 3
     });
-    console.log(nodeStreamWriterWithLowHighWaterMark.desiredSize)
     for (let i = 0; i < 1000000; i++) {
         nodeStreamWriterWithLowHighWaterMark.write(pack(obj));
+        await nodeStreamWriterWithLowHighWaterMark.getLastWritePromise();
     }
-    console.log("live 1");
     nodeStreamWriterWithLowHighWaterMark.close();
-    console.log("live 2");
     console.timeEnd("node-compress-with-low-high-water-mark");
-    console.log(nodeStreamWriterWithLowHighWaterMark.desiredSize)
 }
 
 main().then(r => console.log("Test finished"))

@@ -29,27 +29,24 @@ public:
     ~WebStreamWriter() override = default;
 
     void write(char const* data, size_t data_length) override {
-        // @zzxthehappiest: await_ready is the same as desiredSize > 0
-        // however if I remove this check, it has an out-of-bound index error
-        while (get_desired_size() <= 0) {
-            std::cout << "size: " << data_length << "desired size: " << get_desired_size() << ", "
-                                                                                            "data" <<
-            static_cast<const void*>(data)
-            << std::endl;
-            await_ready();
-        }
-
         auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
         emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
-        // @zzxthehappiest: this function should return a promise instead of void, because
-        // it calls await_ready which could suspend the thread so it needs to return a
-        // promise here. However, in Compressor.hpp/cpp, there is only void write provide.
-        //
-        // This line should be something like:
-        // return m_writable_stream_writer.call<emscripten::val>("write", uint8Array);
-        m_writable_stream_writer.call<void>("write", uint8Array);
+        if (get_desired_size() > 0) {
+            m_writable_stream_writer.call<void>("write", uint8Array);
+            m_last_write_promise = emscripten::val::global("Promise").call<emscripten::val>("resolve", emscripten::val::undefined());
+        } else {
+            // If backpressure, need to await first
+            await_ready().call<emscripten::val>(
+                    "then",
+                    emscripten::val::module_property("dynCall"),
+                    emscripten::val([this, uint8Array](const emscripten::val&) {
+                        m_writable_stream_writer.call<void>("write", uint8Array);
+                        return emscripten::val::undefined();
+                    })
+            );
+        }
     }
 
     // For abort(), similarity, we can define:
@@ -76,9 +73,12 @@ public:
         return desired_size;
     }
 
-    auto await_ready() -> void {
-        auto ready_promise = m_writable_stream_writer["ready"];
-        ready_promise.await();
+    auto await_ready() -> emscripten::val {
+        return m_writable_stream_writer["ready"];
+    }
+
+    auto get_last_write_promise() -> emscripten::val {
+        return m_last_write_promise;
     }
 
     clp::ErrorCode try_seek_from_begin(size_t pos) override { return clp::ErrorCode_Unsupported; }
@@ -91,6 +91,7 @@ public:
 
 private:
     emscripten::val m_writable_stream_writer;
+    emscripten::val m_last_write_promise;
 };
 }  // namespace
 
@@ -178,7 +179,7 @@ auto StructuredIrStreamWriter::close() -> void {
 }
 
 auto StructuredIrStreamWriter::get_desired_size() const -> const int& {
-    auto web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
     if (nullptr == web_stream_writer) {
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
@@ -189,6 +190,20 @@ auto StructuredIrStreamWriter::get_desired_size() const -> const int& {
     }
     m_desired_size = web_stream_writer->get_desired_size();
     return m_desired_size;
+}
+
+auto StructuredIrStreamWriter::get_last_write_promise() -> emscripten::val {
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+
+    return web_stream_writer->get_last_write_promise();
 }
 
 auto StructuredIrStreamWriter::write_ir_buf_to_output_stream() const -> void {

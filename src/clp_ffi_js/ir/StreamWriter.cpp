@@ -18,6 +18,8 @@ EMSCRIPTEN_BINDINGS(ClpStreamWriter) {
             )
             .function("write", &clp_ffi_js::ir::StreamWriter::write)
             .function("close", &clp_ffi_js::ir::StreamWriter::close)
+            .function("getLastWritePromise",
+                      &clp_ffi_js::ir::StreamWriter::get_last_write_promise)
             .property("desiredSize", &clp_ffi_js::ir::StreamWriter::get_desired_size);
 }
 }  // namespace
