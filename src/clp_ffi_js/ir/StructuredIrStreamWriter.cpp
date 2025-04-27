@@ -29,7 +29,7 @@ public:
     ~WebStreamWriter() override = default;
 
     void write(char const* data, size_t data_length) override {
-        // @zzxthehappiest: I think await_ready is the same as desiredSize > 0
+        // @zzxthehappiest: await_ready is the same as desiredSize > 0
         // however if I remove this check, it has an out-of-bound index error
         while (get_desired_size() <= 0) {
             std::cout << "size: " << data_length << "desired size: " << get_desired_size() << ", "
@@ -43,12 +43,33 @@ public:
         emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
+        // @zzxthehappiest: this function should return a promise instead of void, because
+        // it calls await_ready which could suspend the thread so it needs to return a
+        // promise here. However, in Compressor.hpp/cpp, there is only void write provide.
+        //
+        // This line should be something like:
+        // return m_writable_stream_writer.call<emscripten::val>("write", uint8Array);
         m_writable_stream_writer.call<void>("write", uint8Array);
     }
 
-    void flush() override {
-        await_ready();
-    }
+    // For abort(), similarity, we can define:
+    // StreamWriter.hpp/cpp (bind it in .cpp):
+    // virtual auto abort(emscripten::val reason) -> emscripten::val = 0;
+    //
+    // StructuredStreamWriter:
+    // auto StructuredIrStreamWriter::abort(emscripten::val reason) -> emscripten::val {
+    //    return m_output_writer->abort(reason);
+    // }
+    //
+    // WebStreamWriter:
+    // auto abort(emscripten::val reason) -> emscripten::val override {
+    //    return m_writer.call<emscripten::val>("abort", reason);
+    // }
+    //
+    // But obviously there are more functions need to be added in the WriterInterface, currently
+    // there are only two (write/flush)
+
+    void flush() override { return; }
 
     auto get_desired_size() const -> int {
         auto desired_size = m_writable_stream_writer["desiredSize"].as<int>();
@@ -146,7 +167,6 @@ auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
 auto StructuredIrStreamWriter::flush() -> void {
     write_ir_buf_to_output_stream();
     m_zstd_writer->flush();
-    m_output_writer->flush();
 }
 
 auto StructuredIrStreamWriter::close() -> void {
