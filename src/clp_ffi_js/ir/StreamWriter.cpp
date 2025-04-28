@@ -16,6 +16,7 @@ EMSCRIPTEN_BINDINGS(ClpStreamWriter) {
                     &clp_ffi_js::ir::StreamWriter::create,
                     emscripten::return_value_policy::take_ownership()
             )
+            .function("abort", &clp_ffi_js::ir::StreamWriter::abort)
             .function("write", &clp_ffi_js::ir::StreamWriter::write)
             .function("close", &clp_ffi_js::ir::StreamWriter::close)
             .function("getLastWritePromise",

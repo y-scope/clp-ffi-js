@@ -71,6 +71,25 @@ const main = async () => {
     }
     nodeStreamWriterWithLowHighWaterMark.close();
     console.timeEnd("node-compress-with-low-high-water-mark");
+
+    console.time("node-compress-abort");
+    // Use queueingStrategyWithLowHighWaterMark so that there could be async ongoing writes waiting
+    // for ready while aborting
+    const nodeStreamAbort = createTestWritableStream(queueingStrategyWithLowHighWaterMark);
+    const nodeStreamWriterAbort = new nodeModule.StreamWriter(nodeStreamAbort, {
+        compressionLevel: 3
+    });
+    for (let i = 0; i < 1000000; i++) {
+        if (i === 900000) {
+            await nodeStreamWriterAbort.abort("Test abort");
+            console.timeEnd("node-compress-abort");
+            break;
+        } else {
+            nodeStreamWriterAbort.write(pack(obj));
+            await nodeStreamWriterAbort.getLastWritePromise();
+        }
+    }
+    nodeStreamWriterAbort.close();
 }
 
-main().then(r => console.log("Test finished"))
+main().then(r => console.log("Test finished")).catch(error => console.log("Test abort finished"))

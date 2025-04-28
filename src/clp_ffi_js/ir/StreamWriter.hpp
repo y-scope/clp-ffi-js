@@ -54,6 +54,13 @@ public:
     virtual auto close() -> void = 0;
 
     /**
+     * Abort any ongoing writing and invalidate the serializer.
+     * @param reason
+     * @return a promise.
+     */
+    virtual auto abort(emscripten::val reason) -> emscripten::val = 0;
+
+    /**
      * Get the desiredSize property from the writer
      * @return desiredSize
      */

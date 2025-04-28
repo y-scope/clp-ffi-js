@@ -33,6 +33,7 @@ public:
 
     StructuredIrStreamWriter(emscripten::val const& stream, WriterOptions const& writer_options);
 
+    auto abort(::emscripten::val reason) -> emscripten::val override;
     auto write(::emscripten::val chunk) -> void override;
 
     auto flush() -> void override;

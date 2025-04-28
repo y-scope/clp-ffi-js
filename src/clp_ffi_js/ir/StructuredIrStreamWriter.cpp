@@ -33,12 +33,13 @@ public:
         emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
 
         uint8Array.call<void>("set", memoryView);
+
         if (get_desired_size() > 0) {
             m_writable_stream_writer.call<void>("write", uint8Array);
-            m_last_write_promise = emscripten::val::global("Promise").call<emscripten::val>("resolve", emscripten::val::undefined());
+            m_last_write_promise = emscripten::val::global("Promise")
+                    .call<emscripten::val>("resolve", emscripten::val::undefined());
         } else {
-            // If backpressure, need to await first
-            await_ready().call<emscripten::val>(
+            m_last_write_promise = await_ready().call<emscripten::val>(
                     "then",
                     emscripten::val::module_property("dynCall"),
                     emscripten::val([this, uint8Array](const emscripten::val&) {
@@ -49,22 +50,9 @@ public:
         }
     }
 
-    // For abort(), similarity, we can define:
-    // StreamWriter.hpp/cpp (bind it in .cpp):
-    // virtual auto abort(emscripten::val reason) -> emscripten::val = 0;
-    //
-    // StructuredStreamWriter:
-    // auto StructuredIrStreamWriter::abort(emscripten::val reason) -> emscripten::val {
-    //    return m_output_writer->abort(reason);
-    // }
-    //
-    // WebStreamWriter:
-    // auto abort(emscripten::val reason) -> emscripten::val override {
-    //    return m_writer.call<emscripten::val>("abort", reason);
-    // }
-    //
-    // But obviously there are more functions need to be added in the WriterInterface, currently
-    // there are only two (write/flush)
+    auto abort(emscripten::val reason) -> emscripten::val {
+        return m_writable_stream_writer.call<emscripten::val>("abort", reason);
+    }
 
     void flush() override { return; }
 
@@ -176,6 +164,20 @@ auto StructuredIrStreamWriter::close() -> void {
 
     // FIXME: handle any read on this after close()
     m_serializer.reset(nullptr);
+}
+
+auto StructuredIrStreamWriter::abort(::emscripten::val reason) -> emscripten::val {
+    close();
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+    return web_stream_writer->abort(reason);
 }
 
 auto StructuredIrStreamWriter::get_desired_size() const -> const int& {
