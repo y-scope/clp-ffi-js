@@ -17,6 +17,7 @@
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
@@ -26,7 +27,6 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
-
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
@@ -34,6 +34,12 @@ auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
         clp::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
+    // Deserialize metadata from the IR stream's preamble.
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
+    auto const pos{zstd_decompressor->get_pos()};
+    auto metadata_json{deserialize_metadata(*zstd_decompressor)};
+    zstd_decompressor->seek_from_begin(pos);
+
     auto result{UnstructuredIrDeserializer::create(*zstd_decompressor)};
     if (result.has_error()) {
         auto const error_code{result.error()};
@@ -53,7 +59,11 @@ auto UnstructuredIrStreamReader::create(
             std::move(zstd_decompressor),
             std::move(result.value())
     );
-    return UnstructuredIrStreamReader(std::move(data_context));
+    return UnstructuredIrStreamReader(std::move(data_context), std::move(metadata_json));
+}
+
+auto UnstructuredIrStreamReader::get_metadata() const -> MetadataTsType {
+    return parse_metadata_to_ts_type(m_metadata_json);
 }
 
 auto UnstructuredIrStreamReader::get_num_events_buffered() const -> size_t {
@@ -162,12 +172,12 @@ auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
-        StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
+        StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
+        nlohmann::json&& metadata_json
 )
-        : m_stream_reader_data_context{
-                  std::make_unique<StreamReaderDataContext<UnstructuredIrDeserializer>>(
-                          std::move(stream_reader_data_context)
-                  )
-          } {}
-
+        : m_stream_reader_data_context{std::make_unique<
+                  StreamReaderDataContext<UnstructuredIrDeserializer>>(
+                  std::move(stream_reader_data_context)
+          )},
+          m_metadata_json(std::move(metadata_json)) {}
 }  // namespace clp_ffi_js::ir

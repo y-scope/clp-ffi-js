@@ -12,10 +12,12 @@
 #include <vector>
 
 #include <clp/ir/types.hpp>
+#include <clp/ReaderInterface.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/constants.hpp>
@@ -30,6 +32,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(MetadataTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 
 enum class StreamType : uint8_t {
@@ -45,6 +48,31 @@ using LogEvents = std::vector<LogEventWithFilterData<LogEvent>>;
  * log events collection.
  */
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
+
+/**
+ * Rewinds the reader to the beginning then validates the CLP IR data encoding type.
+ * @param reader
+ * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
+ * unsupported.
+ */
+auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
+
+/**
+ * Deserializes the metadata from the IR stream's preamble.
+ *
+ * @param reader
+ * @throws ClpFfiJsException if the preamble couldn't be deserialized.
+ * @return The IR stream's metadata as a JSON object.
+ */
+auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
+
+/**
+ * Parses the metadata from the given JSON object to a JavaScript object.
+ *
+ * @param metadata_json
+ * @return The parsed metadata as a JavaScript object.
+ */
+[[nodiscard]] auto parse_metadata_to_ts_type(nlohmann::json const& metadata_json) -> MetadataTsType;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -80,6 +108,8 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    [[nodiscard]] virtual auto get_metadata() const -> MetadataTsType = 0;
+
     [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
 
     /**

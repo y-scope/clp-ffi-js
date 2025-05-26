@@ -10,6 +10,7 @@
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -53,6 +54,8 @@ public:
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(StructuredIrStreamReader&&) -> StructuredIrStreamReader& = delete;
 
+    [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
+
     [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
         return StreamType::Structured;
     }
@@ -86,6 +89,7 @@ private:
     );
 
     // Variables
+    nlohmann::json m_metadata_json;
     std::shared_ptr<StructuredLogEvents> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;

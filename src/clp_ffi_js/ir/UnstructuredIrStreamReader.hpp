@@ -8,6 +8,7 @@
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -48,6 +49,8 @@ public:
             clp::Array<char> data_array
     ) -> UnstructuredIrStreamReader;
 
+    [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
+
     [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
         return StreamType::Unstructured;
     }
@@ -76,10 +79,12 @@ public:
 private:
     // Constructor
     explicit UnstructuredIrStreamReader(
-            StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
+            StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
+            nlohmann::json&& metadata_json
     );
 
     // Variables
+    nlohmann::json m_metadata_json;
     UnstructuredLogEvents m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
