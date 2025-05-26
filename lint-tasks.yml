@@ -113,7 +113,15 @@ tasks:
       . "{{.G_LINT_VENV_DIR}}/bin/activate"
 
       # Pass emscripten's cflags to clang-tidy by prefixing each one with `--extra-arg`
-      EXTRA_ARGS=$("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" --cflags \
+      EXTRA_ARGS=$("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" \
+        $(
+          cmake -L -N -S '{{.ROOT_DIR}}' \
+            -B '{{.G_CLP_FFI_JS_BUILD_DIR}}' \
+            | grep '^CLP_FFI_JS_COMMON_COMPILE_OPTIONS' \
+            | sed -n 's/^[^=]*=//p' \
+            | tr ';' ' ' \
+        ) \
+        --cflags \
         | tr ' ' '\n' \
         | sed 's/^/--extra-arg /' \
         | tr '\n' ' ')

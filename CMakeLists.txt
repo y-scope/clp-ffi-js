@@ -99,6 +99,12 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
         --closure=1
     )
 endif()
+set(CLP_FFI_JS_COMMON_COMPILE_OPTIONS
+    ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}
+    CACHE STRING
+    "Common compile options for ClpFfiJs. Exporting to cache so that it can be used in linting."
+    FORCE
+)
 
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/StreamReader.cpp
