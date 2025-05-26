@@ -130,8 +130,6 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 }
 
 auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json {
-    rewind_reader_and_validate_encoding_type(reader);
-
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
     std::vector<int8_t> metadata_bytes;
     auto const err{clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
@@ -187,6 +185,8 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
 
     auto zstd_decompressor{std::make_unique<ZstdDecompressor>()};
     zstd_decompressor->open(data_buffer.data(), length);
+
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
 
     // Validate the stream's version and decide which type of IR stream reader to create.
     auto const version{get_version(*zstd_decompressor)};
