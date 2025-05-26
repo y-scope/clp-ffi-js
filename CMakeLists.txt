@@ -99,11 +99,13 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
         --closure=1
     )
 endif()
-set(CLP_FFI_JS_COMMON_COMPILE_OPTIONS
-    ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}
-    CACHE STRING
-    "Common compile options for ClpFfiJs. Exporting to cache so that it can be used in linting."
-    FORCE
+
+# Add a custom target to print the extra compile options for `clang-tidy` or other tools.
+string(JOIN " " CLP_FFI_JS_COMMON_COMPILE_OPTIONS_SPACED ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS})
+add_custom_target(print_clp_ffi_js_compile_options
+        COMMAND ${CMAKE_CXX_COMPILER}
+        ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}
+        --cflags
 )
 
 set(CLP_FFI_JS_SRC_MAIN
