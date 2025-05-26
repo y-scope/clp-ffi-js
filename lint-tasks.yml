@@ -114,7 +114,7 @@ tasks:
 
       # Pass emscripten's cflags to clang-tidy by prefixing each one with `--extra-arg`
       EXTRA_ARGS=$(cmake --build '{{.G_CLP_FFI_JS_BUILD_DIR}}' \
-        --target "print_clp_ffi_js_compile_options" \
+        --target 'print_clp_ffi_js_compile_options' \
         -- --quiet \
         | tr ' ' '\n' \
         | sed 's/^/--extra-arg /' \
