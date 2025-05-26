@@ -108,6 +108,9 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    /**
+    * @return The metadata of the IR stream as a JavaScript object.
+    */
     [[nodiscard]] virtual auto get_metadata() const -> MetadataTsType = 0;
 
     [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
