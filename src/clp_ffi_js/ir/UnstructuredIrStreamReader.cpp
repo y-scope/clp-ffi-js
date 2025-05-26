@@ -63,7 +63,7 @@ auto UnstructuredIrStreamReader::create(
 }
 
 auto UnstructuredIrStreamReader::get_metadata() const -> MetadataTsType {
-    return parse_metadata_to_ts_type(m_metadata_json);
+    return parse_metadata_to_js_object(m_metadata_json);
 }
 
 auto UnstructuredIrStreamReader::get_num_events_buffered() const -> size_t {

@@ -72,7 +72,7 @@ auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
  * @param metadata_json
  * @return The parsed metadata as a JavaScript object.
  */
-[[nodiscard]] auto parse_metadata_to_ts_type(nlohmann::json const& metadata_json) -> MetadataTsType;
+[[nodiscard]] auto parse_metadata_to_js_object(nlohmann::json const& metadata_json) -> MetadataTsType;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
