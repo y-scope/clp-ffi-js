@@ -100,12 +100,13 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
     )
 endif()
 
-# Add a custom target to print the extra compile options for `clang-tidy` or other tools.
-string(JOIN " " CLP_FFI_JS_COMMON_COMPILE_OPTIONS_SPACED ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS})
-add_custom_target(print_clp_ffi_js_compile_options
+# Save the compiler's extra arguments for use in `clang-tidy` and other tools.
+execute_process(
         COMMAND ${CMAKE_CXX_COMPILER}
         ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}
         --cflags
+        OUTPUT_FILE "${CMAKE_BINARY_DIR}/compiler-extra-args.txt"
+        OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 set(CLP_FFI_JS_SRC_MAIN
