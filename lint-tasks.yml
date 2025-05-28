@@ -98,7 +98,7 @@ tasks:
             - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
             - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
             - >-
-              $("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" --cflags \
+              $(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
                 | tr ' ' '\n' \
                 | sed 's/^/--extra-arg /' \
                 | tr '\n' ' ')
@@ -120,7 +120,7 @@ tasks:
             - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
             - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
             - >-
-              $("{{.G_EMSDK_DIR}}/upstream/emscripten/em++" --cflags \
+              $(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
                 | tr ' ' '\n' \
                 | sed 's/^/--extra-arg /' \
                 | tr '\n' ' ')
