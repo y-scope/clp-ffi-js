@@ -101,7 +101,7 @@ tasks:
       - task: "utils:checksum:compute"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          EXCLUDE_PATHS: *emsdk_checksum_exclude_paths
+          EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
           INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
 
   package:
