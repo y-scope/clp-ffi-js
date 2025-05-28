@@ -47,10 +47,10 @@ tasks:
 
   check-cpp-format:
     sources: &cpp_format_source_files
-        - "{{.G_SRC_CLP_FFI_JS_DIR}}/.clang-format"
-        - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
-        - "{{.TASKFILE}}"
-        - "tools/yscope-dev-utils/exports/lint-configs/.clang-format"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/.clang-format"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
+      - "{{.TASKFILE}}"
+      - "tools/yscope-dev-utils/exports/lint-configs/.clang-format"
     deps: ["cpp-lint-configs", "venv"]
     cmds:
       - task: ":utils:cpp-lint:clang-format"
@@ -73,20 +73,20 @@ tasks:
 
   check-cpp-static-diff:
     # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
-    aliases: [ "fix-cpp-static-diff" ]
+    aliases: ["fix-cpp-static-diff"]
     sources: &cpp_static_source_files
-        # Dependency sources
-        - "{{.G_CLP_FFI_JS_BUILD_DIR}}/_deps/*-src/**/*"
-        - "{{.G_SRC_DIR}}/submodules/**/*"
+      # Dependency sources
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/_deps/*-src/**/*"
+      - "{{.G_SRC_DIR}}/submodules/**/*"
 
-        # Source files
-        - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
+      # Source files
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
 
-        # Other sources
-        - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-        - "{{.ROOT_DIR}}/Taskfile.yml"
-        - "{{.TASKFILE}}"
-        - "tools/yscope-dev-utils/exports/lint-configs/.clang-tidy"
+      # Other sources
+      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+      - "{{.ROOT_DIR}}/Taskfile.yml"
+      - "{{.TASKFILE}}"
+      - "tools/yscope-dev-utils/exports/lint-configs/.clang-tidy"
     deps:
       - ":config-cmake-project"
       - "cpp-lint-configs"
