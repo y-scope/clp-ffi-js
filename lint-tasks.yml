@@ -74,19 +74,6 @@ tasks:
   check-cpp-static-diff:
     # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
     aliases: ["fix-cpp-static-diff"]
-    sources: &cpp_static_source_files
-      # Dependency sources
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/_deps/*-src/**/*"
-      - "{{.G_SRC_DIR}}/submodules/**/*"
-
-      # Source files
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
-
-      # Other sources
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-      - "{{.ROOT_DIR}}/Taskfile.yml"
-      - "{{.TASKFILE}}"
-      - "tools/yscope-dev-utils/exports/lint-configs/.clang-tidy"
     deps:
       - ":config-cmake-project"
       - "cpp-lint-configs"
@@ -108,7 +95,6 @@ tasks:
   check-cpp-static-full:
     # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
     aliases: ["fix-cpp-static-full"]
-    sources: *cpp_static_source_files
     deps:
       - ":config-cmake-project"
       - "cpp-lint-configs"
@@ -125,9 +111,10 @@ tasks:
                 | sed 's/^/--extra-arg /' \
                 | tr '\n' ' ')
           INCLUDE_PATTERNS:
-            - "{{.G_SRC_CLP_FFI_JS_DIR}}/*"
+            - "{{.G_SRC_CLP_FFI_JS_DIR}}/**"
           OUTPUT_DIR: "{{.G_LINT_CLANG_TIDY_DIR}}"
-          ROOT_PATHS: *cpp_static_source_files
+          ROOT_PATHS:
+            - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
           VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
   yaml:
