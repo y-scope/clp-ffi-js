@@ -81,7 +81,7 @@ tasks:
     cmds:
       - task: ":utils:cpp-lint:clang-tidy-diff"
         vars:
-          FLAGS:
+          FLAGS: &clang_tidy_flags
             - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
             - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
             - >-
@@ -102,14 +102,7 @@ tasks:
     cmds:
       - task: ":utils:cpp-lint:clang-tidy-find"
         vars:
-          FLAGS:
-            - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
-            - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
-            - >-
-              $(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
-                | tr ' ' '\n' \
-                | sed 's/^/--extra-arg /' \
-                | tr '\n' ' ')
+          FLAGS: *clang_tidy_flags
           INCLUDE_PATTERNS:
             - "{{.G_SRC_CLP_FFI_JS_DIR}}/**"
           OUTPUT_DIR: "{{.G_LINT_CLANG_TIDY_DIR}}"
