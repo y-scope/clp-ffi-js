@@ -105,11 +105,9 @@ tasks:
       - task: ":utils:cpp-lint:clang-tidy-find"
         vars:
           FLAGS: *clang_tidy_flags
-          INCLUDE_PATTERNS:
-            - "{{.G_SRC_CLP_FFI_JS_DIR}}/**"
           OUTPUT_DIR: "{{.G_LINT_CLANG_TIDY_DIR}}"
           ROOT_PATHS:
-            - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
+            - "{{.G_SRC_CLP_FFI_JS_DIR}}"
           VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
   yaml:
