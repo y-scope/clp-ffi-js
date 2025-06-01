@@ -57,7 +57,8 @@ tasks:
         vars:
           FLAGS: ["--dry-run"]
           INCLUDE_FILENAME_PATTERNS: ["*.cpp", "*.h", "*.hpp", "*.inc"]
-          ROOT_PATHS: *cpp_format_source_files
+          ROOT_PATHS:
+            - "{{.G_SRC_CLP_FFI_JS_DIR}}"
           VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
   fix-cpp-format:
@@ -68,7 +69,8 @@ tasks:
         vars:
           FLAGS: ["-i"]
           INCLUDE_FILENAME_PATTERNS: ["*.cpp", "*.h", "*.hpp", "*.inc"]
-          ROOT_PATHS: *cpp_format_source_files
+          ROOT_PATHS:
+            - "{{.G_SRC_CLP_FFI_JS_DIR}}"
           VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
   check-cpp-static-diff:
