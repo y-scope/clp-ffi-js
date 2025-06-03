@@ -2,7 +2,7 @@ version: "3"
 
 includes:
   lint: "lint-tasks.yml"
-  utils: "tools/yscope-dev-utils/taskfiles/utils.yml"
+  utils: "tools/yscope-dev-utils/exports/taskfiles/utils/utils.yaml"
 
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
@@ -45,10 +45,10 @@ tasks:
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "emsdk"
-      - task: "utils:validate-checksum"
+      - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          DATA_DIR: "{{.OUTPUT_DIR}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
       - task: "config-cmake-project"
       - >-
@@ -57,10 +57,10 @@ tasks:
         --parallel
         --target {{range .G_CLP_FFI_JS_ENV_NAMES}}"{{$.G_CLP_FFI_JS_TARGET_PREFIX}}{{.}}" {{end}}
       # This command must be last
-      - task: "utils:compute-checksum"
+      - task: "utils:checksum:compute"
         vars:
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
 
   emsdk:
     vars:
@@ -73,11 +73,10 @@ tasks:
     run: "once"
     deps:
       - "init"
-      - task: "utils:validate-checksum"
+      - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          EXCLUDE_PATHS: &emsdk_checksum_exclude_paths
+          EXCLUDE_PATTERNS: &emsdk_checksum_exclude_paths
             - "upstream/emscripten/__pycache__"
             - "upstream/emscripten/cache/sanity.txt"
             - "upstream/emscripten/cache/symbol_lists"
@@ -87,6 +86,7 @@ tasks:
             - "upstream/emscripten/tools/__pycache__"
             - "upstream/emscripten/tools/ports/__pycache__"
             - "upstream/emscripten/tools/ports/contrib/__pycache__"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
       - task: "clean-emsdk"
       - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
@@ -98,11 +98,11 @@ tasks:
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
         PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
       # This command must be last
-      - task: "utils:compute-checksum"
+      - task: "utils:checksum:compute"
         vars:
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
-          EXCLUDE_PATHS: *emsdk_checksum_exclude_paths
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
 
   package:
     vars:
@@ -114,10 +114,10 @@ tasks:
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "clp-ffi-js"
-      - task: "utils:validate-checksum"
+      - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          DATA_DIR: "{{.OUTPUT_DIR}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
       - "rm -rf {{.OUTPUT_DIR}}"
       - for:
@@ -128,10 +128,10 @@ tasks:
           "{{.OUTPUT_DIR}}/"
       - "npm pack"
       # This command must be last
-      - task: "utils:compute-checksum"
+      - task: "utils:checksum:compute"
         vars:
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
 
   config-cmake-project:
     internal: true

@@ -62,10 +62,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(
-            DataArrayTsType const& data_array,
-            ReaderOptions const& reader_options
-    ) -> std::unique_ptr<StreamReader>;
+    [[nodiscard]] static auto
+    create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
+            -> std::unique_ptr<StreamReader>;
 
     // Destructor
     virtual ~StreamReader() = default;
@@ -124,7 +123,8 @@ public:
      * @throw ClpFfiJsException if a message cannot be decoded.
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
-            -> DecodedResultsTsType = 0;
+            -> DecodedResultsTsType
+            = 0;
 
     /**
      * Finds the log event, L, where if we assume:
@@ -143,9 +143,9 @@ public:
      * @param target_ts
      * @return The index of the log event L.
      */
-    [[nodiscard]] virtual auto find_nearest_log_event_by_timestamp(
-            clp::ir::epoch_time_ms_t target_ts
-    ) -> NullableLogEventIdx = 0;
+    [[nodiscard]] virtual auto
+    find_nearest_log_event_by_timestamp(clp::ir::epoch_time_ms_t target_ts) -> NullableLogEventIdx
+            = 0;
 
 protected:
     explicit StreamReader() = default;

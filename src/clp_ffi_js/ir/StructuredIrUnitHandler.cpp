@@ -42,8 +42,8 @@ namespace {
  * - Forwards `clp::ir::EncodedTextAst::decode_and_unparse`'s return values.
  * - Forwards `parse_log_level`'s return values.
  */
-[[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value
-) -> std::optional<LogLevel>;
+[[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value)
+        -> std::optional<LogLevel>;
 
 auto parse_log_level(std::string_view str) -> std::optional<LogLevel> {
     // Convert the string to uppercase.
@@ -129,8 +129,8 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
     return true;
 }
 
-auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event
-) -> clp::ffi::ir_stream::IRErrorCode {
+auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event)
+        -> clp::ffi::ir_stream::IRErrorCode {
     auto const timestamp = get_timestamp(log_event);
     auto const log_level = get_log_level(log_event);
 
@@ -233,8 +233,8 @@ auto StructuredIrUnitHandler::get_log_level(StructuredLogEvent const& log_event)
     return optional_log_level.value();
 }
 
-auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event
-) const -> clp::ir::epoch_time_ms_t {
+auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event) const
+        -> clp::ir::epoch_time_ms_t {
     constexpr clp::ir::epoch_time_ms_t cDefaultTimestamp{0};
 
     if (false == m_optional_timestamp_full_branch.has_value()) {

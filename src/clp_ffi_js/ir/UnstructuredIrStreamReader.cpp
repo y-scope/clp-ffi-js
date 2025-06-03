@@ -26,7 +26,6 @@
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 
 namespace clp_ffi_js::ir {
-
 using namespace std::literals::string_literals;
 using clp::ir::four_byte_encoded_variable_t;
 
@@ -130,8 +129,9 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
-        const -> DecodedResultsTsType {
+auto
+UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+        -> DecodedResultsTsType {
     auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {
@@ -169,5 +169,4 @@ UnstructuredIrStreamReader::UnstructuredIrStreamReader(
                           std::move(stream_reader_data_context)
                   )
           } {}
-
 }  // namespace clp_ffi_js::ir
