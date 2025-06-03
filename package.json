@@ -32,5 +32,8 @@
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
     }
+  },
+  "devDependencies": {
+    "msgpackr": "^1.11.2"
   }
 }

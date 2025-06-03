@@ -4,12 +4,15 @@
 [submodule "src/submodules/fmt"]
 	path = src/submodules/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "src/submodules/msgpack"]
+	path = src/submodules/msgpack
+	url = https://github.com/msgpack/msgpack-c.git
 [submodule "src/submodules/spdlog"]
 	path = src/submodules/spdlog
 	url = https://github.com/gabime/spdlog.git
+[submodule "tools/yscope-dev-utils"]
+    path = tools/yscope-dev-utils
+    url = https://github.com/y-scope/yscope-dev-utils.git
 [submodule "src/submodules/zstd"]
 	path = src/submodules/zstd
 	url = https://github.com/facebook/zstd.git
-[submodule "tools/yscope-dev-utils"]
-	path = tools/yscope-dev-utils
-	url = https://github.com/y-scope/yscope-dev-utils.git
