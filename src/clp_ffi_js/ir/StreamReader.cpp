@@ -77,7 +77,8 @@ auto get_version(clp::ReaderInterface& reader) -> std::string {
     // Deserialize metadata bytes from preamble.
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
     std::vector<int8_t> metadata_bytes;
-    auto const err{clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
+    auto const err{
+            clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
     };
     if (IRErrorCode::IRErrorCode_Success != err) {
         throw ClpFfiJsException{
@@ -177,7 +178,8 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     auto pos = zstd_decompressor->get_pos();
     auto const version{get_version(*zstd_decompressor)};
     try {
-        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)
+        auto const version_validation_result{
+                clp::ffi::ir_stream::validate_protocol_version(version)
         };
         if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
             zstd_decompressor->seek_from_begin(0);

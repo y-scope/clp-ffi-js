@@ -100,6 +100,16 @@ if(CMAKE_BUILD_TYPE MATCHES "Release")
     )
 endif()
 
+# Save the compiler's extra arguments for use in `clang-tidy` and other tools.
+execute_process(
+        COMMAND ${CMAKE_CXX_COMPILER}
+        ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS}
+        --cflags
+        COMMAND_ERROR_IS_FATAL ANY
+        OUTPUT_FILE "${CMAKE_BINARY_DIR}/compiler-extra-args.txt"
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/StreamReader.cpp
     src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
