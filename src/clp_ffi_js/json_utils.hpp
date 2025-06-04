@@ -12,7 +12,7 @@ namespace clp_ffi_js {
  * Serializes a JSON value into a string with invalid UTF-8 sequences replaced rather than throwing
  * an exception.
  * @param json
- * @return Serialized JSON.
+ * @return The JSON object serialized as a string.
  */
 [[nodiscard]] inline auto dump_json_with_replace(nlohmann::json const& json) -> std::string {
     return json.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
