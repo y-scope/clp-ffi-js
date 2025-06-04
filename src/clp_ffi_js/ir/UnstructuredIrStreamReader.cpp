@@ -59,7 +59,7 @@ auto UnstructuredIrStreamReader::create(
             std::move(zstd_decompressor),
             std::move(result.value())
     );
-    return UnstructuredIrStreamReader(std::move(data_context), std::move(metadata_json));
+    return UnstructuredIrStreamReader{std::move(data_context), std::move(metadata_json)};
 }
 
 auto UnstructuredIrStreamReader::get_metadata() const -> MetadataTsType {
