@@ -64,7 +64,7 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
  * @throws ClpFfiJsException if the preamble couldn't be deserialized.
  * @return The IR stream's metadata as a JSON object.
  */
-auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
+[[nodiscard]] auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
 
 /**
  * Parses the metadata from the given JSON object to a JavaScript object.
