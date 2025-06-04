@@ -9,8 +9,8 @@ namespace clp_ffi_js {
 /**
  * @see nlohmann::basic_json::dump
 
- * Serializes a JSON value into a string with invalid UTF-8 sequences replaced rather than
- * throwing an exception.
+ * Serializes a JSON value into a string with invalid UTF-8 sequences replaced rather than throwing
+ * an exception.
  * @param json
  * @return Serialized JSON.
  */
