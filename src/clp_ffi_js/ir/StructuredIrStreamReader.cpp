@@ -118,7 +118,7 @@ auto StructuredIrStreamReader::create(
 }
 
 auto StructuredIrStreamReader::get_metadata() const -> MetadataTsType {
-    return convert_metadata_to_js_object(m_metadata_json);
+    return convert_metadata_to_js_object(m_metadata);
 }
 
 auto StructuredIrStreamReader::get_num_events_buffered() const -> size_t {
@@ -217,7 +217,7 @@ StructuredIrStreamReader::StructuredIrStreamReader(
         StreamReaderDataContext<StructuredIrDeserializer>&& stream_reader_data_context,
         std::shared_ptr<StructuredLogEvents> deserialized_log_events
 )
-        : m_metadata_json(stream_reader_data_context.get_deserializer().get_metadata()),
+        : m_metadata(stream_reader_data_context.get_deserializer().get_metadata()),
           m_deserialized_log_events{std::move(deserialized_log_events)},
           m_stream_reader_data_context{
                   std::make_unique<StreamReaderDataContext<StructuredIrDeserializer>>(

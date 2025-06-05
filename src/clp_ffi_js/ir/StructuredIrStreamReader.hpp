@@ -88,7 +88,7 @@ private:
     );
 
     // Variables
-    nlohmann::json m_metadata_json;
+    nlohmann::json m_metadata;
     std::shared_ptr<StructuredLogEvents> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;

@@ -78,11 +78,11 @@ private:
     // Constructor
     explicit UnstructuredIrStreamReader(
             StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
-            nlohmann::json&& metadata_json
+            nlohmann::json&& metadata
     );
 
     // Variables
-    nlohmann::json m_metadata_json;
+    nlohmann::json m_metadata;
     UnstructuredLogEvents m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;

@@ -63,7 +63,7 @@ auto UnstructuredIrStreamReader::create(
 }
 
 auto UnstructuredIrStreamReader::get_metadata() const -> MetadataTsType {
-    return convert_metadata_to_js_object(m_metadata_json);
+    return convert_metadata_to_js_object(m_metadata);
 }
 
 auto UnstructuredIrStreamReader::get_num_events_buffered() const -> size_t {
@@ -174,11 +174,12 @@ auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
-        nlohmann::json&& metadata_json
+        nlohmann::json&& metadata
 )
-        : m_stream_reader_data_context{std::make_unique<
-                  StreamReaderDataContext<UnstructuredIrDeserializer>>(
-                  std::move(stream_reader_data_context)
-          )},
-          m_metadata_json(std::move(metadata_json)) {}
+        : m_metadata(std::move(metadata)),
+          m_stream_reader_data_context{
+                  std::make_unique<StreamReaderDataContext<UnstructuredIrDeserializer>>(
+                          std::move(stream_reader_data_context)
+                  )
+          } {}
 }  // namespace clp_ffi_js::ir

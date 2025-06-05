@@ -164,8 +164,8 @@ auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json {
     }
 }
 
-auto convert_metadata_to_js_object(nlohmann::json const& metadata_json) -> MetadataTsType {
-    auto const metadata_str{dump_json_with_replace(metadata_json)};
+auto convert_metadata_to_js_object(nlohmann::json const& metadata) -> MetadataTsType {
+    auto const metadata_str{dump_json_with_replace(metadata)};
     auto const metadata_obj{
             emscripten::val::global("JSON").call<emscripten::val>("parse", metadata_str)
     };

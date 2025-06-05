@@ -69,11 +69,10 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 /**
  * Converts the metadata from the given JSON object to a JavaScript object.
  *
- * @param metadata_json
+ * @param metadata
  * @return The converted JavaScript object.
  */
-[[nodiscard]] auto convert_metadata_to_js_object(nlohmann::json const& metadata_json)
-        -> MetadataTsType;
+[[nodiscard]] auto convert_metadata_to_js_object(nlohmann::json const& metadata) -> MetadataTsType;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
