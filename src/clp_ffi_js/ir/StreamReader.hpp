@@ -50,31 +50,6 @@ using LogEvents = std::vector<LogEventWithFilterData<LogEvent>>;
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
 /**
- * Rewinds the reader to the beginning then validates the CLP IR data encoding type.
- * @param reader
- * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
- * unsupported.
- */
-auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> void;
-
-/**
- * Deserializes the metadata from the IR stream's preamble.
- *
- * @param reader
- * @throws ClpFfiJsException if the preamble couldn't be deserialized.
- * @return The IR stream's metadata as a JSON object.
- */
-[[nodiscard]] auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
-
-/**
- * Converts the metadata from the given JSON object to a JavaScript object.
- *
- * @param metadata
- * @return The converted JavaScript object.
- */
-[[nodiscard]] auto convert_metadata_to_js_object(nlohmann::json const& metadata) -> MetadataTsType;
-
-/**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
  * log events.
  */

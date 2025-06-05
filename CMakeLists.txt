@@ -111,6 +111,7 @@ execute_process(
 )
 
 set(CLP_FFI_JS_SRC_MAIN
+    src/clp_ffi_js/ir/decoding_methods.cpp
     src/clp_ffi_js/ir/StreamReader.cpp
     src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
     src/clp_ffi_js/ir/StructuredIrUnitHandler.cpp
