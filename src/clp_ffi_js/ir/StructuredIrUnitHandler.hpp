@@ -104,8 +104,8 @@ public:
      * @param log_event
      * @return IRErrorCode::IRErrorCode_Success
      */
-    [[nodiscard]] auto handle_log_event(StructuredLogEvent&& log_event
-    ) -> clp::ffi::ir_stream::IRErrorCode;
+    [[nodiscard]] auto handle_log_event(StructuredLogEvent&& log_event)
+            -> clp::ffi::ir_stream::IRErrorCode;
 
     /**
      * Dummy implementation that does nothing but conforms to the interface.
@@ -158,8 +158,8 @@ private:
      * - `m_optional_timestamp_id` is set but not appearing in the given node-id-value pairs.
      * - The value is not a valid integer.
      */
-    [[nodiscard]] auto get_timestamp(StructuredLogEvent const& log_event
-    ) const -> clp::ir::epoch_time_ms_t;
+    [[nodiscard]] auto get_timestamp(StructuredLogEvent const& log_event) const
+            -> clp::ir::epoch_time_ms_t;
 
     // Variables
     std::optional<SchemaTreeFullBranch> m_optional_log_level_full_branch;

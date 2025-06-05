@@ -43,10 +43,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(
-            std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-            clp::Array<char> data_array
-    ) -> UnstructuredIrStreamReader;
+    [[nodiscard]] static auto
+    create(std::unique_ptr<ZstdDecompressor>&& zstd_decompressor, clp::Array<char> data_array)
+            -> UnstructuredIrStreamReader;
 
     [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
 
@@ -72,8 +71,8 @@ public:
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
             -> DecodedResultsTsType override;
 
-    [[nodiscard]] auto find_nearest_log_event_by_timestamp(clp::ir::epoch_time_ms_t target_ts
-    ) -> NullableLogEventIdx override;
+    [[nodiscard]] auto find_nearest_log_event_by_timestamp(clp::ir::epoch_time_ms_t target_ts)
+            -> NullableLogEventIdx override;
 
 private:
     // Constructor

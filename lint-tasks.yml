@@ -1,127 +1,131 @@
 version: "3"
 
 vars:
+  G_LINT_CLANG_TIDY_DIR: "{{.G_BUILD_DIR}}/lint-clang-tidy"
+  G_LINT_VENV_DIR: "{{.G_BUILD_DIR}}/lint-venv"
   G_SRC_DIR: "{{.ROOT_DIR}}/src"
   G_SRC_CLP_FFI_JS_DIR: "{{.G_SRC_DIR}}/clp_ffi_js"
-  G_LINT_VENV_DIR: "{{.G_BUILD_DIR}}/lint-venv"
 
 tasks:
   check:
     cmds:
-      - task: "cpp-check"
-      - task: "yml-check"
+      - task: "check-cpp-full"
+      - task: "check-yaml"
+
+  check-cpp-diff:
+    cmds:
+      - task: "check-cpp-format"
+      - task: "check-cpp-static-diff"
+
+  check-cpp-full:
+    cmds:
+      - task: "check-cpp-format"
+      - task: "check-cpp-static-full"
+
+  check-no-cpp:
+    cmds:
+      - task: "check-yaml"
 
   fix:
     cmds:
-      - task: "cpp-fix"
-      - task: "yml-fix"
+      - task: "fix-cpp-full"
+      - task: "fix-yaml"
 
-  cpp-configs:
-    cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/symlink-cpp-lint-configs.sh"
-
-  cpp-check:
+  fix-cpp-diff:
     cmds:
-      - task: "cpp-format-check"
-      - task: "cpp-static-check"
+      - task: "fix-cpp-format"
+      - task: "fix-cpp-static-diff"
 
-  cpp-fix:
+  fix-cpp-full:
     cmds:
-      - task: "cpp-format-fix"
-      - task: "cpp-static-fix"
+      - task: "fix-cpp-format"
+      - task: "fix-cpp-static-full"
 
-  cpp-format-check:
+  fix-no-cpp:
+    cmds:
+      - task: "fix-yaml"
+
+  check-cpp-format:
     sources: &cpp_format_source_files
       - "{{.G_SRC_CLP_FFI_JS_DIR}}/.clang-format"
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.cpp"
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.h"
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.hpp"
+      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*"
       - "{{.TASKFILE}}"
-      - "tools/yscope-dev-utils/lint-configs/.clang-format"
-    deps: ["cpp-configs", "venv"]
+      - "tools/yscope-dev-utils/exports/lint-configs/.clang-format"
+    deps: ["cpp-lint-configs", "venv"]
     cmds:
-      - task: "clang-format"
+      - task: ":utils:cpp-lint:clang-format"
         vars:
-          FLAGS: "--dry-run"
+          FLAGS: ["--dry-run"]
+          INCLUDE_FILENAME_PATTERNS: ["*.cpp", "*.h", "*.hpp", "*.inc"]
+          ROOT_PATHS: ["{{.G_SRC_CLP_FFI_JS_DIR}}"]
+          VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
-  cpp-format-fix:
+  fix-cpp-format:
     sources: *cpp_format_source_files
-    deps: ["cpp-configs", "venv"]
+    deps: ["cpp-lint-configs", "venv"]
     cmds:
-      - task: "clang-format"
+      - task: ":utils:cpp-lint:clang-format"
         vars:
-          FLAGS: "-i"
+          FLAGS: ["-i"]
+          INCLUDE_FILENAME_PATTERNS: ["*.cpp", "*.h", "*.hpp", "*.inc"]
+          ROOT_PATHS: ["{{.G_SRC_CLP_FFI_JS_DIR}}"]
+          VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
-  cpp-static-check:
-    # Alias task to `cpp-static-fix` since we don't currently support automatic fixes.
-    # NOTE: clang-tidy does have the ability to fix some errors, but the fixes can be inaccurate.
-    # When we eventually determine which errors can be safely fixed, we'll allow clang-tidy to
-    # fix them.
-    aliases: ["cpp-static-fix"]
-    sources:
-      # Dependency sources
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/_deps/*-src/**/*"
-      - "{{.G_SRC_DIR}}/submodules/**/*"
-
-      # clp-ffi-js sources
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.cpp"
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.h"
-      - "{{.G_SRC_CLP_FFI_JS_DIR}}/**/*.hpp"
-
-      # Other sources
-      - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-      - "{{.ROOT_DIR}}/Taskfile.yml"
-      - "{{.TASKFILE}}"
-      - "tools/yscope-dev-utils/lint-configs/.clang-tidy"
-    deps: [":config-cmake-project", "cpp-configs", "venv"]
+  check-cpp-static-diff:
+    # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
+    aliases: ["fix-cpp-static-diff"]
+    deps:
+      - ":config-cmake-project"
+      - "cpp-lint-configs"
+      - "venv"
     cmds:
-      - task: "clang-tidy"
+      - task: ":utils:cpp-lint:clang-tidy-diff"
+        vars:
+          FLAGS: &clang_tidy_flags
+            - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
+            - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
+            - >-
+              $(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
+                | tr ' ' '\n' \
+                | sed 's/^/--extra-arg /' \
+                | tr '\n' ' ')
+          OUTPUT_DIR: "{{.G_LINT_CLANG_TIDY_DIR}}"
+          VENV_DIR: "{{.G_LINT_VENV_DIR}}"
 
-  yml:
+  check-cpp-static-full:
+    # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
+    aliases: ["fix-cpp-static-full"]
+    deps:
+      - ":config-cmake-project"
+      - "cpp-lint-configs"
+      - "venv"
+    cmds:
+      - task: ":utils:cpp-lint:clang-tidy-find"
+        vars:
+          FLAGS: *clang_tidy_flags
+          OUTPUT_DIR: "{{.G_LINT_CLANG_TIDY_DIR}}"
+          ROOT_PATHS: ["{{.G_SRC_CLP_FFI_JS_DIR}}"]
+          VENV_DIR: "{{.G_LINT_VENV_DIR}}"
+
+  yaml:
     aliases:
-      - "yml-check"
-      - "yml-fix"
+      - "check-yaml"
+      - "fix-yaml"
     deps: ["venv"]
     cmds:
       - |-
         . "{{.G_LINT_VENV_DIR}}/bin/activate"
         yamllint \
-          --config-file "{{.ROOT_DIR}}/tools/yscope-dev-utils/lint-configs/.yamllint.yml" \
+          --config-file "{{.ROOT_DIR}}/tools/yscope-dev-utils/exports/lint-configs/.yamllint.yml" \
           --strict \
           .github \
           lint-tasks.yml \
           Taskfile.yml
 
-  clang-format:
+  cpp-lint-configs:
     internal: true
-    requires:
-      vars: ["FLAGS"]
-    cmd: |-
-      . "{{.G_LINT_VENV_DIR}}/bin/activate"
-      find "{{.G_SRC_CLP_FFI_JS_DIR}}" \
-        -type f \
-        \( -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" \) \
-        -print0 | \
-          xargs -0 clang-format {{.FLAGS}} -Werror
-
-  clang-tidy:
-    internal: true
-    vars:
-      FLAGS: >-
-        -p {{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json
-        --config-file=.clang-tidy
-    cmd: |-
-      . "{{.G_LINT_VENV_DIR}}/bin/activate"
-
-      # Pass emscripten's cflags to clang-tidy by prefixing each one with `--extra-arg`
-      EXTRA_ARGS=$(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
-        | tr ' ' '\n' \
-        | sed 's/^/--extra-arg /' \
-        | tr '\n' ' ')
-      find "{{.G_SRC_CLP_FFI_JS_DIR}}" \
-        -type f \
-        \( -iname "*.cpp" -o -iname "*.h" -o -iname "*.hpp" \) \
-        -print0 | \
-          xargs -0 clang-tidy {{.FLAGS}} $EXTRA_ARGS
+    run: "once"
+    cmd: "{{.ROOT_DIR}}/tools/yscope-dev-utils/exports/lint-configs/symlink-cpp-lint-configs.sh"
 
   venv:
     internal: true
@@ -133,20 +137,21 @@ tasks:
       - "{{.TASKFILE}}"
       - "lint-requirements.txt"
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - ":init"
-      - task: ":utils:validate-checksum"
+      - task: ":utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          DATA_DIR: "{{.OUTPUT_DIR}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
-      - task: ":utils:create-venv"
+      - task: ":utils:misc:create-venv"
         vars:
           LABEL: "lint"
           OUTPUT_DIR: "{{.OUTPUT_DIR}}"
           REQUIREMENTS_FILE: "lint-requirements.txt"
       # This command must be last
-      - task: ":utils:compute-checksum"
+      - task: ":utils:checksum:compute"
         vars:
-          DATA_DIR: "{{.OUTPUT_DIR}}"
-          OUTPUT_FILE: "{{.CHECKSUM_FILE}}"
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]

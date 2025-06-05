@@ -72,7 +72,8 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
  * @param metadata_json
  * @return The parsed metadata as a JavaScript object.
  */
-[[nodiscard]] auto parse_metadata_to_js_object(nlohmann::json const& metadata_json) -> MetadataTsType;
+[[nodiscard]] auto parse_metadata_to_js_object(nlohmann::json const& metadata_json)
+        -> MetadataTsType;
 
 /**
  * Class to deserialize and decode Zstandard-compressed CLP IR streams as well as format decoded
@@ -90,10 +91,9 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto create(
-            DataArrayTsType const& data_array,
-            ReaderOptions const& reader_options
-    ) -> std::unique_ptr<StreamReader>;
+    [[nodiscard]] static auto
+    create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
+            -> std::unique_ptr<StreamReader>;
 
     // Destructor
     virtual ~StreamReader() = default;
@@ -109,8 +109,8 @@ public:
 
     // Methods
     /**
-    * @return The metadata of the IR stream as a JavaScript object.
-    */
+     * @return The metadata of the IR stream as a JavaScript object.
+     */
     [[nodiscard]] virtual auto get_metadata() const -> MetadataTsType = 0;
 
     [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
@@ -157,7 +157,8 @@ public:
      * @throw ClpFfiJsException if a message cannot be decoded.
      */
     [[nodiscard]] virtual auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
-            -> DecodedResultsTsType = 0;
+            -> DecodedResultsTsType
+            = 0;
 
     /**
      * Finds the log event, L, where if we assume:
@@ -176,9 +177,9 @@ public:
      * @param target_ts
      * @return The index of the log event L.
      */
-    [[nodiscard]] virtual auto find_nearest_log_event_by_timestamp(
-            clp::ir::epoch_time_ms_t target_ts
-    ) -> NullableLogEventIdx = 0;
+    [[nodiscard]] virtual auto
+    find_nearest_log_event_by_timestamp(clp::ir::epoch_time_ms_t target_ts) -> NullableLogEventIdx
+            = 0;
 
 protected:
     explicit StreamReader() = default;

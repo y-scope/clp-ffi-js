@@ -140,8 +140,9 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
     return m_encoded_log_events.size();
 }
 
-auto UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
-        const -> DecodedResultsTsType {
+auto
+UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter) const
+        -> DecodedResultsTsType {
     auto log_event_to_string = [this](UnstructuredLogEvent const& log_event) -> std::string {
         auto const parsed{log_event.get_message().decode_and_unparse()};
         if (false == parsed.has_value()) {

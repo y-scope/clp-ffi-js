@@ -132,7 +132,8 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json {
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
     std::vector<int8_t> metadata_bytes;
-    auto const err{clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
+    auto const err{
+            clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
     };
     if (IRErrorCode::IRErrorCode_Success != err) {
         throw ClpFfiJsException{
@@ -192,7 +193,8 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     auto const version{get_version(*zstd_decompressor)};
     zstd_decompressor->seek_from_begin(0);
     try {
-        auto const version_validation_result{clp::ffi::ir_stream::validate_protocol_version(version)
+        auto const version_validation_result{
+                clp::ffi::ir_stream::validate_protocol_version(version)
         };
         if (clp::ffi::ir_stream::IRProtocolErrorCode::Supported == version_validation_result) {
             return std::make_unique<StructuredIrStreamReader>(StructuredIrStreamReader::create(
