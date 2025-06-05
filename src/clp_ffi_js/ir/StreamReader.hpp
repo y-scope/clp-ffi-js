@@ -67,12 +67,12 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 [[nodiscard]] auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json;
 
 /**
- * Parses the metadata from the given JSON object to a JavaScript object.
+ * Converts the metadata from the given JSON object to a JavaScript object.
  *
  * @param metadata_json
- * @return The parsed metadata as a JavaScript object.
+ * @return The converted JavaScript object.
  */
-[[nodiscard]] auto parse_metadata_to_js_object(nlohmann::json const& metadata_json)
+[[nodiscard]] auto convert_metadata_to_js_object(nlohmann::json const& metadata_json)
         -> MetadataTsType;
 
 /**

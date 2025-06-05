@@ -118,7 +118,7 @@ auto StructuredIrStreamReader::create(
 }
 
 auto StructuredIrStreamReader::get_metadata() const -> MetadataTsType {
-    return parse_metadata_to_js_object(m_metadata_json);
+    return convert_metadata_to_js_object(m_metadata_json);
 }
 
 auto StructuredIrStreamReader::get_num_events_buffered() const -> size_t {
