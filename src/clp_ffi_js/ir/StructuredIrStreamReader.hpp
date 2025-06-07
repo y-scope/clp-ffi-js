@@ -10,6 +10,7 @@
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -28,8 +29,7 @@ using StructuredLogEvents = LogEvents<StructuredLogEvent>;
 class StructuredIrStreamReader : public StreamReader {
 public:
     /**
-     * @param zstd_decompressor A decompressor for an IR stream, where the read head of the stream
-     * is just after the stream's encoding type.
+     * @param zstd_decompressor A decompressor for an IR stream.
      * @param data_array The array backing `zstd_decompressor`.
      * @param reader_options
      * @return The created instance.
@@ -52,6 +52,8 @@ public:
     StructuredIrStreamReader(StructuredIrStreamReader&&) = default;
     // Delete move assignment operator since it's also disabled in `clp::ir::LogEventDeserializer`.
     auto operator=(StructuredIrStreamReader&&) -> StructuredIrStreamReader& = delete;
+
+    [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
 
     [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
         return StreamType::Structured;
@@ -86,6 +88,7 @@ private:
     );
 
     // Variables
+    nlohmann::json m_metadata;
     std::shared_ptr<StructuredLogEvents> m_deserialized_log_events;
     std::unique_ptr<StreamReaderDataContext<StructuredIrDeserializer>> m_stream_reader_data_context;
     FilteredLogEventsMap m_filtered_log_event_map;

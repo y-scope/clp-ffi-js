@@ -8,6 +8,7 @@
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -37,8 +38,7 @@ public:
     auto operator=(UnstructuredIrStreamReader&&) -> UnstructuredIrStreamReader& = delete;
 
     /**
-     * @param zstd_decompressor A decompressor for an IR stream, where the read head of the stream
-     * is just after the stream's encoding type.
+     * @param zstd_decompressor A decompressor for an IR stream.
      * @param data_array The array backing `zstd_decompressor`.
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
@@ -46,6 +46,8 @@ public:
     [[nodiscard]] static auto
     create(std::unique_ptr<ZstdDecompressor>&& zstd_decompressor, clp::Array<char> data_array)
             -> UnstructuredIrStreamReader;
+
+    [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
 
     [[nodiscard]] auto get_ir_stream_type() const -> StreamType override {
         return StreamType::Unstructured;
@@ -75,10 +77,12 @@ public:
 private:
     // Constructor
     explicit UnstructuredIrStreamReader(
-            StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
+            StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
+            nlohmann::json metadata
     );
 
     // Variables
+    nlohmann::json m_metadata;
     UnstructuredLogEvents m_encoded_log_events;
     std::unique_ptr<StreamReaderDataContext<UnstructuredIrDeserializer>>
             m_stream_reader_data_context;
