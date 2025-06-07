@@ -14,8 +14,6 @@ namespace clp_ffi_js {
  * @param json_obj
  * @return The JSON object serialized as a string.
  */
-[[nodiscard]] inline auto dump_json_with_replace(nlohmann::json const& json_obj) -> std::string {
-    return json_obj.dump(-1, ' ', false, nlohmann::json::error_handler_t::replace);
-}
+[[nodiscard]] auto dump_json_with_replace(nlohmann::json const& json_obj) -> std::string;
 }  // namespace clp_ffi_js
 #endif  // CLP_FFI_JS_JSON_UTILS_HPP
