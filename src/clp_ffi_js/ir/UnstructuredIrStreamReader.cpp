@@ -175,7 +175,7 @@ auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
         StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
-        nlohmann::json&& metadata
+        nlohmann::json metadata
 )
         : m_metadata(std::move(metadata)),
           m_stream_reader_data_context{

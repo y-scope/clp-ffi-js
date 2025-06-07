@@ -78,7 +78,7 @@ private:
     // Constructor
     explicit UnstructuredIrStreamReader(
             StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
-            nlohmann::json&& metadata
+            nlohmann::json metadata
     );
 
     // Variables
