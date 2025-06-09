@@ -12,10 +12,12 @@
 #include <vector>
 
 #include <clp/ir/types.hpp>
+#include <clp/ReaderInterface.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
+#include <json/single_include/nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/constants.hpp>
@@ -30,6 +32,7 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(MetadataTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 
 enum class StreamType : uint8_t {
@@ -79,6 +82,11 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    /**
+     * @return The metadata of the IR stream as a JavaScript object.
+     */
+    [[nodiscard]] virtual auto get_metadata() const -> MetadataTsType = 0;
+
     [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
 
     /**
