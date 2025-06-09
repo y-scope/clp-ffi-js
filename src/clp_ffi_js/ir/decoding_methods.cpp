@@ -55,10 +55,11 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 auto deserialize_metadata(clp::ReaderInterface& reader) -> nlohmann::json {
     clp::ffi::ir_stream::encoded_tag_t metadata_type{};
     std::vector<int8_t> metadata_bytes;
-    auto const err{
-            clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
-    };
-    if (IRErrorCode::IRErrorCode_Success != err) {
+    if (auto const err{
+                clp::ffi::ir_stream::deserialize_preamble(reader, metadata_type, metadata_bytes)
+        };
+        IRErrorCode::IRErrorCode_Success != err)
+    {
         throw ClpFfiJsException{
                 clp::ErrorCode::ErrorCode_Failure,
                 __FILENAME__,
