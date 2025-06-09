@@ -9,6 +9,7 @@
 namespace clp_ffi_js::ir {
 /**
  * Rewinds the reader to the beginning then validates the CLP IR data encoding type.
+ *
  * @param reader
  * @throws ClpFfiJsException if the encoding type couldn't be decoded or the encoding type is
  * unsupported.
