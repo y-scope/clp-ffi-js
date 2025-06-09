@@ -38,7 +38,7 @@ auto UnstructuredIrStreamReader::create(
     // Deserialize metadata from the IR stream's preamble.
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
     auto const pos{zstd_decompressor->get_pos()};
-    auto metadata_json{deserialize_metadata(*zstd_decompressor)};
+    auto metadata_json = deserialize_metadata(*zstd_decompressor);
     zstd_decompressor->seek_from_begin(pos);
 
     auto result{UnstructuredIrDeserializer::create(*zstd_decompressor)};
