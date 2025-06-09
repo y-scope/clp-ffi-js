@@ -18,7 +18,7 @@
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/StructuredIrStreamReader.hpp>
-#include <clp_ffi_js/json_utils.hpp>
+#include <clp_ffi_js/utils.hpp>
 
 namespace clp_ffi_js::ir {
 namespace {

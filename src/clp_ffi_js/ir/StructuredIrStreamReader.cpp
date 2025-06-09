@@ -26,7 +26,7 @@
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
-#include <clp_ffi_js/json_utils.hpp>
+#include <clp_ffi_js/utils.hpp>
 
 namespace clp_ffi_js::ir {
 namespace {
