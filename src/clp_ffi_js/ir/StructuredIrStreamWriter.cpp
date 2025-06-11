@@ -1,0 +1,216 @@
+#include <msgpack.hpp>
+#include <streaming_compression/zstd/Compressor.hpp>
+
+#include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/ir/StreamWriter.hpp>
+#include <clp_ffi_js/ir/StructuredIrStreamWriter.hpp>
+#include <emscripten.h>
+
+namespace clp_ffi_js::ir {
+namespace {
+constexpr std::string_view cWriterOptionsCompressionLevel{"compressionLevel"};
+
+class WebStreamWriter final: public clp::WriterInterface {
+public:
+    // Delete default constructor to disable direct instantiation.
+    WebStreamWriter() = delete;
+
+    explicit WebStreamWriter(emscripten::val stream)
+            : WriterInterface{},
+              m_writable_stream_writer{stream.call<emscripten::val>("getWriter")} {}
+
+    // Delete copy & move constructors and assignment operators
+    WebStreamWriter(WebStreamWriter const&) = delete;
+    WebStreamWriter(WebStreamWriter&&) = delete;
+    auto operator=(WebStreamWriter const&) -> WebStreamWriter& = delete;
+    auto operator=(WebStreamWriter&&) -> WebStreamWriter& = delete;
+
+    // Destructor
+    ~WebStreamWriter() override = default;
+
+    void write(char const* data, size_t data_length) override {
+        auto const uint8Array{emscripten::val::global("Uint8Array").new_(data_length)};
+        emscripten::val memoryView{emscripten::typed_memory_view(data_length, data)};
+
+        uint8Array.call<void>("set", memoryView);
+
+        if (get_desired_size() > 0) {
+            m_writable_stream_writer.call<void>("write", uint8Array);
+            m_last_write_promise = emscripten::val::global("Promise")
+                    .call<emscripten::val>("resolve", emscripten::val::undefined());
+        } else {
+            m_last_write_promise = await_ready().call<emscripten::val>(
+                    "then",
+                    emscripten::val::module_property("dynCall"),
+                    emscripten::val([this, uint8Array](const emscripten::val&) {
+                        m_writable_stream_writer.call<void>("write", uint8Array);
+                        return emscripten::val::undefined();
+                    })
+            );
+        }
+    }
+
+    auto abort(emscripten::val reason) -> emscripten::val {
+        return m_writable_stream_writer.call<emscripten::val>("abort", reason);
+    }
+
+    void flush() override { return; }
+
+    auto get_desired_size() const -> int {
+        auto desired_size = m_writable_stream_writer["desiredSize"].as<int>();
+        return desired_size;
+    }
+
+    auto await_ready() -> emscripten::val {
+        return m_writable_stream_writer["ready"];
+    }
+
+    auto get_last_write_promise() -> emscripten::val {
+        return m_last_write_promise;
+    }
+
+    clp::ErrorCode try_seek_from_begin(size_t pos) override { return clp::ErrorCode_Unsupported; }
+
+    clp::ErrorCode try_seek_from_current(off_t offset) override {
+        return clp::ErrorCode_Unsupported;
+    }
+
+    clp::ErrorCode try_get_pos(size_t& pos) const override { return clp::ErrorCode_Unsupported; }
+
+private:
+    emscripten::val m_writable_stream_writer;
+    emscripten::val m_last_write_promise;
+};
+}  // namespace
+
+StructuredIrStreamWriter::StructuredIrStreamWriter(
+        emscripten::val const& stream,
+        WriterOptions const& writer_options
+)
+        : StreamWriter{},
+          m_output_writer{std::make_unique<WebStreamWriter>(stream)} {
+    int compression_level{clp::streaming_compression::zstd::cDefaultCompressionLevel};
+    if (writer_options.hasOwnProperty(cWriterOptionsCompressionLevel.data())) {
+        compression_level = writer_options[cWriterOptionsCompressionLevel.data()].as<int>();
+    }
+
+    m_msgpack_buf.reserve(cDefaultMsgpackBufferSizeLimit);
+
+    m_zstd_writer = std::make_unique<clp::streaming_compression::zstd::Compressor>();
+    m_zstd_writer->open(
+            *m_output_writer,
+            compression_level
+    );
+
+    auto serializer_result{ClpIrSerializer::create()};
+    if (serializer_result.has_error()) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format(
+                        "Failed to create serializer: {} {}",
+                        serializer_result.error().category().name(),
+                        serializer_result.error().message()
+                )
+        };
+    }
+    m_serializer = std::make_unique<ClpIrSerializer>(std::move(serializer_result.value()));
+}
+
+auto StructuredIrStreamWriter::write(emscripten::val chunk) -> void {
+    size_t const packed_user_gen_handle_length = chunk["length"].as<int>();
+    m_msgpack_buf.resize(packed_user_gen_handle_length);
+    const emscripten::val memoryView{
+            emscripten::typed_memory_view(packed_user_gen_handle_length, m_msgpack_buf.data())
+    };
+    memoryView.call<void>("set", chunk);
+
+    auto const unpacked_user_gen_handle{msgpack::unpack(
+            reinterpret_cast<char const*>(m_msgpack_buf.data()),
+            m_msgpack_buf.size()
+    )};
+    auto const unpacked_user_gen_map{unpacked_user_gen_handle.get().via.map};
+    m_msgpack_buf.clear();
+
+    // FIXME: this should come from the arg 'chunk' as well
+    msgpack::object_map auto_gen_map{0, nullptr};
+
+    auto const serializer_result{
+            m_serializer->serialize_msgpack_map(auto_gen_map, unpacked_user_gen_map)
+    };
+    if (false == serializer_result) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to serialize msgpack map")
+        };
+    }
+
+    if (cDefaultIrBufferSizeLimit < get_ir_buf_size()) {
+        write_ir_buf_to_output_stream();
+    }
+}
+
+auto StructuredIrStreamWriter::flush() -> void {
+    write_ir_buf_to_output_stream();
+    m_zstd_writer->flush();
+}
+
+auto StructuredIrStreamWriter::close() -> void {
+    write_ir_buf_to_output_stream();
+    m_zstd_writer->close();
+
+    // FIXME: handle any read on this after close()
+    m_serializer.reset(nullptr);
+}
+
+auto StructuredIrStreamWriter::abort(::emscripten::val reason) -> emscripten::val {
+    close();
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+    return web_stream_writer->abort(reason);
+}
+
+auto StructuredIrStreamWriter::get_desired_size() const -> const int& {
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+    m_desired_size = web_stream_writer->get_desired_size();
+    return m_desired_size;
+}
+
+auto StructuredIrStreamWriter::get_last_write_promise() -> emscripten::val {
+    auto *web_stream_writer = dynamic_cast<WebStreamWriter*>(m_output_writer.get());
+    if (nullptr == web_stream_writer) {
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Failure,
+                __FILENAME__,
+                __LINE__,
+                std::format("Failed to cast WebStreamWriter")
+        };
+    }
+
+    return web_stream_writer->get_last_write_promise();
+}
+
+auto StructuredIrStreamWriter::write_ir_buf_to_output_stream() const -> void {
+    auto const ir_buf_view{m_serializer->get_ir_buf_view()};
+    m_zstd_writer->write(reinterpret_cast<char const*>(ir_buf_view.data()), ir_buf_view.size());
+    m_serializer->clear_ir_buf();
+}
+}  // namespace clp_ffi_js::ir

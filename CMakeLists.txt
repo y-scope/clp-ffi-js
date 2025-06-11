@@ -83,12 +83,13 @@ set(CLP_FFI_JS_COMMON_COMPILE_OPTIONS
     -fwasm-exceptions
 )
 set(CLP_FFI_JS_COMMON_LINK_OPTIONS
-    -fwasm-exceptions
+#    -fwasm-exceptions
     -sALLOW_MEMORY_GROWTH
     -sEXPORT_ES6
     -sMAXIMUM_MEMORY=4GB
     -sMODULARIZE
     -sWASM_BIGINT
+    -sASYNCIFY=1
 )
 if(CMAKE_BUILD_TYPE MATCHES "Release")
     list(APPEND CLP_FFI_JS_COMMON_COMPILE_OPTIONS
@@ -113,7 +114,9 @@ execute_process(
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/decoding_methods.cpp
     src/clp_ffi_js/ir/StreamReader.cpp
+    src/clp_ffi_js/ir/StreamWriter.cpp
     src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
+    src/clp_ffi_js/ir/StructuredIrStreamWriter.cpp
     src/clp_ffi_js/ir/StructuredIrUnitHandler.cpp
     src/clp_ffi_js/ir/UnstructuredIrStreamReader.cpp
     src/clp_ffi_js/utils.cpp
@@ -131,6 +134,11 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     src/submodules/clp/components/core/src/clp/ReaderInterface.cpp
     src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
     src/submodules/clp/components/core/src/clp/TimestampPattern.cpp
+
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/Serializer.cpp
+    src/submodules/clp/components/core/src/clp/ffi/ir_stream/encoding_methods.cpp
+    src/submodules/clp/components/core/src/clp/ir/parsing.cpp
+    src/submodules/clp/components/core/src/clp/streaming_compression/zstd/Compressor.cpp
 )
 
 set(CLP_FFI_JS_SRC_FMT src/submodules/fmt/src/format.cc)
@@ -146,6 +154,19 @@ set(CLP_FFI_JS_SRC_ZSTD
     src/submodules/zstd/lib/decompress/zstd_ddict.c
     src/submodules/zstd/lib/decompress/zstd_decompress_block.c
     src/submodules/zstd/lib/decompress/zstd_decompress.c
+
+    src/submodules/zstd/lib/compress/fse_compress.c
+    src/submodules/zstd/lib/compress/hist.c
+    src/submodules/zstd/lib/compress/huf_compress.c
+    src/submodules/zstd/lib/compress/zstd_compress.c
+    src/submodules/zstd/lib/compress/zstd_compress_literals.c
+    src/submodules/zstd/lib/compress/zstd_compress_sequences.c
+    src/submodules/zstd/lib/compress/zstd_compress_superblock.c
+    src/submodules/zstd/lib/compress/zstd_double_fast.c
+    src/submodules/zstd/lib/compress/zstd_fast.c
+    src/submodules/zstd/lib/compress/zstd_lazy.c
+    src/submodules/zstd/lib/compress/zstd_ldm.c
+    src/submodules/zstd/lib/compress/zstd_opt.c
 )
 
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
@@ -195,6 +216,7 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         src/submodules/clp/components/core/src/clp
         src/submodules/clp/components/core/submodules
         src/submodules/fmt/include
+        src/submodules/msgpack/include
         src/submodules/spdlog/include
         src/submodules/zstd/lib
     )
@@ -208,5 +230,24 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_SRC_CLP_CORE}
         ${CLP_FFI_JS_SRC_FMT}
         ${CLP_FFI_JS_SRC_ZSTD}
+    )
+endforeach()
+
+# Copy final JS and WASM outputs to the test directory
+foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
+    set(bin_name "ClpFfiJs-${env}")
+    set(js_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.js")
+    set(wasm_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.wasm")
+    set(tsd_output "${CMAKE_CURRENT_BINARY_DIR}/${bin_name}.d.ts")
+    set(test_output_dir "${CMAKE_CURRENT_SOURCE_DIR}/test/clp-ffi-js")
+
+    add_custom_command(
+            TARGET ${bin_name}
+            POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${test_output_dir}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${js_output} ${test_output_dir}/${bin_name}.js
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${wasm_output} ${test_output_dir}/${bin_name}.wasm
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${tsd_output} ${test_output_dir}/${bin_name}.d.ts
+            COMMENT "Copying ${bin_name} build output to test/clp-ffi-js directory"
     )
 endforeach()
