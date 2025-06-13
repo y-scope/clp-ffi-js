@@ -11,7 +11,7 @@ namespace clp_ffi_js::ir {
 /**
  * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
  * An IR deserializer class that reads from a `clp::ReaderInterface`, which in turn reads from a
- * `clp::Array`.
+ * `ystdlib::containers::Array`.
  * @tparam Deserializer Type of deserializer.
  */
 template <typename Deserializer>
