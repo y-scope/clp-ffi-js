@@ -45,8 +45,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS
 
 if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     # Include dependency settings if the project isn't being included as a subproject.
-    # NOTE: We mark the file optional because if the user happens to have the dependencies
-    # installed, this file is not necessary.
+    # NOTE: We mark the file optional because if the user happens to set the necessary dependency
+    # location variables, this file is not necessary.
     include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
 
     # If previously undefined, `BUILD_TESTING` will be set to ON.
