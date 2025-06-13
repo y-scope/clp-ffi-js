@@ -48,9 +48,6 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     # NOTE: We mark the file optional because if the user happens to set the necessary dependency
     # location variables, this file is not necessary.
     include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
-
-    # If previously undefined, `BUILD_TESTING` will be set to ON.
-    include(CTest)
 endif()
 
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
