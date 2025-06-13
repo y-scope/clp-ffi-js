@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/protocol_constants.hpp>
@@ -18,8 +17,9 @@
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
@@ -107,7 +107,7 @@ auto StreamReader::create(DataArrayTsType const& data_array, ReaderOptions const
     SPDLOG_INFO("StreamReader::create: got buffer of length={}", length);
 
     // Copy array from JavaScript to C++.
-    clp::Array<char> data_buffer{length};
+    ystdlib::containers::Array<char> data_buffer(length);
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
     emscripten::val::module_property("HEAPU8")
             .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));

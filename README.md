@@ -39,6 +39,11 @@ Download and install [emscripten]:
 task emsdk
 ```
 
+Download the required source dependencies:
+```shell
+task deps
+```
+
 Set up the config files for our C++ linting tools:
 ```shell
 task lint:cpp-configs

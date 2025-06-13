@@ -13,7 +13,7 @@
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>

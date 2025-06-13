@@ -1,14 +1,14 @@
 #ifndef CLP_FFI_JS_IR_UNSTRUCTUREDIRSTREAMREADER_HPP
 #define CLP_FFI_JS_IR_UNSTRUCTUREDIRSTREAMREADER_HPP
 
-#include <Array.hpp>
 #include <cstddef>
 #include <memory>
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -43,9 +43,10 @@ public:
      * @return The created instance.
      * @throw ClpFfiJsException if any error occurs.
      */
-    [[nodiscard]] static auto
-    create(std::unique_ptr<ZstdDecompressor>&& zstd_decompressor, clp::Array<char> data_array)
-            -> UnstructuredIrStreamReader;
+    [[nodiscard]] static auto create(
+            std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
+            ystdlib::containers::Array<char> data_array
+    ) -> UnstructuredIrStreamReader;
 
     [[nodiscard]] auto get_metadata() const -> MetadataTsType override;
 

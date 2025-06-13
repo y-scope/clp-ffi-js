@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 namespace clp_ffi_js {
 /**
