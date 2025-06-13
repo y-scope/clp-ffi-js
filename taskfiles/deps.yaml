@@ -86,12 +86,13 @@ tasks:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
           LIB_NAME: "{{.LIB_NAME}}"
-          FILE_SHA256: "0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406"
+          FILE_SHA256: "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
           OUTPUT_DIR: "{{.NLOHMANN_JSON_OUTPUT_DIR}}"
+
           # NOTE: We use the GitHub-generated source tarball for this version rather than the
           # release tarball, since the latter is served from githubusercontent.com which is blocked
           # by some developers' firewalls. The contents of the former are a superset of the latter.
-          URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz"
+          URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY \"{{.NLOHMANN_JSON_OUTPUT_DIR}}\"
