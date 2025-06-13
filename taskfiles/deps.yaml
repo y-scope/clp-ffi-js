@@ -29,14 +29,15 @@ tasks:
     vars:
       LIB_NAME: "boost"
       BOOST_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+      BOOST_VERSION: "1.88.0"
     run: "once"
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "d6c69e4459eb5d6ec208250291221e7ff4a2affde9af6e49c9303b89c687461f"
+          FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
           OUTPUT_DIR: "{{.BOOST_OUTPUT_DIR}}"
-          URL: "https://github.com/boostorg/boost/releases/download/boost-1.87.0\
-            /boost-1.87.0-b2-nodocs.tar.gz"
+          URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
+            /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_BOOST_SOURCE_DIRECTORY \"{{.BOOST_OUTPUT_DIR}}\"
