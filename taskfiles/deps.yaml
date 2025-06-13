@@ -14,7 +14,6 @@ tasks:
           DEP_TASK: "deps:download-all"
 
   download-all:
-
     internal: true
     deps:
       - "download-boost"
