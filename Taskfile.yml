@@ -15,7 +15,7 @@ vars:
   G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
   G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
 
-  # These should be kept in-sync with its usage in CMakeLists.txt
+  # These should be kept in-sync with their usage in CMakeLists.txt
   G_DEPS_CMAKE_SETTINGS_DIR: "{{.G_DEPS_DIR}}/cmake-settings"
   G_DEPS_CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/settings.cmake"
 
