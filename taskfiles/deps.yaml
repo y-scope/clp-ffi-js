@@ -2,7 +2,7 @@ version: "3"
 
 tasks:
   install-all:
-    desc: "Install all dependencies required by clp-ffi-js."
+    desc: "Download all dependencies."
     run: "once"
     cmds:
       - "rm -rf '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
