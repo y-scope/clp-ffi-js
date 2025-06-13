@@ -1,17 +1,25 @@
 version: "3"
 
 includes:
+  deps: "taskfiles/deps.yaml"
   lint: "lint-tasks.yml"
   utils: "tools/yscope-dev-utils/exports/taskfiles/utils/utils.yaml"
 
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
-  G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
-  G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
-  G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
+  G_DEPS_DIR: "{{.G_BUILD_DIR}}/deps"
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+
+  G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
+  G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
+
+  # These should be kept in-sync with its usage in CMakeLists.txt
+  G_DEPS_CMAKE_SETTINGS_DIR: "{{.G_DEPS_DIR}}/cmake-settings"
+  G_DEPS_CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/settings.cmake"
+
+  G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
 
 tasks:
@@ -65,8 +73,7 @@ tasks:
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
-      # Lock emsdk to version 3.1.67 to work around issue #6.
-      EMSDK_VERSION: "3.1.67"
+      EMSDK_VERSION: "4.0.10"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
@@ -142,7 +149,9 @@ tasks:
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-    deps: ["emsdk"]
+    deps:
+      - "emsdk"
+      - "deps:install-all"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \

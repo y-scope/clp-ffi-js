@@ -4,7 +4,7 @@
 #include <memory>
 #include <utility>
 
-#include <clp/Array.hpp>
+#include <ystdlib/containers/Array.hpp>
 #include <clp/ReaderInterface.hpp>
 
 namespace clp_ffi_js::ir {
@@ -19,7 +19,7 @@ class StreamReaderDataContext {
 public:
     // Constructors
     StreamReaderDataContext(
-            clp::Array<char>&& data_buffer,
+            ystdlib::containers::Array<char>&& data_buffer,
             std::unique_ptr<clp::ReaderInterface>&& reader,
             Deserializer deserializer
     )
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] auto get_reader() -> clp::ReaderInterface& { return *m_reader; }
 
 private:
-    clp::Array<char> m_data_buffer;
+    ystdlib::containers::Array<char> m_data_buffer;
     std::unique_ptr<clp::ReaderInterface> m_reader;
     Deserializer m_deserializer;
 };

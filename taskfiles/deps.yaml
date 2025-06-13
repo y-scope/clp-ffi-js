@@ -1,0 +1,151 @@
+version: "3"
+
+tasks:
+  install-all:
+    desc: "Install all dependencies required by clp-ffi-js."
+    run: "once"
+    cmds:
+      - "rm -rf '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
+      - "mkdir -p '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
+      - task: ":utils:cmake:install-deps-and-generate-settings"
+        vars:
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
+          DEP_TASK: "deps:install-all-parallel"
+
+  install-all-parallel:
+    internal: true
+    deps:
+      - "download-boost"
+      - "download-clp"
+      - "download-fmt"
+      - "download-nlohmann-json"
+      - "download-spdlog"
+      - "download-ystdlib"
+      - "download-zstd"
+
+  download-boost:
+    internal: true
+    vars:
+      LIB_NAME: "boost"
+      BOOST_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "d6c69e4459eb5d6ec208250291221e7ff4a2affde9af6e49c9303b89c687461f"
+          OUTPUT_DIR: "{{.BOOST_OUTPUT_DIR}}"
+          URL: "https://github.com/boostorg/boost/releases/download/boost-1.87.0\
+            /boost-1.87.0-b2-nodocs.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_BOOST_SOURCE_DIRECTORY \"{{.BOOST_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-clp:
+    internal: true
+    vars:
+      LIB_NAME: "clp"
+      CLP_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "1ab2de20460d4641553addfdfe6acd4109d871d5531f8f519a52ea4926303087"
+          OUTPUT_DIR: "{{.CLP_OUTPUT_DIR}}"
+          URL: "https://github.com/y-scope/clp/archive/412f6dc.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.CLP_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-fmt:
+    internal: true
+    vars:
+      LIB_NAME: "fmt"
+      FMT_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
+          OUTPUT_DIR: "{{.FMT_OUTPUT_DIR}}"
+          URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_FMT_SOURCE_DIRECTORY \"{{.FMT_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-nlohmann-json:
+    internal: true
+    vars:
+      LIB_NAME: "nlohmann_json"
+      NLOHMANN_JSON_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          LIB_NAME: "{{.LIB_NAME}}"
+          FILE_SHA256: "0d8ef5af7f9794e3263480193c491549b2ba6cc74bb018906202ada498a79406"
+          OUTPUT_DIR: "{{.NLOHMANN_JSON_OUTPUT_DIR}}"
+          # NOTE: We use the GitHub-generated source tarball for this version rather than the
+          # release tarball, since the latter is served from githubusercontent.com which is blocked
+          # by some developers' firewalls. The contents of the former are a superset of the latter.
+          URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.11.3.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY \"{{.NLOHMANN_JSON_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-spdlog:
+    internal: true
+    vars:
+      LIB_NAME: "spdlog"
+      SPDLOG_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    deps:
+      - "download-fmt"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
+          OUTPUT_DIR: "{{.SPDLOG_OUTPUT_DIR}}"
+          URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY \"{{.SPDLOG_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-ystdlib:
+    internal: true
+    vars:
+      LIB_NAME: "ystdlib"
+      YSTDLIB_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "36fa0e9d96b7307ca92482343d6ba1091c5576370676e6d423cce32c20e34a3d"
+          OUTPUT_DIR: "{{.YSTDLIB_OUTPUT_DIR}}"
+          URL: "https://github.com/y-scope/ystdlib-cpp/archive/d80cf86.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY \"{{.YSTDLIB_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-zstd:
+    internal: true
+    vars:
+      LIB_NAME: "zstd"
+      ZSTD_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "d6c69e4459eb5d6ec208250291221e7ff4a2affde9af6e49c9303b89c687461f"
+          OUTPUT_DIR: "{{.ZSTD_OUTPUT_DIR}}"
+          URL: "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY \"{{.ZSTD_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"

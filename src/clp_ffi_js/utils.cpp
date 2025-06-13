@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 namespace clp_ffi_js {
 [[nodiscard]] auto dump_json_with_replace(nlohmann::json const& json_obj) -> std::string {

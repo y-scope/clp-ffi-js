@@ -5,12 +5,12 @@
 #include <memory>
 #include <optional>
 
-#include <clp/Array.hpp>
+#include <ystdlib/containers/Array.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -37,7 +37,7 @@ public:
      */
     [[nodiscard]] static auto create(
             std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-            clp::Array<char> data_array,
+            ystdlib::containers::Array<char> data_array,
             ReaderOptions const& reader_options
     ) -> StructuredIrStreamReader;
 

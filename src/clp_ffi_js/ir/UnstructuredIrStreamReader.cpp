@@ -10,14 +10,14 @@
 #include <system_error>
 #include <utility>
 
-#include <clp/Array.hpp>
+#include <ystdlib/containers/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
@@ -33,7 +33,7 @@ using clp::ir::four_byte_encoded_variable_t;
 
 auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-        clp::Array<char> data_array
+        ystdlib::containers::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
     // Deserialize metadata from the IR stream's preamble.
     rewind_reader_and_validate_encoding_type(*zstd_decompressor);
@@ -95,7 +95,7 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
         auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
         if (result.has_error()) {
             auto const error{result.error()};
-            if (std::errc::no_message_available == error) {
+            if (std::errc::no_message == error) {
                 break;
             }
             if (std::errc::result_out_of_range == error) {

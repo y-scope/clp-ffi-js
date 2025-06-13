@@ -2,7 +2,7 @@
 #define CLP_FFI_JS_IR_DECODING_METHODS_HPP
 
 #include <clp/ReaderInterface.hpp>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 
 #include <clp_ffi_js/ir/StreamReader.hpp>
 

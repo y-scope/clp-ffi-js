@@ -9,7 +9,7 @@
 #include <system_error>
 #include <utility>
 
-#include <clp/Array.hpp>
+#include <ystdlib/containers/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/SchemaTree.hpp>
@@ -17,7 +17,7 @@
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <json/single_include/nlohmann/json.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
@@ -79,7 +79,7 @@ EMSCRIPTEN_BINDINGS(ClpStructuredIrStreamReader) {
 
 auto StructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-        clp::Array<char> data_array,
+        ystdlib::containers::Array<char> data_array,
         ReaderOptions const& reader_options
 ) -> StructuredIrStreamReader {
     auto deserialized_log_events{std::make_shared<StructuredLogEvents>()};

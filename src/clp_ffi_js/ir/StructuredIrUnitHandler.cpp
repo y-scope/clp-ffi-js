@@ -55,7 +55,7 @@ auto parse_log_level(std::string_view str) -> std::optional<LogLevel> {
             [](unsigned char c) { return std::toupper(c); }
     );
 
-    auto const* it = std::ranges::find(
+    auto const it = std::ranges::find(
             cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx),
             cLogLevelNames.end(),
             log_level_name_upper_case
