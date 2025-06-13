@@ -49,6 +49,7 @@ jobs:
           python --version
           tar --version
           task --version
+          uv --version
 
       - name: "Run lint task"
         run: "task lint:check"
