@@ -3,9 +3,9 @@
 
 #include <memory>
 #include <utility>
-#include <ystdlib/containers/Array.hpp>
 
 #include <clp/ReaderInterface.hpp>
+#include <ystdlib/containers/Array.hpp>
 
 namespace clp_ffi_js::ir {
 /**

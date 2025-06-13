@@ -3,12 +3,12 @@
 
 #include <cstddef>
 #include <memory>
-#include <nlohmann/json.hpp>
-#include <ystdlib/containers/Array.hpp>
 
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <nlohmann/json.hpp>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>

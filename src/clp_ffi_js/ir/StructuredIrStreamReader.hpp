@@ -3,14 +3,14 @@
 
 #include <cstddef>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <optional>
-#include <ystdlib/containers/Array.hpp>
 
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
 #include <emscripten/val.h>
+#include <nlohmann/json.hpp>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>

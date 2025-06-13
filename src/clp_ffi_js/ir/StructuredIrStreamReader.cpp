@@ -3,13 +3,11 @@
 #include <cstddef>
 #include <format>
 #include <memory>
-#include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <system_error>
 #include <utility>
-#include <ystdlib/containers/Array.hpp>
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
@@ -18,7 +16,9 @@
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
