@@ -1,7 +1,7 @@
 version: "3"
 
 tasks:
-  install-all:
+  default:
     desc: "Download all dependencies."
     run: "once"
     cmds:
