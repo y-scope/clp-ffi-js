@@ -1,9 +1,8 @@
 #ifndef CLP_FFI_JS_UTILS_HPP
 #define CLP_FFI_JS_UTILS_HPP
 
-#include <string>
-
 #include <nlohmann/json.hpp>
+#include <string>
 
 namespace clp_ffi_js {
 /**

@@ -4,12 +4,13 @@
 #include <cstdint>
 #include <format>
 #include <memory>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
-
 #include <ystdlib/containers/Array.hpp>
+
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/protocol_constants.hpp>
@@ -18,7 +19,6 @@
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
-#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>

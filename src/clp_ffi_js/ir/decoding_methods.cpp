@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <format>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -13,7 +14,6 @@
 #include <clp/TraceableException.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
-#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
