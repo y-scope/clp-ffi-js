@@ -51,7 +51,7 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "1ab2de20460d4641553addfdfe6acd4109d871d5531f8f519a52ea4926303087"
+          FILE_SHA256: "9db9528c8fd2c97e6d88fb40892f93f33a6e3a64e47c643add2855dee397d571"
           OUTPUT_DIR: "{{.CLP_OUTPUT_DIR}}"
           URL: "https://github.com/y-scope/clp/archive/412f6dc.tar.gz"
       - >-
