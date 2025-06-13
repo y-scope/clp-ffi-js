@@ -33,6 +33,9 @@ jobs:
         with:
           python-version: "3.8"
 
+      - name: "Install uv"
+        uses: "astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb"
+
       - name: "Install task"
         run: "npm install -g @go-task/cli"
 
