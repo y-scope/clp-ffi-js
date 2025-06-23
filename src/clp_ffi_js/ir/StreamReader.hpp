@@ -264,7 +264,14 @@ auto StreamReader::generic_decode_range(
         auto const& log_level = log_event_with_filter_data.get_log_level();
 
         EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
+                {
+                    Emval.toValue($0).push({
+                        "message": UTF8ToString($1),
+                        "timestamp": $2,
+                        "logLevel": $3,
+                        "logEventNumber": $4
+                    });
+                },
                 results.as_handle(),
                 log_event_to_string(log_event).c_str(),
                 timestamp,
