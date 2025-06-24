@@ -122,7 +122,7 @@ public:
      * @param end_idx
      * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
      * @return An object representing the decoded log events. Each decoded event includes:
-     * - logEventNumber: The log event's number (1-indexed) in the stream.
+     * - logEventNum: The log event's number (1-indexed) in the stream.
      * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
      * - message: The log event's message.
      * - timestamp: The log event's timestamp in milliseconds since the Unix epoch.
