@@ -121,11 +121,11 @@ public:
      * @param begin_idx
      * @param end_idx
      * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
-     * @return An array where each element is a decoded log event represented by an array of:
-     * - The log event's message
-     * - The log event's timestamp as milliseconds since the Unix epoch
-     * - The log event's log level as an integer that indexes into `cLogLevelNames`
-     * - The log event's number (1-indexed) in the stream
+     * @return An object representing the decoded log events. Each decoded event includes:
+     * - logEventNumber: The log event's number (1-indexed) in the stream.
+     * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
+     * - message: The log event's message.
+     * - timestamp: The log event's timestamp in milliseconds since the Unix epoch.
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      * @throw ClpFfiJsException if a message cannot be decoded.
