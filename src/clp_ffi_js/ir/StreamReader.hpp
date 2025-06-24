@@ -266,17 +266,17 @@ auto StreamReader::generic_decode_range(
         EM_ASM(
                 {
                     Emval.toValue($0).push({
-                        "message": UTF8ToString($1),
-                        "timestamp": $2,
-                        "logLevel": $3,
-                        "logEventNumber": $4
+                        "logEventNumber": $1,
+                        "logLevel": $2,
+                        "message": UTF8ToString($3),
+                        "timestamp": $4,
                     });
                 },
                 results.as_handle(),
-                log_event_to_string(log_event).c_str(),
-                timestamp,
+                log_event_idx + 1,
                 log_level,
-                log_event_idx + 1
+                log_event_to_string(log_event).c_str(),
+                timestamp
         );
     }
 
