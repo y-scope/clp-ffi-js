@@ -121,7 +121,8 @@ public:
      * @param begin_idx
      * @param end_idx
      * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
-     * @return An object representing the decoded log events. Each decoded event includes:
+     * @return An array of objects, where each object represents a decoded log event with the
+     * following properties:
      * - logEventNum: The log event's number (1-indexed) in the stream.
      * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
      * - message: The log event's message.
