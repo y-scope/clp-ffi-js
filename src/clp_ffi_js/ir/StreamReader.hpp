@@ -121,11 +121,12 @@ public:
      * @param begin_idx
      * @param end_idx
      * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
-     * @return An array where each element is a decoded log event represented by an array of:
-     * - The log event's message
-     * - The log event's timestamp as milliseconds since the Unix epoch
-     * - The log event's log level as an integer that indexes into `cLogLevelNames`
-     * - The log event's number (1-indexed) in the stream
+     * @return An array of objects, where each object represents a decoded log event with the
+     * following properties:
+     * - logEventNum: The log event's number (1-indexed) in the stream.
+     * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
+     * - message: The log event's message.
+     * - timestamp: The log event's timestamp in milliseconds since the Unix epoch.
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      * @throw ClpFfiJsException if a message cannot be decoded.
@@ -264,12 +265,19 @@ auto StreamReader::generic_decode_range(
         auto const& log_level = log_event_with_filter_data.get_log_level();
 
         EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
+                {
+                    Emval.toValue($0).push({
+                        "logEventNumber": $1,
+                        "logLevel": $2,
+                        "message": UTF8ToString($3),
+                        "timestamp": $4,
+                    });
+                },
                 results.as_handle(),
-                log_event_to_string(log_event).c_str(),
-                timestamp,
+                log_event_idx + 1,
                 log_level,
-                log_event_idx + 1
+                log_event_to_string(log_event).c_str(),
+                timestamp
         );
     }
 
