@@ -316,7 +316,7 @@ auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event
     auto const& optional_utc_offset_value = node_id_value_pairs.at(utc_offset_node_id);
     if (false == optional_utc_offset_value.has_value()) {
         SPDLOG_ERROR(
-                "Protocol error: The log level cannot be an empty value. Log event index: {}",
+                "Protocol error: The utc offset cannot be an empty value. Log event index: {}",
                 m_deserialized_log_events->size()
         );
         return cDefaultUtcOffset;
@@ -325,8 +325,7 @@ auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event
     auto const& utc_offset_value{optional_utc_offset_value.value()};
     if (false == utc_offset_value.is<clp::ffi::value_int_t>()) {
         SPDLOG_ERROR(
-                "Protocol error: The utc_offset_value value must be a valid integer. Log event "
-                "index: {}",
+                "Protocol error: The utc offset must be a valid integer. Log event index: {}",
                 m_deserialized_log_events->size()
         );
         return cDefaultUtcOffset;
