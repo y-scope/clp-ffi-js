@@ -263,21 +263,24 @@ auto StreamReader::generic_decode_range(
         auto const& log_event = log_event_with_filter_data.get_log_event();
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
         auto const& log_level = log_event_with_filter_data.get_log_level();
+        auto const& utc_offset = log_event_with_filter_data.get_utc_offset();
 
         EM_ASM(
                 {
                     Emval.toValue($0).push({
-                        "logEventNumber": $1,
+                        "logEventNum": $1,
                         "logLevel": $2,
                         "message": UTF8ToString($3),
                         "timestamp": $4,
+                        "utcOffset": $5
                     });
                 },
                 results.as_handle(),
                 log_event_idx + 1,
                 log_level,
                 log_event_to_string(log_event).c_str(),
-                timestamp
+                timestamp,
+                utc_offset
         );
     }
 

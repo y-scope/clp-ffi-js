@@ -133,8 +133,9 @@ auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event)
         -> clp::ffi::ir_stream::IRErrorCode {
     auto const timestamp = get_timestamp(log_event);
     auto const log_level = get_log_level(log_event);
+    auto const utc_offset = get_utc_offset(log_event);
 
-    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
+    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp, utc_offset);
 
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
@@ -176,6 +177,15 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         }
     }
 
+    if (false == m_optional_utc_offset_node_id.has_value()
+        && m_optional_utc_offset_full_branch.has_value()
+        && is_auto_generated == m_optional_utc_offset_full_branch->is_auto_generated())
+    {
+        if (m_optional_utc_offset_full_branch->match(*schema_tree, schema_tree_node_locator)) {
+            m_optional_utc_offset_node_id.emplace(inserted_node_id);
+        }
+    }
+
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
@@ -189,6 +199,13 @@ auto StructuredIrUnitHandler::handle_end_of_stream() const -> clp::ffi::ir_strea
         && false == m_optional_timestamp_node_id.has_value())
     {
         SPDLOG_WARN("Timestamp filter option is given, but the key is not found in the IR stream.");
+    }
+    if (m_optional_utc_offset_full_branch.has_value()
+        && false == m_optional_utc_offset_node_id.has_value())
+    {
+        SPDLOG_WARN(
+                "Utc offset filter option is given, but the key is not found in the IR stream."
+        );
     }
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
@@ -273,5 +290,47 @@ auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event)
     return static_cast<clp::ir::epoch_time_ms_t>(
             timestamp.get_immutable_view<clp::ffi::value_int_t>()
     );
+}
+
+auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event) const
+        -> clp::ffi::value_int_t {
+    // TODO: We should make a generic function to fetch values.
+    constexpr uint32_t cDefaultUtcOffset{0};
+
+    if (false == m_optional_utc_offset_full_branch.has_value()) {
+        return cDefaultUtcOffset;
+    }
+
+    if (false == m_optional_utc_offset_node_id.has_value()) {
+        return cDefaultUtcOffset;
+    }
+
+    auto const utc_offset_node_id = m_optional_utc_offset_node_id.value();
+    auto const& node_id_value_pairs = m_optional_utc_offset_full_branch->is_auto_generated()
+                                              ? log_event.get_auto_gen_node_id_value_pairs()
+                                              : log_event.get_user_gen_node_id_value_pairs();
+    if (false == node_id_value_pairs.contains(utc_offset_node_id)) {
+        return cDefaultUtcOffset;
+    }
+
+    auto const& optional_utc_offset_value = node_id_value_pairs.at(utc_offset_node_id);
+    if (false == optional_utc_offset_value.has_value()) {
+        SPDLOG_ERROR(
+                "Protocol error: The log level cannot be an empty value. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
+        return cDefaultUtcOffset;
+    }
+
+    auto const& utc_offset_value{optional_utc_offset_value.value()};
+    if (false == utc_offset_value.is<clp::ffi::value_int_t>()) {
+        SPDLOG_ERROR(
+                "Protocol error: The utc_offset_value value must be a valid integer. Log event "
+                "index: {}",
+                m_deserialized_log_events->size()
+        );
+        return cDefaultUtcOffset;
+    }
+    return utc_offset_value.get_immutable_view<clp::ffi::value_int_t>();
 }
 }  // namespace clp_ffi_js::ir

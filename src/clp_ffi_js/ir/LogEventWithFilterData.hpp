@@ -2,6 +2,7 @@
 #define CLP_FFI_JS_IR_LOGEVENTWITHFILTERDATA_HPP
 
 #include <concepts>
+#include <ffi/Value.hpp>
 #include <utility>
 
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
@@ -30,11 +31,13 @@ public:
     LogEventWithFilterData(
             LogEvent log_event,
             LogLevel log_level,
-            clp::ir::epoch_time_ms_t timestamp
+            clp::ir::epoch_time_ms_t timestamp,
+            clp::ffi::value_int_t utc_offset
     )
             : m_log_event{std::move(log_event)},
               m_log_level{log_level},
-              m_timestamp{timestamp} {}
+              m_timestamp{timestamp},
+              m_utc_offset(utc_offset) {}
 
     // Disable copy constructor and assignment operator
     LogEventWithFilterData(LogEventWithFilterData const&) = delete;
@@ -53,10 +56,13 @@ public:
 
     [[nodiscard]] auto get_timestamp() const -> clp::ir::epoch_time_ms_t { return m_timestamp; }
 
+    [[nodiscard]] auto get_utc_offset() const -> clp::ffi::value_int_t { return m_utc_offset; }
+
 private:
     LogEvent m_log_event;
     LogLevel m_log_level;
     clp::ir::epoch_time_ms_t m_timestamp;
+    clp::ffi::value_int_t m_utc_offset;
 };
 }  // namespace clp_ffi_js::ir
 

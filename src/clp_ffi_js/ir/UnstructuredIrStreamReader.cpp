@@ -1,7 +1,9 @@
 #include "UnstructuredIrStreamReader.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
+#include <ffi/Value.hpp>
 #include <format>
 #include <iterator>
 #include <memory>
@@ -135,7 +137,11 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
+        clp::ffi::value_int_t const utc_offset
+                = std::chrono::duration_cast<std::chrono::seconds>(log_event.get_utc_offset())
+                          .count();
+        m_encoded_log_events
+                .emplace_back(log_event, log_level, log_event.get_timestamp(), utc_offset);
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
