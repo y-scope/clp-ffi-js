@@ -293,9 +293,8 @@ auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event)
 }
 
 auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event) const
-        -> clp::ffi::value_int_t {
-    // TODO: We should make a generic function to fetch values.
-    constexpr uint32_t cDefaultUtcOffset{0};
+        -> UtcOffset {
+    constexpr std::chrono::minutes cDefaultUtcOffset{0};
 
     if (false == m_optional_utc_offset_full_branch.has_value()) {
         return cDefaultUtcOffset;
@@ -330,6 +329,6 @@ auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event
         );
         return cDefaultUtcOffset;
     }
-    return utc_offset_value.get_immutable_view<clp::ffi::value_int_t>();
+    return UtcOffset{utc_offset_value.get_immutable_view<clp::ffi::value_int_t>()};
 }
 }  // namespace clp_ffi_js::ir

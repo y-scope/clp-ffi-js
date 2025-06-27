@@ -3,7 +3,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <ffi/Value.hpp>
 #include <memory>
 #include <optional>
 #include <string>
@@ -172,8 +171,7 @@ private:
      * - `m_optional_utc_offset_node_id` is set but not appearing in the given node-id-value pairs.
      * - The value is not a valid integer.
      */
-    [[nodiscard]] auto get_utc_offset(StructuredLogEvent const& log_event) const
-            -> clp::ffi::value_int_t;
+    [[nodiscard]] auto get_utc_offset(StructuredLogEvent const& log_event) const -> UtcOffset;
 
     // Variables
     std::optional<SchemaTreeFullBranch> m_optional_log_level_full_branch;
