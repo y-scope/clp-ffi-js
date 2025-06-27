@@ -1,6 +1,7 @@
 #include "UnstructuredIrStreamReader.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <format>
 #include <iterator>
@@ -135,7 +136,12 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
+        m_encoded_log_events.emplace_back(
+                log_event,
+                log_level,
+                log_event.get_timestamp(),
+                std::chrono::duration_cast<UtcOffset>(log_event.get_utc_offset())
+        );
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();

@@ -127,6 +127,7 @@ public:
      * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
      * - message: The log event's message.
      * - timestamp: The log event's timestamp in milliseconds since the Unix epoch.
+     * - utcOffset: The log event's local time zone offset from UTC, in minutes.
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      * @throw ClpFfiJsException if a message cannot be decoded.
@@ -263,21 +264,24 @@ auto StreamReader::generic_decode_range(
         auto const& log_event = log_event_with_filter_data.get_log_event();
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
         auto const& log_level = log_event_with_filter_data.get_log_level();
+        auto const& utc_offset = log_event_with_filter_data.get_utc_offset().count();
 
         EM_ASM(
                 {
                     Emval.toValue($0).push({
-                        "logEventNumber": $1,
+                        "logEventNum": $1,
                         "logLevel": $2,
                         "message": UTF8ToString($3),
                         "timestamp": $4,
+                        "utcOffset": $5
                     });
                 },
                 results.as_handle(),
                 log_event_idx + 1,
                 log_level,
                 log_event_to_string(log_event).c_str(),
-                timestamp
+                timestamp,
+                utc_offset
         );
     }
 
