@@ -329,6 +329,10 @@ auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event
         );
         return cDefaultUtcOffset;
     }
-    return UtcOffset{utc_offset_value.get_immutable_view<clp::ffi::value_int_t>()};
+    // TODO: Support parsing of other time units, e.g., minutes, hours, etc..
+    auto const utc_offset_seconds{
+            std::chrono::seconds{utc_offset_value.get_immutable_view<clp::ffi::value_int_t>()}
+    };
+    return std::chrono::duration_cast<UtcOffset>(utc_offset_seconds);
 }
 }  // namespace clp_ffi_js::ir
