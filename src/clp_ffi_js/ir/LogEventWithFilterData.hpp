@@ -14,6 +14,7 @@ namespace clp_ffi_js::ir {
 using clp::ir::four_byte_encoded_variable_t;
 using UnstructuredLogEvent = clp::ir::LogEvent<four_byte_encoded_variable_t>;
 using StructuredLogEvent = clp::ffi::KeyValuePairLogEvent;
+using UtcOffset = std::chrono::minutes;
 
 /**
  * A templated class that extends a log event type with processed versions of some of its fields,
@@ -30,11 +31,13 @@ public:
     LogEventWithFilterData(
             LogEvent log_event,
             LogLevel log_level,
-            clp::ir::epoch_time_ms_t timestamp
+            clp::ir::epoch_time_ms_t timestamp,
+            UtcOffset utc_offset
     )
             : m_log_event{std::move(log_event)},
               m_log_level{log_level},
-              m_timestamp{timestamp} {}
+              m_timestamp{timestamp},
+              m_utc_offset{utc_offset} {}
 
     // Disable copy constructor and assignment operator
     LogEventWithFilterData(LogEventWithFilterData const&) = delete;
@@ -53,10 +56,13 @@ public:
 
     [[nodiscard]] auto get_timestamp() const -> clp::ir::epoch_time_ms_t { return m_timestamp; }
 
+    [[nodiscard]] auto get_utc_offset() const -> UtcOffset { return m_utc_offset; }
+
 private:
     LogEvent m_log_event;
     LogLevel m_log_level;
     clp::ir::epoch_time_ms_t m_timestamp;
+    UtcOffset m_utc_offset;
 };
 }  // namespace clp_ffi_js::ir
 

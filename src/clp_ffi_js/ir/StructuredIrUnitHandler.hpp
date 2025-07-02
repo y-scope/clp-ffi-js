@@ -92,10 +92,12 @@ public:
             std::shared_ptr<std::vector<LogEventWithFilterData<StructuredLogEvent>>>
                     deserialized_log_events,
             std::optional<SchemaTreeFullBranch> log_level_full_branch,
-            std::optional<SchemaTreeFullBranch> timestamp_full_branch
+            std::optional<SchemaTreeFullBranch> timestamp_full_branch,
+            std::optional<SchemaTreeFullBranch> utc_offset_full_branch
     )
             : m_optional_log_level_full_branch{std::move(log_level_full_branch)},
               m_optional_timestamp_full_branch{std::move(timestamp_full_branch)},
+              m_optional_utc_offset_full_branch{std::move(utc_offset_full_branch)},
               m_deserialized_log_events{std::move(deserialized_log_events)} {}
 
     // Methods implementing `clp::ffi::ir_stream::IrUnitHandlerInterface`.
@@ -161,12 +163,24 @@ private:
     [[nodiscard]] auto get_timestamp(StructuredLogEvent const& log_event) const
             -> clp::ir::epoch_time_ms_t;
 
+    /**
+     * @param log_event
+     * @return Utc offset from the given `log_event` on success.
+     * @return 0 by default if:
+     * - `m_optional_utc_offset_node_id` is unset.
+     * - `m_optional_utc_offset_node_id` is set but not appearing in the given node-id-value pairs.
+     * - The value is not a valid integer.
+     */
+    [[nodiscard]] auto get_utc_offset(StructuredLogEvent const& log_event) const -> UtcOffset;
+
     // Variables
     std::optional<SchemaTreeFullBranch> m_optional_log_level_full_branch;
     std::optional<SchemaTreeFullBranch> m_optional_timestamp_full_branch;
+    std::optional<SchemaTreeFullBranch> m_optional_utc_offset_full_branch;
 
     std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_log_level_node_id;
     std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_timestamp_node_id;
+    std::optional<clp::ffi::SchemaTree::Node::id_t> m_optional_utc_offset_node_id;
 
     // TODO: Technically, we don't need to use a `shared_ptr` since the parent stream reader will
     // have a longer lifetime than this class. Instead, we could use `gsl::not_null` once we add
