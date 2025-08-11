@@ -28,6 +28,8 @@
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
 #include <clp_ffi_js/utils.hpp>
 
+#include "clp_ffi_js/ir/query_methods.hpp"
+
 namespace clp_ffi_js::ir {
 namespace {
 constexpr std::string_view cEmptyJsonStr{"{}"};
@@ -139,12 +141,58 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
-void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    generic_filter_log_events(
-            m_filtered_log_event_map,
-            log_level_filter,
-            *m_deserialized_log_events
-    );
+void StructuredIrStreamReader::filter_log_events(
+        LogLevelFilterTsType const& log_level_filter,
+        std::string const& kql_filter
+) {
+    m_filtered_log_event_map = std::nullopt;
+
+    if (0 != kql_filter.size()) {
+        auto& reader{m_stream_reader_data_context->get_reader()};
+        reader.seek_from_begin(0);
+        auto indexes{query_index(reader, kql_filter)};
+        m_filtered_log_event_map = std::make_optional(std::move(indexes));
+    }
+
+    if (false == log_level_filter.isNull()) {
+        std::vector<size_t> filtered_log_event_map;
+
+        auto filter_levels{
+                emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter)
+        };
+
+        auto fn = [&](size_t log_event_idx) {
+            auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
+            if (std::ranges::find(
+                        filter_levels,
+                        clp::enum_to_underlying_type(log_event.get_log_level())
+                )
+                != filter_levels.end())
+            {
+                filtered_log_event_map.emplace_back(log_event_idx);
+            }
+        };
+
+        if (m_filtered_log_event_map.has_value()) {
+            for (auto log_event_idx : m_filtered_log_event_map.value()) {
+                fn(log_event_idx);
+            }
+        } else {
+            for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size();
+                 ++log_event_idx)
+            {
+                fn(log_event_idx);
+            }
+        }
+
+        m_filtered_log_event_map = std::make_optional(std::move(filtered_log_event_map));
+    }
+
+    if (m_filtered_log_event_map.has_value()
+        && m_filtered_log_event_map->size() == m_deserialized_log_events->size())
+    {
+        m_filtered_log_event_map = std::nullopt;
+    }
 }
 
 auto StructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -178,7 +226,6 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
                 )
         };
     }
-    m_stream_reader_data_context.reset(nullptr);
     return m_deserialized_log_events->size();
 }
 

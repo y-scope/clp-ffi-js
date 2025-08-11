@@ -129,8 +129,10 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
     return true;
 }
 
-auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event)
-        -> clp::ffi::ir_stream::IRErrorCode {
+auto StructuredIrUnitHandler::handle_log_event(
+        StructuredLogEvent&& log_event,
+        [[maybe_unused]] size_t log_event_ix
+) -> clp::ffi::ir_stream::IRErrorCode {
     auto const timestamp = get_timestamp(log_event);
     auto const log_level = get_log_level(log_event);
     auto const utc_offset = get_utc_offset(log_event);

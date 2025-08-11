@@ -104,7 +104,9 @@ public:
      *
      * @param log_level_filter Array of selected log levels
      */
-    virtual void filter_log_events(LogLevelFilterTsType const& log_level_filter) = 0;
+    virtual void
+    filter_log_events(LogLevelFilterTsType const& log_level_filter, std::string const& kql_filter)
+            = 0;
 
     /**
      * Deserializes all log events in the stream.

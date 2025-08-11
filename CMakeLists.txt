@@ -102,6 +102,7 @@ execute_process(
 
 set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/ir/decoding_methods.cpp
+    src/clp_ffi_js/ir/query_methods.cpp
     src/clp_ffi_js/ir/StreamReader.cpp
     src/clp_ffi_js/ir/StructuredIrStreamReader.cpp
     src/clp_ffi_js/ir/StructuredIrUnitHandler.cpp
@@ -113,6 +114,8 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/ErrorCode.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/utils.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/utils.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/SchemaTree.cpp
@@ -144,6 +147,27 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
     "List of supported environments."
 )
 
+set(CLP_BUILD_CLP_STRING_UTILS ON)
+add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
+
+set(CLP_BUILD_EXECUTABLES OFF)
+set(CLP_BUILD_CLP_S_ARCHIVEREADER OFF)
+set(CLP_BUILD_CLP_S_ARCHIVEWRITER OFF)
+set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES OFF)
+set(CLP_BUILD_CLP_S_IO OFF)
+set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR OFF)
+set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES OFF)
+set(CLP_BUILD_CLP_S_SEARCH OFF)
+set(CLP_BUILD_CLP_S_SEARCH_AST ON)
+set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
+set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
+add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
+
+add_subdirectory(${CMAKE_SOURCE_DIR}/build/deps/antlr-runtime-src)
+add_subdirectory(${CMAKE_SOURCE_DIR}/build/deps/date-src)
+add_subdirectory(${CMAKE_SOURCE_DIR}/build/deps/simdjson-src)
+add_subdirectory(${CMAKE_SOURCE_DIR}/build/deps/spdlog-src)
+
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
     add_executable(${CLP_FFI_JS_BIN_NAME})
@@ -154,7 +178,16 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     target_compile_options(${CLP_FFI_JS_BIN_NAME} PRIVATE ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS})
 
     # Set up link options
-    target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE embind)
+    target_link_libraries(${CLP_FFI_JS_BIN_NAME}
+        PRIVATE
+        antlr4_static
+        clp_s::search::ast
+        clp_s::search::kql
+        embind
+        simdjson::simdjson
+        spdlog::spdlog
+        string_utils
+    )
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
@@ -184,7 +217,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
         ${CLP_FFI_JS_FMT_SOURCE_DIRECTORY}/include
         ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include
-        ${CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY}/include
         ${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY}/src
         ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib
     )

@@ -106,7 +106,7 @@ public:
      * @param log_event
      * @return IRErrorCode::IRErrorCode_Success
      */
-    [[nodiscard]] auto handle_log_event(StructuredLogEvent&& log_event)
+    [[nodiscard]] auto handle_log_event(StructuredLogEvent&& log_event, size_t log_event_ix)
             -> clp::ffi::ir_stream::IRErrorCode;
 
     /**

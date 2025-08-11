@@ -16,13 +16,39 @@ tasks:
   download-all:
     internal: true
     deps:
+      - "download-antlr-runtime"
       - "download-boost"
       - "download-clp"
+      - "download-date"
       - "download-fmt"
       - "download-nlohmann-json"
+      - "download-simdjson"
       - "download-spdlog"
       - "download-ystdlib"
       - "download-zstd"
+
+
+  download-antlr-runtime:
+    internal: true
+    vars:
+      LIB_NAME: "antlr-runtime"
+      ANTLR_RUNTIME_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+      ANTLR_RUNTIME_VERSION: "4.13.2"
+      INSTALL_PREFIX: "{{.G_DEPS_CORE_DIR}}/{{.LIB_NAME}}-install"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "9f18272a9b32b622835a3365f850dd1063d60f5045fb1e12ce475ae6e18a35bb"
+          INCLUDE_PATTERNS: ["*/runtime/Cpp"]
+          NUM_COMPONENTS_TO_STRIP: 3
+          OUTPUT_DIR: "{{.ANTLR_RUNTIME_OUTPUT_DIR}}"
+          URL: "https://github.com/antlr/antlr4/archive/refs/tags/{{.ANTLR_RUNTIME_VERSION}}.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY \"{{.ANTLR_RUNTIME_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
 
   download-boost:
     internal: true
@@ -52,12 +78,29 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "9315fbd3cbb46487e36a0156fae95f6edfc2de483bbde82df541d478e044c98b"
+          FILE_SHA256: "00fa3880ac74c00c453832d51f9a533533e59f89b94159f05ad4c767225178f0"
           OUTPUT_DIR: "{{.CLP_OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/clp/archive/88b8b46.tar.gz"
+          URL: "https://github.com/y-scope/clp/archive/6a00a87.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.CLP_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-date:
+    internal: true
+    vars:
+      LIB_NAME: "date"
+      DATE_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538"
+          OUTPUT_DIR: "{{.DATE_OUTPUT_DIR}}"
+          URL: "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_DATE_SOURCE_DIRECTORY \"{{.DATE_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
   download-fmt:
@@ -97,6 +140,23 @@ tasks:
       - >-
         echo "set(
         CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY \"{{.NLOHMANN_JSON_OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  download-simdjson:
+    internal: true
+    vars:
+      LIB_NAME: "simdjson"
+      SIMDJSON_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "07a1bb3587aac18fd6a10a83fe4ab09f1100ab39f0cb73baea1317826b9f9e0d"
+          OUTPUT_DIR: "{{.SIMDJSON_OUTPUT_DIR}}"
+          URL: "https://github.com/simdjson/simdjson/archive/refs/tags/v3.13.0.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY \"{{.SIMDJSON_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
   download-spdlog:
