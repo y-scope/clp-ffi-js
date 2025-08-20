@@ -1,10 +1,8 @@
 #include "query_methods.hpp"
 
 #include <cstddef>
-#include <ErrorCode.hpp>
 #include <format>
 #include <memory>
-#include <ReaderInterface.hpp>
 #include <sstream>
 #include <string>
 #include <string_view>
@@ -12,14 +10,15 @@
 #include <utility>
 #include <vector>
 
+#include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/ir_stream/search/QueryHandler.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
 #include <clp/ffi/SchemaTree.hpp>
+#include <clp/ReaderInterface.hpp>
 #include <clp/time_types.hpp>
 #include <clp_s/search/kql/kql.hpp>
-#include <clp_s/TraceableException.hpp>
 #include <spdlog/spdlog.h>
 #include <ystdlib/error_handling/Result.hpp>
 

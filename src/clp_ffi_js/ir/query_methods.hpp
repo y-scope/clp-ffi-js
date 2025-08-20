@@ -15,7 +15,7 @@ namespace clp_ffi_js::ir {
  * @param reader An interface for reading log events.
  * @param query_string The query string to match against log events.
  * @return A vector of indices of the log events that matched the query.
- * @throws ClpFfiJsException if the preamble couldn't be deserialized or the Query counln't be
+ * @throws ClpFfiJsException if the preamble couldn't be deserialized or the Query couldn't be
  * executed.
  */
 [[nodiscard]] auto
