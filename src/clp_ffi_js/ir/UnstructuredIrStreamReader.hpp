@@ -60,7 +60,7 @@ public:
 
     void filter_log_events(
             LogLevelFilterTsType const& log_level_filter,
-            std::string const& kql_filter
+            [[maybe_unused]] std::string const& kql_filter
     ) override;
 
     /**

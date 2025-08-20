@@ -34,7 +34,6 @@ tasks:
       LIB_NAME: "antlr-runtime"
       ANTLR_RUNTIME_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
       ANTLR_RUNTIME_VERSION: "4.13.2"
-      INSTALL_PREFIX: "{{.G_DEPS_CORE_DIR}}/{{.LIB_NAME}}-install"
     run: "once"
     cmds:
       - task: ":utils:remote:download-and-extract-tar"

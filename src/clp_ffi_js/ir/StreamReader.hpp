@@ -103,6 +103,8 @@ public:
      * Generates a filtered collection from all log events.
      *
      * @param log_level_filter Array of selected log levels
+     * @param kql_filter KQL expression to filter structured IR. Use an empty string to disable. For
+     * unstructured IR, the filter is ignored (a warning is logged).
      */
     virtual void
     filter_log_events(LogLevelFilterTsType const& log_level_filter, std::string const& kql_filter)

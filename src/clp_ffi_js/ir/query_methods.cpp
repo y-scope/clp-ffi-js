@@ -1,18 +1,29 @@
 #include "query_methods.hpp"
 
+#include <cstddef>
+#include <ErrorCode.hpp>
+#include <format>
+#include <memory>
+#include <ReaderInterface.hpp>
 #include <sstream>
+#include <string>
+#include <string_view>
+#include <system_error>
+#include <utility>
+#include <vector>
 
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
+#include <clp/ffi/ir_stream/search/QueryHandler.hpp>
 #include <clp/ffi/KeyValuePairLogEvent.hpp>
-#include <clp/streaming_compression/zstd/Decompressor.hpp>
+#include <clp/ffi/SchemaTree.hpp>
 #include <clp/time_types.hpp>
 #include <clp_s/search/kql/kql.hpp>
-#include <ystdlib/containers/Array.hpp>
+#include <clp_s/TraceableException.hpp>
+#include <spdlog/spdlog.h>
+#include <ystdlib/error_handling/Result.hpp>
 
-#include "clp_ffi_js/ClpFfiJsException.hpp"
-#include "spdlog/common.h"
-#include "spdlog/spdlog.h"
+#include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::ir {
 using clp::ffi::ir_stream::IRErrorCode;
@@ -55,6 +66,7 @@ private:
     std::vector<size_t> m_deserialized_log_event_indexes;
 };
 
+namespace {
 auto trivial_new_projected_schema_tree_node_callback(
         [[maybe_unused]] bool is_auto_generated,
         [[maybe_unused]] clp::ffi::SchemaTree::Node::id_t node_id,
@@ -62,8 +74,10 @@ auto trivial_new_projected_schema_tree_node_callback(
 ) -> ystdlib::error_handling::Result<void> {
     return ystdlib::error_handling::success();
 }
+}  // namespace
 
-[[nodiscard]] auto query_index(clp::ReaderInterface& reader, std::string const& query_string)
+[[nodiscard]] auto
+query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_string)
         -> std::vector<size_t> {
     std::istringstream query_string_stream{query_string};
     auto query_handler_result{
@@ -82,7 +96,7 @@ auto trivial_new_projected_schema_tree_node_callback(
                 __FILENAME__,
                 __LINE__,
                 std::format(
-                        "Failed to create qury handler: {} {}",
+                        "Failed to create query handler: {} {}",
                         error_code.category().name(),
                         error_code.message()
                 )

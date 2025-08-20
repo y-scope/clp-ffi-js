@@ -131,7 +131,7 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
 
 auto StructuredIrUnitHandler::handle_log_event(
         StructuredLogEvent&& log_event,
-        [[maybe_unused]] size_t log_event_ix
+        [[maybe_unused]] size_t log_event_idx
 ) -> clp::ffi::ir_stream::IRErrorCode {
     auto const timestamp = get_timestamp(log_event);
     auto const log_level = get_log_level(log_event);

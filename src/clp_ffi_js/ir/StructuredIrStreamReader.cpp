@@ -1,5 +1,6 @@
 #include "StructuredIrStreamReader.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <format>
 #include <memory>
@@ -7,28 +8,31 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <type_traits>
+#include <type_utils.hpp>
 #include <utility>
+#include <vector>
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/TraceableException.hpp>
+#include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <spdlog/spdlog.h>
 #include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
+#include <clp_ffi_js/ir/query_methods.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
 #include <clp_ffi_js/utils.hpp>
-
-#include "clp_ffi_js/ir/query_methods.hpp"
 
 namespace clp_ffi_js::ir {
 namespace {
@@ -147,10 +151,10 @@ void StructuredIrStreamReader::filter_log_events(
 ) {
     m_filtered_log_event_map = std::nullopt;
 
-    if (0 != kql_filter.size()) {
+    if (false == kql_filter.empty()) {
         auto& reader{m_stream_reader_data_context->get_reader()};
         reader.seek_from_begin(0);
-        auto indexes{query_index(reader, kql_filter)};
+        auto indexes{query_log_event_indices(reader, kql_filter)};
         m_filtered_log_event_map = std::make_optional(std::move(indexes));
     }
 
@@ -235,11 +239,13 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         auto json_pair_result{log_event.serialize_to_json()};
         if (json_pair_result.has_error()) {
             auto const error_code{json_pair_result.error()};
+            // NOLINTBEGIN(bugprone-lambda-function-name)
             SPDLOG_ERROR(
                     "Failed to deserialize log event to JSON: {}:{}",
                     error_code.category().name(),
                     error_code.message()
             );
+            // NOLINTEND(bugprone-lambda-function-name)
             return std::string{cEmptyJsonStr};
         }
 
