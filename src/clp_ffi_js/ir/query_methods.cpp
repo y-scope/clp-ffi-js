@@ -32,9 +32,9 @@ using clp::UtcOffset;
 class LogEventIndexIrUnitHandler {
 public:
     [[nodiscard]] auto
-    handle_log_event([[maybe_unused]] KeyValuePairLogEvent&& log_event, size_t log_event_ix)
+    handle_log_event([[maybe_unused]] KeyValuePairLogEvent&& log_event, size_t log_event_idx)
             -> IRErrorCode {
-        m_deserialized_log_event_indexes.push_back(log_event_ix);
+        m_deserialized_log_event_indexes.push_back(log_event_idx);
         return IRErrorCode::IRErrorCode_Success;
     }
 
