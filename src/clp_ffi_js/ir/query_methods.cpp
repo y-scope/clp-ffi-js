@@ -23,8 +23,10 @@
 #include <ystdlib/error_handling/Result.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/ir/decoding_methods.hpp>
 
 namespace clp_ffi_js::ir {
+namespace {
 using clp::ffi::ir_stream::IRErrorCode;
 using clp::ffi::KeyValuePairLogEvent;
 using clp::UtcOffset;
@@ -65,7 +67,6 @@ private:
     std::vector<size_t> m_deserialized_log_event_indices;
 };
 
-namespace {
 auto trivial_new_projected_schema_tree_node_callback(
         [[maybe_unused]] bool is_auto_generated,
         [[maybe_unused]] clp::ffi::SchemaTree::Node::id_t node_id,
@@ -76,7 +77,7 @@ auto trivial_new_projected_schema_tree_node_callback(
 }  // namespace
 
 [[nodiscard]] auto
-query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_string)
+collect_matched_log_event_indices(clp::ReaderInterface& reader, std::string const& query_string)
         -> std::vector<size_t> {
     std::istringstream query_string_stream{query_string};
     auto query_handler_result{
@@ -123,28 +124,7 @@ query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_s
     }
 
     auto& deserializer{deserializer_result.value()};
-    while (false == deserializer.is_stream_completed()) {
-        auto result{deserializer.deserialize_next_ir_unit(reader)};
-        if (false == result.has_error()) {
-            continue;
-        }
-        auto const error{result.error()};
-        if (std::errc::result_out_of_range == error) {
-            SPDLOG_WARN("File contains an incomplete IR stream");
-            break;
-        }
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Corrupt,
-                __FILENAME__,
-                __LINE__,
-                std::format(
-                        "Failed to deserialize IR unit: {}:{}",
-                        error.category().name(),
-                        error.message()
-                )
-        };
-    }
-
+    deserialize_log_events(deserializer, reader);
     return deserializer.get_ir_unit_handler().get_deserialized_log_event_indices();
 }
 }  // namespace clp_ffi_js::ir

@@ -104,10 +104,10 @@ public:
     /**
      * Generates a filtered collection from all log events.
      *
-     * @param log_level_filter Array of selected log levels
-     * @param kql_filter KQL expression to filter structured IR. Use an empty string to disable. For
-     * unstructured IR, the filter is ignored and a warning is logged if `kql_filter` is not an
-     * empty string.
+     * @param log_level_filter Array of selected log levels.
+     * @param kql_filter: A KQL expression used to filter kv-pairs.
+     * - For structured IR: the filter is applied when non-empty.
+     * - For unstructured IR: the filter is always ignored, and a warning is logged when non-empty.
      */
     virtual void
     filter_log_events(LogLevelFilterTsType const& log_level_filter, std::string const& kql_filter)
@@ -116,7 +116,7 @@ public:
     /**
      * Generates a filtered collection from all log events.
      *
-     * @param log_level_filter Array of selected log levels
+     * @param log_level_filter Array of selected log levels.
      */
     void filter_log_events(LogLevelFilterTsType const& log_level_filter) {
         filter_log_events(log_level_filter, "");

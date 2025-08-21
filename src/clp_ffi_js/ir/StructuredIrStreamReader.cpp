@@ -9,7 +9,6 @@
 #include <string_view>
 #include <system_error>
 #include <type_traits>
-#include <type_utils.hpp>
 #include <utility>
 #include <vector>
 
@@ -149,13 +148,12 @@ void StructuredIrStreamReader::filter_log_events(
         LogLevelFilterTsType const& log_level_filter,
         std::string const& kql_filter
 ) {
-    m_filtered_log_event_map = std::nullopt;
+    m_filtered_log_event_map.reset();
 
     if (false == kql_filter.empty()) {
         auto& reader{m_stream_reader_data_context->get_reader()};
         reader.seek_from_begin(0);
-        auto indices{query_log_event_indices(reader, kql_filter)};
-        m_filtered_log_event_map = std::move(indices);
+        m_filtered_log_event_map.emplace(collect_matched_log_event_indices(reader, kql_filter));
     }
 
     if (false == log_level_filter.isNull()) {
@@ -182,7 +180,7 @@ void StructuredIrStreamReader::filter_log_events(
                 filter_and_collect_idx(log_event_idx);
             }
         } else {
-            for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size();
+            for (size_t log_event_idx{0}; log_event_idx < m_deserialized_log_events->size();
                  ++log_event_idx)
             {
                 filter_and_collect_idx(log_event_idx);
@@ -209,27 +207,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
     auto& reader{m_stream_reader_data_context->get_reader()};
     auto& deserializer = m_stream_reader_data_context->get_deserializer();
 
-    while (false == deserializer.is_stream_completed()) {
-        auto result{deserializer.deserialize_next_ir_unit(reader)};
-        if (false == result.has_error()) {
-            continue;
-        }
-        auto const error{result.error()};
-        if (std::errc::result_out_of_range == error) {
-            SPDLOG_WARN("File contains an incomplete IR stream");
-            break;
-        }
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Corrupt,
-                __FILENAME__,
-                __LINE__,
-                std::format(
-                        "Failed to deserialize IR unit: {}:{}",
-                        error.category().name(),
-                        error.message()
-                )
-        };
-    }
+    deserialize_log_events(deserializer, reader);
     return m_deserialized_log_events->size();
 }
 

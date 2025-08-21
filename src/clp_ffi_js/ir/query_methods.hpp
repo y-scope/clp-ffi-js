@@ -18,8 +18,8 @@ namespace clp_ffi_js::ir {
  * @throws ClpFfiJsException if the preamble couldn't be deserialized or the Query couldn't be
  * executed.
  */
-[[nodiscard]] auto
-query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_string)
+auto
+collect_matched_log_event_indices(clp::ReaderInterface& reader, std::string const& query_string)
         -> std::vector<size_t>;
 }  // namespace clp_ffi_js::ir
 
