@@ -20,7 +20,7 @@
 #include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
-#include <nlohmann/json_fwd.hpp>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 #include <ystdlib/containers/Array.hpp>
 
@@ -155,17 +155,17 @@ void StructuredIrStreamReader::filter_log_events(
         auto& reader{m_stream_reader_data_context->get_reader()};
         reader.seek_from_begin(0);
         auto indexes{query_log_event_indices(reader, kql_filter)};
-        m_filtered_log_event_map = std::make_optional(std::move(indexes));
+        m_filtered_log_event_map = std::move(indexes);
     }
 
     if (false == log_level_filter.isNull()) {
         std::vector<size_t> filtered_log_event_map;
 
-        auto filter_levels{
+        auto const filter_levels{
                 emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter)
         };
 
-        auto fn = [&](size_t log_event_idx) {
+        auto filter_and_collect_idx = [&](size_t const log_event_idx) {
             auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
             if (std::ranges::find(
                         filter_levels,
@@ -178,18 +178,18 @@ void StructuredIrStreamReader::filter_log_events(
         };
 
         if (m_filtered_log_event_map.has_value()) {
-            for (auto log_event_idx : m_filtered_log_event_map.value()) {
-                fn(log_event_idx);
+            for (auto const log_event_idx : m_filtered_log_event_map.value()) {
+                filter_and_collect_idx(log_event_idx);
             }
         } else {
             for (size_t log_event_idx = 0; log_event_idx < m_deserialized_log_events->size();
                  ++log_event_idx)
             {
-                fn(log_event_idx);
+                filter_and_collect_idx(log_event_idx);
             }
         }
 
-        m_filtered_log_event_map = std::make_optional(std::move(filtered_log_event_map));
+        m_filtered_log_event_map = std::move(filtered_log_event_map);
     }
 
     if (m_filtered_log_event_map.has_value()
@@ -216,7 +216,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
         }
         auto const error{result.error()};
         if (std::errc::result_out_of_range == error) {
-            SPDLOG_ERROR("File contains an incomplete IR stream");
+            SPDLOG_WARN("File contains an incomplete IR stream");
             break;
         }
         throw ClpFfiJsException{

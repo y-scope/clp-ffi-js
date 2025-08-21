@@ -150,6 +150,12 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
 
+# The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`.
+# by reusing `clp_s`'s AST and KQL libraries.
+#
+# However, 'clp-ffi-js' doesn't currently require other 'clp_s' build targets (e.g., executables,
+# archive readers, etc.). Disabling them prevents an increase in the binary size and reduces the
+# number of dependencies needed during the build process.
 set(CLP_BUILD_EXECUTABLES OFF)
 set(CLP_BUILD_CLP_S_ARCHIVEREADER OFF)
 set(CLP_BUILD_CLP_S_ARCHIVEWRITER OFF)
@@ -163,7 +169,10 @@ set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
+set(ANTLR_BUILD_SHARED OFF)
+set(ANTLR_BUILD_STATIC ON)
 add_subdirectory(${CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY})
+
 add_subdirectory(${CLP_FFI_JS_DATE_SOURCE_DIRECTORY})
 add_subdirectory(${CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY})
 add_subdirectory(${CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY})
@@ -180,13 +189,10 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     # Set up link options
     target_link_libraries(${CLP_FFI_JS_BIN_NAME}
         PRIVATE
-        antlr4_static
         clp_s::search::ast
         clp_s::search::kql
         embind
-        simdjson::simdjson
         spdlog::spdlog
-        string_utils
     )
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}

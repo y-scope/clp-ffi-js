@@ -34,7 +34,7 @@ public:
     [[nodiscard]] auto
     handle_log_event([[maybe_unused]] KeyValuePairLogEvent&& log_event, size_t log_event_idx)
             -> IRErrorCode {
-        m_deserialized_log_event_indexes.push_back(log_event_idx);
+        m_deserialized_log_event_indices.push_back(log_event_idx);
         return IRErrorCode::IRErrorCode_Success;
     }
 
@@ -57,12 +57,12 @@ public:
         return IRErrorCode::IRErrorCode_Success;
     }
 
-    [[nodiscard]] auto get_deserialized_log_event_indexes() const -> std::vector<size_t> const& {
-        return m_deserialized_log_event_indexes;
+    [[nodiscard]] auto get_deserialized_log_event_indices() const -> std::vector<size_t> const& {
+        return m_deserialized_log_event_indices;
     }
 
 private:
-    std::vector<size_t> m_deserialized_log_event_indexes;
+    std::vector<size_t> m_deserialized_log_event_indices;
 };
 
 namespace {
@@ -130,7 +130,7 @@ query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_s
         }
         auto const error{result.error()};
         if (std::errc::result_out_of_range == error) {
-            SPDLOG_ERROR("File contains an incomplete IR stream");
+            SPDLOG_WARN("File contains an incomplete IR stream");
             break;
         }
         throw ClpFfiJsException{
@@ -145,6 +145,6 @@ query_log_event_indices(clp::ReaderInterface& reader, std::string const& query_s
         };
     }
 
-    return deserializer.get_ir_unit_handler().get_deserialized_log_event_indexes();
+    return deserializer.get_ir_unit_handler().get_deserialized_log_event_indices();
 }
 }  // namespace clp_ffi_js::ir

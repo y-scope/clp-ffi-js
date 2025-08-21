@@ -96,6 +96,8 @@ public:
 
     /**
      * @return The filtered log events map.
+     * This is a sorted list of log event indices that match the filter.
+     * If all log events match the filter, it returns `null` or a vector of all log events.
      */
     [[nodiscard]] virtual auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType = 0;
 
@@ -104,11 +106,21 @@ public:
      *
      * @param log_level_filter Array of selected log levels
      * @param kql_filter KQL expression to filter structured IR. Use an empty string to disable. For
-     * unstructured IR, the filter is ignored (a warning is logged).
+     * unstructured IR, the filter is ignored and a warning is logged if `kql_filter` is not an
+     * empty string.
      */
     virtual void
     filter_log_events(LogLevelFilterTsType const& log_level_filter, std::string const& kql_filter)
             = 0;
+
+    /**
+     * Generates a filtered collection from all log events.
+     *
+     * @param log_level_filter Array of selected log levels
+     */
+    void filter_log_events(LogLevelFilterTsType const& log_level_filter) {
+        filter_log_events(log_level_filter, "");
+    }
 
     /**
      * Deserializes all log events in the stream.

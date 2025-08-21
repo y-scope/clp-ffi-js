@@ -84,9 +84,12 @@ void UnstructuredIrStreamReader::filter_log_events(
         LogLevelFilterTsType const& log_level_filter,
         [[maybe_unused]] std::string const& kql_filter
 ) {
-    SPDLOG_WARN(
-            "KQL filters aren't supported for unstructured IR streams, so they're being ignored."
-    );
+    if (false == kql_filter.empty()) {
+        SPDLOG_WARN(
+                "KQL filters aren't supported for unstructured IR streams, so they're being "
+                "ignored."
+        );
+    }
     generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 
