@@ -150,7 +150,7 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
 
-# The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`.
+# The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
 #
 # However, 'clp-ffi-js' doesn't currently require other 'clp_s' build targets (e.g., executables,

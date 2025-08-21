@@ -154,8 +154,8 @@ void StructuredIrStreamReader::filter_log_events(
     if (false == kql_filter.empty()) {
         auto& reader{m_stream_reader_data_context->get_reader()};
         reader.seek_from_begin(0);
-        auto indexes{query_log_event_indices(reader, kql_filter)};
-        m_filtered_log_event_map = std::move(indexes);
+        auto indices{query_log_event_indices(reader, kql_filter)};
+        m_filtered_log_event_map = std::move(indices);
     }
 
     if (false == log_level_filter.isNull()) {
