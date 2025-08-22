@@ -63,7 +63,10 @@ public:
 
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType override;
 
-    void filter_log_events(LogLevelFilterTsType const& log_level_filter) override;
+    void filter_log_events(
+            LogLevelFilterTsType const& log_level_filter,
+            std::string const& kql_filter
+    ) override;
 
     /**
      * @see StreamReader::deserialize_stream

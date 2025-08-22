@@ -80,7 +80,16 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
-void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
+void UnstructuredIrStreamReader::filter_log_events(
+        LogLevelFilterTsType const& log_level_filter,
+        [[maybe_unused]] std::string const& kql_filter
+) {
+    if (false == kql_filter.empty()) {
+        SPDLOG_WARN(
+                "KQL filters aren't supported for unstructured IR streams, so they're being "
+                "ignored."
+        );
+    }
     generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 

@@ -1,10 +1,15 @@
 #ifndef CLP_FFI_JS_IR_DECODING_METHODS_HPP
 #define CLP_FFI_JS_IR_DECODING_METHODS_HPP
 
+#include <clp/ffi/ir_stream/Deserializer.hpp>
+#include <clp/ffi/ir_stream/IrUnitHandlerReq.hpp>
+#include <clp/ffi/ir_stream/search/QueryHandlerReq.hpp>
 #include <clp/ReaderInterface.hpp>
 #include <nlohmann/json.hpp>
 
+#include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
+#include <clp_ffi_js/ir/StructuredIrStreamReader.hpp>
 
 namespace clp_ffi_js::ir {
 /**
@@ -32,6 +37,36 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
  * @return The converted JavaScript object.
  */
 [[nodiscard]] auto convert_metadata_to_js_object(nlohmann::json const& metadata) -> MetadataTsType;
+
+template <
+        clp::ffi::ir_stream::IrUnitHandlerReq IrUnitHandlerType,
+        clp::ffi::ir_stream::search::QueryHandlerReq QueryHandlerType>
+auto deserialize_log_events(
+        clp::ffi::ir_stream::Deserializer<IrUnitHandlerType, QueryHandlerType>& deserializer,
+        clp::ReaderInterface& reader
+) -> void {
+    while (false == deserializer.is_stream_completed()) {
+        auto const result{deserializer.deserialize_next_ir_unit(reader)};
+        if (false == result.has_error()) {
+            continue;
+        }
+        auto const error{result.error()};
+        if (std::errc::result_out_of_range == error) {
+            SPDLOG_WARN("File contains an incomplete IR stream");
+            break;
+        }
+        throw ClpFfiJsException{
+                clp::ErrorCode::ErrorCode_Corrupt,
+                __FILENAME__,
+                __LINE__,
+                std::format(
+                        "Failed to deserialize IR unit: {}:{}",
+                        error.category().name(),
+                        error.message()
+                )
+        };
+    }
+}
 }  // namespace clp_ffi_js::ir
 
 #endif  // CLP_FFI_JS_IR_DECODING_METHODS_HPP

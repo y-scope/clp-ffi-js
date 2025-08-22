@@ -1,5 +1,6 @@
 #include "StructuredIrStreamReader.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <format>
 #include <memory>
@@ -7,13 +8,15 @@
 #include <string>
 #include <string_view>
 #include <system_error>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 #include <clp/ErrorCode.hpp>
 #include <clp/ffi/ir_stream/Deserializer.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ir/types.hpp>
-#include <clp/TraceableException.hpp>
+#include <clp/type_utils.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <nlohmann/json.hpp>
@@ -21,8 +24,10 @@
 #include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
+#include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/decoding_methods.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
+#include <clp_ffi_js/ir/query_methods.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
 #include <clp_ffi_js/ir/StructuredIrUnitHandler.hpp>
@@ -139,12 +144,57 @@ auto StructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredLog
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
-void StructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
-    generic_filter_log_events(
-            m_filtered_log_event_map,
-            log_level_filter,
-            *m_deserialized_log_events
-    );
+void StructuredIrStreamReader::filter_log_events(
+        LogLevelFilterTsType const& log_level_filter,
+        std::string const& kql_filter
+) {
+    m_filtered_log_event_map.reset();
+
+    if (false == kql_filter.empty()) {
+        auto& reader{m_stream_reader_data_context->get_reader()};
+        reader.seek_from_begin(0);
+        m_filtered_log_event_map.emplace(collect_matched_log_event_indices(reader, kql_filter));
+    }
+
+    if (false == log_level_filter.isNull()) {
+        std::vector<size_t> filtered_log_event_map;
+
+        auto const filter_levels{
+                emscripten::vecFromJSArray<std::underlying_type_t<LogLevel>>(log_level_filter)
+        };
+
+        auto filter_and_collect_idx = [&](size_t const log_event_idx) {
+            auto const& log_event{m_deserialized_log_events->at(log_event_idx)};
+            if (std::ranges::find(
+                        filter_levels,
+                        clp::enum_to_underlying_type(log_event.get_log_level())
+                )
+                != filter_levels.end())
+            {
+                filtered_log_event_map.emplace_back(log_event_idx);
+            }
+        };
+
+        if (m_filtered_log_event_map.has_value()) {
+            for (auto const log_event_idx : m_filtered_log_event_map.value()) {
+                filter_and_collect_idx(log_event_idx);
+            }
+        } else {
+            for (size_t log_event_idx{0}; log_event_idx < m_deserialized_log_events->size();
+                 ++log_event_idx)
+            {
+                filter_and_collect_idx(log_event_idx);
+            }
+        }
+
+        m_filtered_log_event_map = std::move(filtered_log_event_map);
+    }
+
+    if (m_filtered_log_event_map.has_value()
+        && m_filtered_log_event_map->size() == m_deserialized_log_events->size())
+    {
+        m_filtered_log_event_map = std::nullopt;
+    }
 }
 
 auto StructuredIrStreamReader::deserialize_stream() -> size_t {
@@ -157,28 +207,7 @@ auto StructuredIrStreamReader::deserialize_stream() -> size_t {
     auto& reader{m_stream_reader_data_context->get_reader()};
     auto& deserializer = m_stream_reader_data_context->get_deserializer();
 
-    while (false == deserializer.is_stream_completed()) {
-        auto result{deserializer.deserialize_next_ir_unit(reader)};
-        if (false == result.has_error()) {
-            continue;
-        }
-        auto const error{result.error()};
-        if (std::errc::result_out_of_range == error) {
-            SPDLOG_ERROR("File contains an incomplete IR stream");
-            break;
-        }
-        throw ClpFfiJsException{
-                clp::ErrorCode::ErrorCode_Corrupt,
-                __FILENAME__,
-                __LINE__,
-                std::format(
-                        "Failed to deserialize IR unit: {}:{}",
-                        error.category().name(),
-                        error.message()
-                )
-        };
-    }
-    m_stream_reader_data_context.reset(nullptr);
+    deserialize_log_events(deserializer, reader);
     return m_deserialized_log_events->size();
 }
 
@@ -188,11 +217,13 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
         auto json_pair_result{log_event.serialize_to_json()};
         if (json_pair_result.has_error()) {
             auto const error_code{json_pair_result.error()};
+            // NOLINTBEGIN(bugprone-lambda-function-name)
             SPDLOG_ERROR(
                     "Failed to deserialize log event to JSON: {}:{}",
                     error_code.category().name(),
                     error_code.message()
             );
+            // NOLINTEND(bugprone-lambda-function-name)
             return std::string{cEmptyJsonStr};
         }
 
