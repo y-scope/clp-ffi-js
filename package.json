@@ -13,7 +13,7 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
-    "release": "git diff --exit-code && task package && npm publish"
+    "release": "git diff --exit-code && task package && npm publish --provenance"
   },
   "type": "module",
   "files": [

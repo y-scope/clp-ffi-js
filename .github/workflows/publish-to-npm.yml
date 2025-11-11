@@ -34,6 +34,9 @@ jobs:
   publish-to-npm:
     needs: ["build"]
     runs-on: "ubuntu-latest"
+    permissions:
+      # For the `--provenance` flag in `npm publish`.
+      id-token: "write"
     steps:
       - uses: "actions/checkout@v4"
       - uses: "actions/download-artifact@v4"
