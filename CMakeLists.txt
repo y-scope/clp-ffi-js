@@ -111,6 +111,7 @@ set(CLP_FFI_JS_SRC_MAIN
 )
 
 set(CLP_FFI_JS_SRC_CLP_CORE
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/EncodedTextAstError.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/ErrorCode.cpp
@@ -125,8 +126,6 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ReaderInterface.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
 )
-
-set(CLP_FFI_JS_SRC_FMT ${CLP_FFI_JS_FMT_SOURCE_DIRECTORY}/src/format.cc)
 
 set(CLP_FFI_JS_SRC_ZSTD
     ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/entropy_common.c
@@ -150,6 +149,30 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
 
+# Set up `Boost::headers` as a header-only interface target so that downstream dependencies
+# (e.g., ystdlib) can link against it without requiring a full Boost installation.
+if(NOT TARGET Boost::headers)
+    add_library(Boost_headers INTERFACE)
+    target_include_directories(Boost_headers INTERFACE ${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY})
+    add_library(Boost::headers ALIAS Boost_headers)
+endif()
+
+# Set up ystdlib as a subproject to provide the `ystdlib::error_handling` target required by the CLP
+# core's `EncodedTextAstError` and `clp_s`'s `timestamp_parser`.
+set(Boost_INCLUDE_DIR "${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY}")
+set(YSTDLIB_CPP_BUILD_TESTING OFF)
+add_subdirectory(${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY} ystdlib)
+
+set(ANTLR_BUILD_SHARED OFF)
+set(ANTLR_BUILD_STATIC ON)
+add_subdirectory(${CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY})
+
+add_subdirectory(${CLP_FFI_JS_DATE_SOURCE_DIRECTORY})
+set(FMT_INSTALL OFF)
+add_subdirectory(${CLP_FFI_JS_FMT_SOURCE_DIRECTORY} fmt)
+add_subdirectory(${CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY})
+add_subdirectory(${CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY})
+
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
 #
@@ -166,16 +189,9 @@ set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES OFF)
 set(CLP_BUILD_CLP_S_SEARCH OFF)
 set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
+set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
-
-set(ANTLR_BUILD_SHARED OFF)
-set(ANTLR_BUILD_STATIC ON)
-add_subdirectory(${CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY})
-
-add_subdirectory(${CLP_FFI_JS_DATE_SOURCE_DIRECTORY})
-add_subdirectory(${CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY})
-add_subdirectory(${CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY})
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
@@ -192,6 +208,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         clp_s::search::ast
         clp_s::search::kql
         embind
+        fmt::fmt
         spdlog::spdlog
     )
     set(CLP_FFI_JS_LINK_OPTIONS
@@ -234,7 +251,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         PRIVATE
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
-        ${CLP_FFI_JS_SRC_FMT}
         ${CLP_FFI_JS_SRC_ZSTD}
     )
 endforeach()
