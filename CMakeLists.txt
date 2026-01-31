@@ -1,8 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-include(FetchContent)
-set(FETCHCONTENT_QUIET OFF)
-
 if(NOT CMAKE_TOOLCHAIN_FILE)
     set(CMAKE_TOOLCHAIN_FILE
         "${CMAKE_CURRENT_SOURCE_DIR}/build/emsdk/upstream/emscripten/cmake/Modules/Platform/\
@@ -238,7 +235,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY}
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
-        ${CLP_FFI_JS_FMT_SOURCE_DIRECTORY}/include
         ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include
         ${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY}/src
         ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib
