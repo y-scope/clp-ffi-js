@@ -82,7 +82,8 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         expect(events).not.toBeNull();
         expect(events).toHaveLength(Math.min(DECODE_CHUNK_SIZE, numEvents));
 
-        const [event] = events as NonNullable<typeof events>;
+        const [firstEvent] = events as NonNullable<typeof events>;
+        const event = firstEvent as NonNullable<typeof events>[0];
 
         expect(typeof event.logEventNum).toBe("number");
         expect(typeof event.logLevel).toBe("number");
@@ -167,8 +168,8 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
 
         expect(events).not.toBeNull();
 
-        const [event] = events as NonNullable<typeof events>;
-        const {timestamp} = event as NonNullable<typeof events>[0];
+        const [firstEvent] = events as NonNullable<typeof events>;
+        const {timestamp} = firstEvent as NonNullable<typeof events>[0];
         const nearestIdx = reader.findNearestLogEventByTimestamp(timestamp);
 
         expect(nearestIdx).not.toBeNull();

@@ -14,7 +14,7 @@
   },
   "scripts": {
     "lint": "npm run lint:check",
-    "lint:check:js": "eslint . --max-warnings 0",
+    "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
     "lint:fix:js": "npm run lint:check:js -- --fix",
     "release": "git diff --exit-code && task package && npm publish",
     "test": "vitest run"
