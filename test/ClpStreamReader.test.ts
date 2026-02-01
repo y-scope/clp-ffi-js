@@ -6,6 +6,10 @@ import {
 } from "vitest";
 
 import {
+    IR_STREAM_TYPE_STRUCTURED,
+    IR_STREAM_TYPE_UNSTRUCTURED,
+} from "./constants.js";
+import {
     createModule,
     type MainModule,
 } from "./utils.js";
@@ -19,12 +23,12 @@ beforeAll(async () => {
 
 describe("Module Constants", () => {
     it("should export IrStreamType enum with correct values", () => {
-        expect(module.IrStreamType.STRUCTURED.value).toBe(0);
-        expect(module.IrStreamType.UNSTRUCTURED.value).toBe(1);
+        expect(module.IrStreamType.STRUCTURED.value).toBe(IR_STREAM_TYPE_STRUCTURED);
+        expect(module.IrStreamType.UNSTRUCTURED.value).toBe(IR_STREAM_TYPE_UNSTRUCTURED);
     });
 
-    it("should export MERGED_KV_PAIRS keys as strings", () => {
-        expect(typeof module.MERGED_KV_PAIRS_AUTO_GENERATED_KEY).toBe("string");
-        expect(typeof module.MERGED_KV_PAIRS_USER_GENERATED_KEY).toBe("string");
+    it("should export MERGED_KV_PAIRS keys with correct values", () => {
+        expect(module.MERGED_KV_PAIRS_AUTO_GENERATED_KEY).toBe("auto-generated");
+        expect(module.MERGED_KV_PAIRS_USER_GENERATED_KEY).toBe("user-generated");
     });
 });

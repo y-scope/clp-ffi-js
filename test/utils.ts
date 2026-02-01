@@ -9,14 +9,6 @@ import MainModuleFactory, {
     type ClpStreamReader,
     type MainModule,
 } from "../dist/ClpFfiJs-node.js";
-import {
-    DECODE_CHUNK_SIZE,
-    FILTERED_CHUNK_SIZE,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_WARN,
-    OUT_OF_BOUNDS_OFFSET,
-} from "./constants.js";
 
 
 const TEST_DATA_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), "data");
@@ -114,11 +106,5 @@ export type {
 export {
     createModule,
     createReader,
-    DECODE_CHUNK_SIZE,
-    FILTERED_CHUNK_SIZE,
     loadTestData,
-    LOG_LEVEL_ERROR,
-    LOG_LEVEL_INFO,
-    LOG_LEVEL_WARN,
-    OUT_OF_BOUNDS_OFFSET,
 };

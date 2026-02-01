@@ -1,4 +1,16 @@
 /**
+ * Value for `IrStreamType.STRUCTURED`. Matches `StreamType::Structured` in
+ * `src/clp_ffi_js/ir/StreamReader.hpp`.
+ */
+const IR_STREAM_TYPE_STRUCTURED = 0;
+
+/**
+ * Value for `IrStreamType.UNSTRUCTURED`. Matches `StreamType::Unstructured` in
+ * `src/clp_ffi_js/ir/StreamReader.hpp`.
+ */
+const IR_STREAM_TYPE_UNSTRUCTURED = 1;
+
+/**
  * Number of events to decode when testing `decodeRange` with a small range from the beginning of
  * the stream. This is an arbitrary small value to avoid processing the entire stream in tests.
  */
@@ -34,6 +46,8 @@ const OUT_OF_BOUNDS_OFFSET = 1;
 export {
     DECODE_CHUNK_SIZE,
     FILTERED_CHUNK_SIZE,
+    IR_STREAM_TYPE_STRUCTURED,
+    IR_STREAM_TYPE_UNSTRUCTURED,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
