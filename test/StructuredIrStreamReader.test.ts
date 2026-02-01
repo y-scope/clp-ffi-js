@@ -8,17 +8,19 @@ import {
 } from "vitest";
 
 import {
-    type ClpStreamReader,
-    createModule,
-    createReader,
     DECODE_CHUNK_SIZE,
     FILTERED_CHUNK_SIZE,
-    loadTestData,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
-    type MainModule,
     OUT_OF_BOUNDS_OFFSET,
+} from "./constants.js";
+import {
+    type ClpStreamReader,
+    createModule,
+    createReader,
+    loadTestData,
+    type MainModule,
     type ReaderOptions,
 } from "./utils.js";
 
@@ -190,8 +192,9 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
 
         expect(events).not.toBeNull();
 
-        const [{timestamp: targetTs}] = events as NonNullable<typeof events>;
-        const nearestIdx = reader.findNearestLogEventByTimestamp(targetTs);
+        const [event] = events as NonNullable<typeof events>;
+        const {timestamp} = event as NonNullable<typeof events>[0];
+        const nearestIdx = reader.findNearestLogEventByTimestamp(timestamp);
 
         expect(nearestIdx).not.toBeNull();
         expect(typeof nearestIdx).toBe("number");
