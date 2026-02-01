@@ -47,7 +47,4 @@ jobs:
           npm --version
           task --version
 
-      - name: "Build"
-        run: "task"
-
       - run: "task test:js"
