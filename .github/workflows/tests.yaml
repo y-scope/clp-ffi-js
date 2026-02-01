@@ -1,0 +1,53 @@
+name: "tests"
+
+on:
+  pull_request:
+    paths: &monitored_paths
+      - ".github/workflows/tests.yaml"
+      - "CMakeLists.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "src/**"
+      - "taskfiles/**"
+      - "Taskfile.yml"
+      - "test/**"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+  push:
+    paths: *monitored_paths
+  schedule:
+    # Run daily at 00:15 UTC (the 15 is to avoid periods of high load)
+    - cron: "15 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: "${{github.workflow}}-${{github.ref}}"
+
+  # Cancel in-progress jobs for efficiency
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    runs-on: "ubuntu-24.04"
+    steps:
+      - uses: "actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8"  # v6.0.1
+        with:
+          submodules: "recursive"
+
+      - name: "Install task"
+        run: "npm install -g @go-task/cli@3.44.0"
+
+      - name: "Log tool versions"
+        run: |-
+          cmake --version
+          md5sum --version
+          node --version
+          npm --version
+          task --version
+
+      - name: "Build"
+        run: "task"
+
+      - run: "task test:js"
