@@ -118,6 +118,7 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_ERROR]);
         const errorMap = reader.getFilteredLogEventMap();
 
+        expect(errorMap).not.toBeNull();
         if (null !== errorMap) {
             expect(errorMap.length).toBeLessThanOrEqual(numEvents);
         }
@@ -139,6 +140,7 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const filteredMap = reader.getFilteredLogEventMap();
 
+        expect(filteredMap).not.toBeNull();
         if (null !== filteredMap && 0 < filteredMap.length) {
             const filteredEvents = reader.decodeRange(
                 0,
@@ -159,6 +161,7 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents(null, "loglevel: INFO");
         const kqlMap = reader.getFilteredLogEventMap();
 
+        expect(kqlMap).not.toBeNull();
         if (null !== kqlMap) {
             expect(kqlMap.length).toBeGreaterThanOrEqual(0);
 
@@ -184,6 +187,7 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         ], "server");
         const combinedMap = reader.getFilteredLogEventMap();
 
+        expect(combinedMap).not.toBeNull();
         if (null !== combinedMap) {
             expect(combinedMap.length).toBeGreaterThanOrEqual(0);
         }
@@ -296,6 +300,7 @@ describe("Structured IR Stream with logLevelKey", () => {
         ], "server");
         const combinedMap = reader.getFilteredLogEventMap();
 
+        expect(combinedMap).not.toBeNull();
         if (null !== combinedMap) {
             expect(combinedMap.length).toBeGreaterThanOrEqual(0);
         }

@@ -116,6 +116,7 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const infoMap = reader.getFilteredLogEventMap();
 
+        expect(infoMap).not.toBeNull();
         if (null !== infoMap) {
             expect(infoMap.length).toBeLessThanOrEqual(numEvents);
         }
@@ -140,6 +141,7 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         ]);
         const warnErrorMap = reader.getFilteredLogEventMap();
 
+        expect(warnErrorMap).not.toBeNull();
         if (null !== warnErrorMap && 0 < warnErrorMap.length) {
             const filteredEvents = reader.decodeRange(
                 0,
