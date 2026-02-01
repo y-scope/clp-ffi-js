@@ -1,8 +1,11 @@
 version: "3"
 
 tasks:
+  default:
+    deps: ["js"]
+
   js:
-    deps: ["node-modules"]
+    deps: [":clp-ffi-js", "node-modules"]
     cmd: "npm run test"
 
   node-modules:
