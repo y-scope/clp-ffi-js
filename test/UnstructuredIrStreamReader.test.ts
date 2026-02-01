@@ -17,11 +17,13 @@ import {
 } from "./constants.js";
 import {
     type ClpStreamReader,
-    createModule,
     createReader,
-    loadTestData,
     type MainModule,
-} from "./utils.js";
+} from "./utils/common.js";
+import {
+    createModule,
+    loadTestData,
+} from "./utils/index.js";
 
 
 let module: MainModule;

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import {
     afterEach,
     beforeAll,
@@ -17,12 +18,14 @@ import {
 } from "./constants.js";
 import {
     type ClpStreamReader,
-    createModule,
     createReader,
-    loadTestData,
     type MainModule,
     type ReaderOptions,
-} from "./utils.js";
+} from "./utils/common.js";
+import {
+    createModule,
+    loadTestData,
+} from "./utils/index.js";
 
 
 let module: MainModule;

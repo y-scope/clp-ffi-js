@@ -32,7 +32,7 @@
     },
     "include": [
         "test/**/*.ts",
-        "vitest.config.ts",
+        "vitest.*config.ts",
         "eslint.config.mjs"
     ]
 }
