@@ -24,4 +24,5 @@ const EslintConfig = [
     ...StylisticConfigArray,
 ];
 
+
 export default EslintConfig;
