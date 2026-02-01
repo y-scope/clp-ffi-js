@@ -1,3 +1,5 @@
+import {expect} from "vitest";
+
 import type {
     ClpStreamReader,
     MainModule,
@@ -43,12 +45,23 @@ const createReader = (
 };
 
 
+/**
+ * Asserts that a value is not null or undefined, narrowing the type for later usage.
+ *
+ * @param val
+ */
+const assertNonNull: <T>(val: T) => asserts val is NonNullable<T> = (val) => {
+    expect(val).not.toBeNull();
+};
+
+
 export type {
     ClpStreamReader,
     MainModule,
     ReaderOptions,
 };
 export {
+    assertNonNull,
     createReader,
     TEST_DATA_URLS,
 };

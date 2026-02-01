@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 import {
     afterEach,
     beforeAll,
@@ -17,6 +16,7 @@ import {
     OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
+    assertNonNull,
     type ClpStreamReader,
     createReader,
     type MainModule,
@@ -83,20 +83,20 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
 
         const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
 
-        expect(events).not.toBeNull();
+        assertNonNull(events);
         expect(events).toHaveLength(Math.min(DECODE_CHUNK_SIZE, numEvents));
 
-        const [firstEvent] = events as NonNullable<typeof events>;
-        const event = firstEvent as NonNullable<typeof events>[0];
+        const [firstEvent] = events;
+        assertNonNull(firstEvent);
 
-        expect(typeof event.logEventNum).toBe("number");
-        expect(typeof event.logLevel).toBe("number");
-        expect(typeof event.message).toBe("string");
-        expect(typeof event.timestamp).toBe("bigint");
+        expect(typeof firstEvent.logEventNum).toBe("number");
+        expect(typeof firstEvent.logLevel).toBe("number");
+        expect(typeof firstEvent.message).toBe("string");
+        expect(typeof firstEvent.timestamp).toBe("bigint");
         expect([
             "bigint",
             "number",
-        ]).toContain(typeof event.utcOffset);
+        ]).toContain(typeof firstEvent.utcOffset);
     });
 
     it("should decode last events", () => {
@@ -108,8 +108,8 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
             false
         );
 
-        expect(lastEvents).not.toBeNull();
-        expect((lastEvents as NonNullable<typeof lastEvents>).length).toBeGreaterThan(0);
+        assertNonNull(lastEvents);
+        expect(lastEvents.length).toBeGreaterThan(0);
     });
 
     it("should filter log events by log level", () => {
@@ -118,10 +118,8 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_ERROR]);
         const errorMap = reader.getFilteredLogEventMap();
 
-        expect(errorMap).not.toBeNull();
-        if (null !== errorMap) {
-            expect(errorMap.length).toBeLessThanOrEqual(numEvents);
-        }
+        assertNonNull(errorMap);
+        expect(errorMap.length).toBeLessThanOrEqual(numEvents);
     });
 
     it("should reset filter when passing null", () => {
@@ -140,18 +138,16 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const filteredMap = reader.getFilteredLogEventMap();
 
-        expect(filteredMap).not.toBeNull();
-        if (null !== filteredMap && 0 < filteredMap.length) {
+        assertNonNull(filteredMap);
+        if (0 < filteredMap.length) {
             const filteredEvents = reader.decodeRange(
                 0,
                 Math.min(FILTERED_CHUNK_SIZE, filteredMap.length),
                 true
             );
 
-            expect(filteredEvents).not.toBeNull();
-            expect(
-                (filteredEvents as NonNullable<typeof filteredEvents>).length
-            ).toBeGreaterThan(0);
+            assertNonNull(filteredEvents);
+            expect(filteredEvents.length).toBeGreaterThan(0);
         }
     });
 
@@ -161,19 +157,17 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         reader.filterLogEvents(null, "loglevel: INFO");
         const kqlMap = reader.getFilteredLogEventMap();
 
-        expect(kqlMap).not.toBeNull();
-        if (null !== kqlMap) {
-            expect(kqlMap.length).toBeGreaterThanOrEqual(0);
+        assertNonNull(kqlMap);
+        expect(kqlMap.length).toBeGreaterThanOrEqual(0);
 
-            if (0 < kqlMap.length) {
-                const kqlEvents = reader.decodeRange(
-                    0,
-                    Math.min(FILTERED_CHUNK_SIZE, kqlMap.length),
-                    true
-                );
+        if (0 < kqlMap.length) {
+            const kqlEvents = reader.decodeRange(
+                0,
+                Math.min(FILTERED_CHUNK_SIZE, kqlMap.length),
+                true
+            );
 
-                expect(kqlEvents).not.toBeNull();
-            }
+            assertNonNull(kqlEvents);
         }
     });
 
@@ -187,22 +181,19 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         ], "server");
         const combinedMap = reader.getFilteredLogEventMap();
 
-        expect(combinedMap).not.toBeNull();
-        if (null !== combinedMap) {
-            expect(combinedMap.length).toBeGreaterThanOrEqual(0);
-        }
+        assertNonNull(combinedMap);
+        expect(combinedMap.length).toBeGreaterThanOrEqual(0);
     });
 
     it("should find nearest log event by timestamp", () => {
         const numEvents = reader.deserializeStream();
 
         const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
+        assertNonNull(events);
 
-        expect(events).not.toBeNull();
-
-        const [firstEvent] = events as NonNullable<typeof events>;
-        const {timestamp} = firstEvent as NonNullable<typeof events>[0];
-        const nearestIdx = reader.findNearestLogEventByTimestamp(timestamp);
+        const [firstEvent] = events;
+        assertNonNull(firstEvent);
+        const nearestIdx = reader.findNearestLogEventByTimestamp(firstEvent.timestamp);
 
         expect(nearestIdx).not.toBeNull();
         expect(typeof nearestIdx).toBe("number");
@@ -221,7 +212,6 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
     });
 });
 
-// eslint-disable-next-line max-lines-per-function
 describe("Structured IR Stream with logLevelKey", () => {
     const readerOptions: ReaderOptions = {
         logLevelKey: {isAutoGenerated: true, parts: ["loglevel"]},
@@ -248,12 +238,11 @@ describe("Structured IR Stream with logLevelKey", () => {
             false
         );
 
-        expect(events).not.toBeNull();
+        assertNonNull(events);
+        const [firstEvent] = events;
+        assertNonNull(firstEvent);
 
-        const [firstEvent] = events as NonNullable<typeof events>;
-        const event = firstEvent as NonNullable<typeof events>[0];
-
-        expect(event.logLevel).not.toBe(0);
+        expect(firstEvent.logLevel).not.toBe(0);
     });
 
     it("should filter INFO events with extracted log levels", () => {
@@ -262,9 +251,9 @@ describe("Structured IR Stream with logLevelKey", () => {
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const infoMap = reader.getFilteredLogEventMap();
 
-        expect(infoMap).not.toBeNull();
-        expect((infoMap as NonNullable<typeof infoMap>).length).toBeGreaterThan(0);
-        expect((infoMap as NonNullable<typeof infoMap>).length).toBeLessThan(numEvents);
+        assertNonNull(infoMap);
+        expect(infoMap.length).toBeGreaterThan(0);
+        expect(infoMap.length).toBeLessThan(numEvents);
     });
 
     it("should decode filtered events with useFilter=true", () => {
@@ -272,22 +261,16 @@ describe("Structured IR Stream with logLevelKey", () => {
 
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const filteredMap = reader.getFilteredLogEventMap();
-
-        expect(filteredMap).not.toBeNull();
+        assertNonNull(filteredMap);
 
         const filteredEvents = reader.decodeRange(
             0,
-            Math.min(
-                FILTERED_CHUNK_SIZE,
-                (filteredMap as NonNullable<typeof filteredMap>).length
-            ),
+            Math.min(FILTERED_CHUNK_SIZE, filteredMap.length),
             true
         );
 
-        expect(filteredEvents).not.toBeNull();
-        expect(
-            (filteredEvents as NonNullable<typeof filteredEvents>).length
-        ).toBeGreaterThan(0);
+        assertNonNull(filteredEvents);
+        expect(filteredEvents.length).toBeGreaterThan(0);
     });
 
     it("should combine KQL and log level filters with extracted keys", () => {
@@ -300,9 +283,7 @@ describe("Structured IR Stream with logLevelKey", () => {
         ], "server");
         const combinedMap = reader.getFilteredLogEventMap();
 
-        expect(combinedMap).not.toBeNull();
-        if (null !== combinedMap) {
-            expect(combinedMap.length).toBeGreaterThanOrEqual(0);
-        }
+        assertNonNull(combinedMap);
+        expect(combinedMap.length).toBeGreaterThanOrEqual(0);
     });
 });

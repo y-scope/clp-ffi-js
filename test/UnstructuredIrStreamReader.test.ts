@@ -16,6 +16,7 @@ import {
     OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
+    assertNonNull,
     type ClpStreamReader,
     createReader,
     type MainModule,
@@ -80,21 +81,19 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
-
-        expect(events).not.toBeNull();
+        assertNonNull(events);
         expect(events).toHaveLength(Math.min(DECODE_CHUNK_SIZE, numEvents));
 
-        const [firstEvent] = events as NonNullable<typeof events>;
-        const event = firstEvent as NonNullable<typeof events>[0];
-
-        expect(typeof event.logEventNum).toBe("number");
-        expect(typeof event.logLevel).toBe("number");
-        expect(typeof event.message).toBe("string");
-        expect(typeof event.timestamp).toBe("bigint");
+        const [firstEvent] = events;
+        assertNonNull(firstEvent);
+        expect(typeof firstEvent.logEventNum).toBe("number");
+        expect(typeof firstEvent.logLevel).toBe("number");
+        expect(typeof firstEvent.message).toBe("string");
+        expect(typeof firstEvent.timestamp).toBe("bigint");
         expect([
             "bigint",
             "number",
-        ]).toContain(typeof event.utcOffset);
+        ]).toContain(typeof firstEvent.utcOffset);
     });
 
     it("should decode last events", () => {
@@ -106,8 +105,8 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
             false
         );
 
-        expect(lastEvents).not.toBeNull();
-        expect((lastEvents as NonNullable<typeof lastEvents>).length).toBeGreaterThan(0);
+        assertNonNull(lastEvents);
+        expect(lastEvents.length).toBeGreaterThan(0);
     });
 
     it("should filter log events by log level", () => {
@@ -116,10 +115,8 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const infoMap = reader.getFilteredLogEventMap();
 
-        expect(infoMap).not.toBeNull();
-        if (null !== infoMap) {
-            expect(infoMap.length).toBeLessThanOrEqual(numEvents);
-        }
+        assertNonNull(infoMap);
+        expect(infoMap.length).toBeLessThanOrEqual(numEvents);
     });
 
     it("should reset filter when passing null", () => {
@@ -141,18 +138,16 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         ]);
         const warnErrorMap = reader.getFilteredLogEventMap();
 
-        expect(warnErrorMap).not.toBeNull();
-        if (null !== warnErrorMap && 0 < warnErrorMap.length) {
+        assertNonNull(warnErrorMap);
+        if (0 < warnErrorMap.length) {
             const filteredEvents = reader.decodeRange(
                 0,
                 Math.min(FILTERED_CHUNK_SIZE, warnErrorMap.length),
                 true
             );
 
-            expect(filteredEvents).not.toBeNull();
-            expect(
-                (filteredEvents as NonNullable<typeof filteredEvents>).length
-            ).toBeGreaterThan(0);
+            assertNonNull(filteredEvents);
+            expect(filteredEvents.length).toBeGreaterThan(0);
         }
     });
 
@@ -169,12 +164,11 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
+        assertNonNull(events);
 
-        expect(events).not.toBeNull();
-
-        const [firstEvent] = events as NonNullable<typeof events>;
-        const {timestamp} = firstEvent as NonNullable<typeof events>[0];
-        const nearestIdx = reader.findNearestLogEventByTimestamp(timestamp);
+        const [firstEvent] = events;
+        assertNonNull(firstEvent);
+        const nearestIdx = reader.findNearestLogEventByTimestamp(firstEvent.timestamp);
 
         expect(nearestIdx).not.toBeNull();
         expect(typeof nearestIdx).toBe("number");
