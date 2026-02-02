@@ -17,4 +17,4 @@ tasks:
     generates:
       - "{{.ROOT_DIR}}/node_modules/**/*"
     cmds:
-      - "npm install"
+      - "npm clean-install"
