@@ -47,7 +47,4 @@ jobs:
           npm --version
           task --version
 
-      - name: "Install Playwright browsers and dependencies"
-        run: "npx playwright install --with-deps"
-
       - run: "task test:js"
