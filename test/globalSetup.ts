@@ -14,9 +14,9 @@ const TEST_DATA_DIR = path.join(
 );
 
 /**
- * Downloads all test data files to `test/data/` if they don't already exist on disk.
- * This runs once before all test projects (node and browser), so browser tests can fetch
- * from Vite's local dev server instead of S3.
+ * Downloads all test data files to `test/data/` if they don't already exist on disk. This runs once
+ * before all test projects (node and browser), so browser tests can fetch from Vite's local dev
+ * server instead of S3.
  */
 const setup = async () => {
     fs.mkdirSync(TEST_DATA_DIR, {recursive: true});
