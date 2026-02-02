@@ -7,8 +7,8 @@ import {
     it,
 } from "vitest";
 
+import {describeCommonTests} from "./commonStreamReaderTests.js";
 import {
-    DECODE_CHUNK_SIZE,
     FILTERED_CHUNK_SIZE,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
@@ -35,7 +35,6 @@ beforeAll(async () => {
     data = await loadTestData("unstructured-yarn.clp.zst");
 });
 
-// eslint-disable-next-line max-lines-per-function
 describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
     let reader: ClpStreamReader;
 
@@ -47,62 +46,11 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
         reader.delete();
     });
 
-    it("should report IR stream type as UNSTRUCTURED", () => {
-        const streamType = reader.getIrStreamType();
-
-        expect(streamType.value).toBe(module.IrStreamType.UNSTRUCTURED.value);
-    });
-
-    it("should return metadata as an object", () => {
-        const metadata = reader.getMetadata();
-
-        expect(metadata).not.toBeNull();
-        expect(typeof metadata).toBe("object");
-    });
-
-    it("should deserialize stream and return the expected event count", () => {
-        const numEvents = reader.deserializeStream();
-
-        expect(numEvents).toBe(NUM_EVENTS_UNSTRUCTURED_YARN);
-    });
-
-    it("should match getNumEventsBuffered with deserialized count", () => {
-        const numEvents = reader.deserializeStream();
-        const numBuffered = reader.getNumEventsBuffered();
-
-        expect(numBuffered).toBe(numEvents);
-    });
-
-    it("should decode first events with expected fields", () => {
-        const numEvents = reader.deserializeStream();
-
-        const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
-        assertNonNull(events);
-        expect(events).toHaveLength(Math.min(DECODE_CHUNK_SIZE, numEvents));
-
-        const [firstEvent] = events;
-        assertNonNull(firstEvent);
-        expect(typeof firstEvent.logEventNum).toBe("number");
-        expect(typeof firstEvent.logLevel).toBe("number");
-        expect(typeof firstEvent.message).toBe("string");
-        expect(typeof firstEvent.timestamp).toBe("bigint");
-        expect([
-            "bigint",
-            "number",
-        ]).toContain(typeof firstEvent.utcOffset);
-    });
-
-    it("should decode last events", () => {
-        const numEvents = reader.deserializeStream();
-
-        const lastEvents = reader.decodeRange(
-            Math.max(0, numEvents - FILTERED_CHUNK_SIZE),
-            numEvents,
-            false
-        );
-
-        assertNonNull(lastEvents);
-        expect(lastEvents.length).toBe(FILTERED_CHUNK_SIZE);
+    describeCommonTests({
+        expectedNumEvents: NUM_EVENTS_UNSTRUCTURED_YARN,
+        expectedStreamType: "UNSTRUCTURED",
+        getModule: () => module,
+        getReader: () => reader,
     });
 
     it("should filter log events by log level", () => {
@@ -113,16 +61,6 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
 
         assertNonNull(infoMap);
         expect(infoMap.length).toBe(NUM_EVENTS_UNSTRUCTURED_YARN_INFO);
-    });
-
-    it("should reset filter when passing null", () => {
-        reader.deserializeStream();
-
-        reader.filterLogEvents([LOG_LEVEL_INFO]);
-        reader.filterLogEvents(null);
-        const resetMap = reader.getFilteredLogEventMap();
-
-        expect(resetMap).toBeNull();
     });
 
     it("should decode events with useFilter=true", () => {
@@ -154,31 +92,5 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
         const kqlMap = reader.getFilteredLogEventMap();
 
         expect(kqlMap).toBeNull();
-    });
-
-    it("should find nearest log event by timestamp", () => {
-        const numEvents = reader.deserializeStream();
-
-        const events = reader.decodeRange(0, Math.min(DECODE_CHUNK_SIZE, numEvents), false);
-        assertNonNull(events);
-
-        const [firstEvent] = events;
-        assertNonNull(firstEvent);
-        const nearestIdx = reader.findNearestLogEventByTimestamp(firstEvent.timestamp);
-
-        expect(nearestIdx).not.toBeNull();
-        expect(typeof nearestIdx).toBe("number");
-    });
-
-    it("should return null for out-of-bounds decodeRange", () => {
-        const numEvents = reader.deserializeStream();
-
-        const invalidRange = reader.decodeRange(
-            numEvents,
-            numEvents + 1,
-            false
-        );
-
-        expect(invalidRange).toBeNull();
     });
 });
