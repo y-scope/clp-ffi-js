@@ -13,6 +13,9 @@ import {
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
+    NUM_EVENTS_UNSTRUCTURED_YARN,
+    NUM_EVENTS_UNSTRUCTURED_YARN_INFO,
+    NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR,
     OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
@@ -32,11 +35,11 @@ let data: Uint8Array;
 
 beforeAll(async () => {
     module = await createModule();
-    data = await loadTestData("yarn-unstructured.clp.zst");
+    data = await loadTestData("unstructured-yarn.clp.zst");
 });
 
 // eslint-disable-next-line max-lines-per-function
-describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
+describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
     let reader: ClpStreamReader;
 
     beforeEach(() => {
@@ -64,10 +67,10 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         expect(typeof metadata).toBe("object");
     });
 
-    it("should deserialize stream and return a positive event count", () => {
+    it("should deserialize stream and return the expected event count", () => {
         const numEvents = reader.deserializeStream();
 
-        expect(numEvents).toBeGreaterThan(0);
+        expect(numEvents).toBe(NUM_EVENTS_UNSTRUCTURED_YARN);
     });
 
     it("should match getNumEventsBuffered with deserialized count", () => {
@@ -106,17 +109,17 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         );
 
         assertNonNull(lastEvents);
-        expect(lastEvents.length).toBeGreaterThan(0);
+        expect(lastEvents.length).toBe(FILTERED_CHUNK_SIZE);
     });
 
     it("should filter log events by log level", () => {
-        const numEvents = reader.deserializeStream();
+        reader.deserializeStream();
 
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const infoMap = reader.getFilteredLogEventMap();
 
         assertNonNull(infoMap);
-        expect(infoMap.length).toBeLessThanOrEqual(numEvents);
+        expect(infoMap.length).toBe(NUM_EVENTS_UNSTRUCTURED_YARN_INFO);
     });
 
     it("should reset filter when passing null", () => {
@@ -139,16 +142,16 @@ describe("Unstructured IR Stream: yarn-unstructured.clp.zst", () => {
         const warnErrorMap = reader.getFilteredLogEventMap();
 
         assertNonNull(warnErrorMap);
-        if (0 < warnErrorMap.length) {
-            const filteredEvents = reader.decodeRange(
-                0,
-                Math.min(FILTERED_CHUNK_SIZE, warnErrorMap.length),
-                true
-            );
+        expect(warnErrorMap.length).toBe(NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR);
 
-            assertNonNull(filteredEvents);
-            expect(filteredEvents.length).toBeGreaterThan(0);
-        }
+        const filteredEvents = reader.decodeRange(
+            0,
+            Math.min(FILTERED_CHUNK_SIZE, warnErrorMap.length),
+            true
+        );
+
+        assertNonNull(filteredEvents);
+        expect(filteredEvents.length).toBe(FILTERED_CHUNK_SIZE);
     });
 
     it("should ignore KQL filter on unstructured stream", () => {

@@ -10,8 +10,9 @@ import {
 import {
     DECODE_CHUNK_SIZE,
     FILTERED_CHUNK_SIZE,
-    LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
+    NUM_EVENTS_STRUCTURED_COCKROACHDB,
+    NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO,
     NUM_EVENTS_MATCHING_KQL_INFO,
     OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
@@ -33,11 +34,11 @@ let data: Uint8Array;
 
 beforeAll(async () => {
     module = await createModule();
-    data = await loadTestData("cockroachdb.clp.zst");
+    data = await loadTestData("structured-cockroachdb.clp.zst");
 });
 
 // eslint-disable-next-line max-lines-per-function
-describe("Structured IR Stream: cockroachdb.clp.zst", () => {
+describe("Structured IR Stream: structured-cockroachdb.clp.zst", () => {
     let reader: ClpStreamReader;
 
     beforeEach(() => {
@@ -65,10 +66,10 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         expect(typeof metadata).toBe("object");
     });
 
-    it("should deserialize stream and return a positive event count", () => {
+    it("should deserialize stream and return the expected event count", () => {
         const numEvents = reader.deserializeStream();
 
-        expect(numEvents).toBeGreaterThan(0);
+        expect(numEvents).toBe(NUM_EVENTS_STRUCTURED_COCKROACHDB);
     });
 
     it("should match getNumEventsBuffered with deserialized count", () => {
@@ -109,46 +110,27 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
         );
 
         assertNonNull(lastEvents);
-        expect(lastEvents.length).toBeGreaterThan(0);
+        expect(lastEvents.length).toBe(FILTERED_CHUNK_SIZE);
     });
 
-    it("should filter log events by log level", () => {
-        const numEvents = reader.deserializeStream();
+    it("should return empty filter map for log level without extracted keys", () => {
+        reader.deserializeStream();
 
-        reader.filterLogEvents([LOG_LEVEL_ERROR]);
-        const errorMap = reader.getFilteredLogEventMap();
+        reader.filterLogEvents([LOG_LEVEL_INFO]);
+        const infoMap = reader.getFilteredLogEventMap();
 
-        assertNonNull(errorMap);
-        expect(errorMap.length).toBeLessThanOrEqual(numEvents);
+        assertNonNull(infoMap);
+        expect(infoMap.length).toBe(0);
     });
 
     it("should reset filter when passing null", () => {
         reader.deserializeStream();
 
-        reader.filterLogEvents([LOG_LEVEL_ERROR]);
+        reader.filterLogEvents([LOG_LEVEL_INFO]);
         reader.filterLogEvents(null);
         const resetMap = reader.getFilteredLogEventMap();
 
         expect(resetMap).toBeNull();
-    });
-
-    it("should decode events with useFilter=true", () => {
-        reader.deserializeStream();
-
-        reader.filterLogEvents([LOG_LEVEL_INFO]);
-        const filteredMap = reader.getFilteredLogEventMap();
-
-        assertNonNull(filteredMap);
-        if (0 < filteredMap.length) {
-            const filteredEvents = reader.decodeRange(
-                0,
-                Math.min(FILTERED_CHUNK_SIZE, filteredMap.length),
-                true
-            );
-
-            assertNonNull(filteredEvents);
-            expect(filteredEvents.length).toBeGreaterThan(0);
-        }
     });
 
     it("should filter log events with KQL query", () => {
@@ -234,14 +216,13 @@ describe("Structured IR Stream with logLevelKey", () => {
     });
 
     it("should filter INFO events with extracted log levels", () => {
-        const numEvents = reader.deserializeStream();
+        reader.deserializeStream();
 
         reader.filterLogEvents([LOG_LEVEL_INFO]);
         const infoMap = reader.getFilteredLogEventMap();
 
         assertNonNull(infoMap);
-        expect(infoMap.length).toBeGreaterThan(0);
-        expect(infoMap.length).toBeLessThan(numEvents);
+        expect(infoMap.length).toBe(NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO);
     });
 
     it("should decode filtered events with useFilter=true", () => {

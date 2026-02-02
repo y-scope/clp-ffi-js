@@ -24,8 +24,8 @@ const DEFAULT_READER_OPTIONS: ReaderOptions = {
 };
 
 const TEST_DATA_URLS: Readonly<Record<string, string>> = {
-    "cockroachdb.clp.zst": "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/cockroachdb.clp.zst",
-    "yarn-unstructured.clp.zst": "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/yarn-ubuntu-resourcemanager-ip-172-31-17-135.log.1.clp.zst",
+    "structured-cockroachdb.clp.zst": "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/cockroachdb.clp.zst",
+    "unstructured-yarn.clp.zst": "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/yarn-ubuntu-resourcemanager-ip-172-31-17-135.log.1.clp.zst",
 };
 
 /**

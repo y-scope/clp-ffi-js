@@ -38,7 +38,33 @@ const LOG_LEVEL_WARN = 4;
 const LOG_LEVEL_ERROR = 5;
 
 /**
- * Expected number of events matching KQL query `"INFO"` in `cockroachdb.clp.zst`.
+ * Total number of log events in `structured-cockroachdb.clp.zst`.
+ */
+const NUM_EVENTS_STRUCTURED_COCKROACHDB = 200000;
+
+/**
+ * Total number of log events in `unstructured-yarn.clp.zst`.
+ */
+const NUM_EVENTS_UNSTRUCTURED_YARN = 375558;
+
+/**
+ * Expected number of INFO-level events in `structured-cockroachdb.clp.zst` when `logLevelKey` is
+ * extracted.
+ */
+const NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO = 199974;
+
+/**
+ * Expected number of INFO-level events in `unstructured-yarn.clp.zst`.
+ */
+const NUM_EVENTS_UNSTRUCTURED_YARN_INFO = 301322;
+
+/**
+ * Expected number of WARN+ERROR-level events in `unstructured-yarn.clp.zst`.
+ */
+const NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR = 74236;
+
+/**
+ * Expected number of events matching KQL query `"INFO"` in `structured-cockroachdb.clp.zst`.
  */
 const NUM_EVENTS_MATCHING_KQL_INFO = 199974;
 
@@ -57,5 +83,10 @@ export {
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
     NUM_EVENTS_MATCHING_KQL_INFO,
+    NUM_EVENTS_STRUCTURED_COCKROACHDB,
+    NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO,
+    NUM_EVENTS_UNSTRUCTURED_YARN,
+    NUM_EVENTS_UNSTRUCTURED_YARN_INFO,
+    NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR,
     OUT_OF_BOUNDS_OFFSET,
 };
