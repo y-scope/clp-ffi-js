@@ -12,7 +12,7 @@ import {
     FILTERED_CHUNK_SIZE,
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
-    LOG_LEVEL_WARN,
+    NUM_EVENTS_MATCHING_KQL_INFO,
     OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
@@ -154,35 +154,23 @@ describe("Structured IR Stream: cockroachdb.clp.zst", () => {
     it("should filter log events with KQL query", () => {
         reader.deserializeStream();
 
-        reader.filterLogEvents(null, "loglevel: INFO");
+        reader.filterLogEvents(null, "INFO");
         const kqlMap = reader.getFilteredLogEventMap();
 
         assertNonNull(kqlMap);
-        expect(kqlMap.length).toBeGreaterThanOrEqual(0);
-
-        if (0 < kqlMap.length) {
-            const kqlEvents = reader.decodeRange(
-                0,
-                Math.min(FILTERED_CHUNK_SIZE, kqlMap.length),
-                true
-            );
-
-            assertNonNull(kqlEvents);
-        }
+        expect(kqlMap.length).toBe(NUM_EVENTS_MATCHING_KQL_INFO);
     });
 
-    it("should filter log events with KQL + log level combined", () => {
+    it("should return no results for KQL + log level filter without extracted keys", () => {
         reader.deserializeStream();
 
         reader.filterLogEvents([
             LOG_LEVEL_INFO,
-            LOG_LEVEL_WARN,
-            LOG_LEVEL_ERROR,
-        ], "server");
+        ], "INFO");
         const combinedMap = reader.getFilteredLogEventMap();
 
         assertNonNull(combinedMap);
-        expect(combinedMap.length).toBeGreaterThanOrEqual(0);
+        expect(combinedMap.length).toBe(0);
     });
 
     it("should find nearest log event by timestamp", () => {
@@ -278,12 +266,10 @@ describe("Structured IR Stream with logLevelKey", () => {
 
         reader.filterLogEvents([
             LOG_LEVEL_INFO,
-            LOG_LEVEL_WARN,
-            LOG_LEVEL_ERROR,
-        ], "server");
+        ], "INFO");
         const combinedMap = reader.getFilteredLogEventMap();
 
         assertNonNull(combinedMap);
-        expect(combinedMap.length).toBeGreaterThanOrEqual(0);
+        expect(combinedMap.length).toBe(NUM_EVENTS_MATCHING_KQL_INFO);
     });
 });

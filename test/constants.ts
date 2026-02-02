@@ -38,6 +38,11 @@ const LOG_LEVEL_WARN = 4;
 const LOG_LEVEL_ERROR = 5;
 
 /**
+ * Expected number of events matching KQL query `"INFO"` in `cockroachdb.clp.zst`.
+ */
+const NUM_EVENTS_MATCHING_KQL_INFO = 199974;
+
+/**
  * Offset added to `numEvents` to create an out-of-bounds index for testing.
  */
 const OUT_OF_BOUNDS_OFFSET = 1;
@@ -51,5 +56,6 @@ export {
     LOG_LEVEL_ERROR,
     LOG_LEVEL_INFO,
     LOG_LEVEL_WARN,
+    NUM_EVENTS_MATCHING_KQL_INFO,
     OUT_OF_BOUNDS_OFFSET,
 };
