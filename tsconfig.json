@@ -9,7 +9,7 @@
             "es2024"
         ],
         "module": "nodenext",
-        "moduleResolution": "node16",
+        "moduleResolution": "nodenext",
         "noEmit": true,
         "skipLibCheck": true,
         "target": "es2022",
