@@ -14,7 +14,6 @@ import {
     NUM_EVENTS_STRUCTURED_COCKROACHDB,
     NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO,
     NUM_EVENTS_MATCHING_KQL_INFO,
-    OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
     assertNonNull,
@@ -169,8 +168,8 @@ describe("Structured IR Stream: structured-cockroachdb.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const invalidRange = reader.decodeRange(
-            numEvents + OUT_OF_BOUNDS_OFFSET,
-            numEvents + (2 * OUT_OF_BOUNDS_OFFSET),
+            numEvents + 1,
+            numEvents + 2,
             false
         );
 

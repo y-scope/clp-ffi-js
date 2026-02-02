@@ -68,11 +68,6 @@ const NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR = 74236;
  */
 const NUM_EVENTS_MATCHING_KQL_INFO = 199974;
 
-/**
- * Offset added to `numEvents` to create an out-of-bounds index for testing.
- */
-const OUT_OF_BOUNDS_OFFSET = 1;
-
 
 export {
     DECODE_CHUNK_SIZE,
@@ -88,5 +83,4 @@ export {
     NUM_EVENTS_UNSTRUCTURED_YARN,
     NUM_EVENTS_UNSTRUCTURED_YARN_INFO,
     NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR,
-    OUT_OF_BOUNDS_OFFSET,
 };

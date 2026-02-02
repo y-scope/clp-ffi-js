@@ -16,7 +16,6 @@ import {
     NUM_EVENTS_UNSTRUCTURED_YARN,
     NUM_EVENTS_UNSTRUCTURED_YARN_INFO,
     NUM_EVENTS_UNSTRUCTURED_YARN_WARN_ERROR,
-    OUT_OF_BOUNDS_OFFSET,
 } from "./constants.js";
 import {
     assertNonNull,
@@ -177,8 +176,8 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const invalidRange = reader.decodeRange(
-            numEvents + OUT_OF_BOUNDS_OFFSET,
-            numEvents + (2 * OUT_OF_BOUNDS_OFFSET),
+            numEvents + 1,
+            numEvents + 2,
             false
         );
 
