@@ -16,7 +16,7 @@
     "lint": "npm run lint:check",
     "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
     "lint:fix:js": "npm run lint:check:js -- --fix",
-    "postinstall": "npx playwright install",
+    "prepare": "npx playwright install",
     "release": "git diff --exit-code && task package && npm publish",
     "test": "vitest run"
   },
