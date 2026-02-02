@@ -11,9 +11,9 @@ import {
     DECODE_CHUNK_SIZE,
     FILTERED_CHUNK_SIZE,
     LOG_LEVEL_INFO,
+    NUM_EVENTS_MATCHING_KQL_INFO,
     NUM_EVENTS_STRUCTURED_COCKROACHDB,
     NUM_EVENTS_STRUCTURED_COCKROACHDB_INFO,
-    NUM_EVENTS_MATCHING_KQL_INFO,
 } from "./constants.js";
 import {
     assertNonNull,
@@ -168,8 +168,8 @@ describe("Structured IR Stream: structured-cockroachdb.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const invalidRange = reader.decodeRange(
+            numEvents,
             numEvents + 1,
-            numEvents + 2,
             false
         );
 

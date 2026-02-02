@@ -176,8 +176,8 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
         const numEvents = reader.deserializeStream();
 
         const invalidRange = reader.decodeRange(
+            numEvents,
             numEvents + 1,
-            numEvents + 2,
             false
         );
 
