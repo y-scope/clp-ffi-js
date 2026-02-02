@@ -18,14 +18,12 @@ import {
 import {
     assertNonNull,
     type ClpStreamReader,
+    createModule,
     createReader,
+    loadTestData,
     type MainModule,
     type ReaderOptions,
-} from "./utils/common.js";
-import {
-    createModule,
-    loadTestData,
-} from "./utils/index.js";
+} from "./utils.js";
 
 
 let module: MainModule;

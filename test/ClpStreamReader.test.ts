@@ -9,8 +9,10 @@ import {
     IR_STREAM_TYPE_STRUCTURED,
     IR_STREAM_TYPE_UNSTRUCTURED,
 } from "./constants.js";
-import {type MainModule} from "./utils/common.js";
-import {createModule} from "./utils/index.js";
+import {
+    createModule,
+    type MainModule,
+} from "./utils.js";
 
 
 let module: MainModule;
