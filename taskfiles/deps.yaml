@@ -27,7 +27,6 @@ tasks:
       - "download-ystdlib"
       - "download-zstd"
 
-
   download-antlr-runtime:
     internal: true
     vars:
@@ -47,7 +46,6 @@ tasks:
         echo "set(
         CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY \"{{.ANTLR_RUNTIME_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
-
 
   download-boost:
     internal: true
