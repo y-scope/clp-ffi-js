@@ -13,7 +13,7 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
-    "lint": "npm run lint:check",
+    "lint": "npm run lint:check:js",
     "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
     "lint:fix:js": "npm run lint:check:js -- --fix",
     "release": "git diff --exit-code && task package && npm publish",
