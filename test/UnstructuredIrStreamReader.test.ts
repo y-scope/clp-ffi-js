@@ -50,10 +50,6 @@ describe("Unstructured IR Stream: unstructured-yarn.clp.zst", () => {
         reader.delete();
     });
 
-    it("should create a ClpStreamReader", () => {
-        expect(reader).not.toBeNull();
-    });
-
     it("should report IR stream type as UNSTRUCTURED", () => {
         const streamType = reader.getIrStreamType();
 

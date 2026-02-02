@@ -49,10 +49,6 @@ describe("Structured IR Stream: structured-cockroachdb.clp.zst", () => {
         reader.delete();
     });
 
-    it("should create a ClpStreamReader", () => {
-        expect(reader).not.toBeNull();
-    });
-
     it("should report IR stream type as STRUCTURED", () => {
         const streamType = reader.getIrStreamType();
 
