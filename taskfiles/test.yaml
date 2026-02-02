@@ -5,16 +5,5 @@ tasks:
     deps: ["js"]
 
   js:
-    deps: [":clp-ffi-js", "node-modules"]
+    deps: [":clp-ffi-js", ":deps:node-modules"]
     cmd: "npm run test"
-
-  node-modules:
-    internal: true
-    sources:
-      - "{{.ROOT_DIR}}/package.json"
-      - "{{.ROOT_DIR}}/package-lock.json"
-      - "{{.TASKFILE}}"
-    generates:
-      - "{{.ROOT_DIR}}/node_modules/**/*"
-    cmds:
-      - "npm clean-install"

@@ -24,7 +24,7 @@ tasks:
       - task: "check-cpp-static-full"
 
   check-js:
-    deps: [":test:node-modules"]
+    deps: [":deps:node-modules"]
     cmds:
       - "npm run lint:check:js"
 
@@ -50,7 +50,7 @@ tasks:
       - task: "fix-cpp-static-full"
 
   fix-js:
-    deps: [":test:node-modules"]
+    deps: [":deps:node-modules"]
     cmds:
       - "npm run lint:fix:js"
 
