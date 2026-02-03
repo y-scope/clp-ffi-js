@@ -75,6 +75,7 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
         auto const result
                 = value.get_immutable_view<clp::ffi::FourByteEncodedTextAst>().to_string();
         if (result.has_error()) {
+            SPDLOG_ERROR("Failed to decode FourByteEncodedTextAst: {}", result.error().message());
             return std::nullopt;
         }
         return parse_log_level(result.value());
@@ -84,6 +85,7 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
         auto const result
                 = value.get_immutable_view<clp::ffi::EightByteEncodedTextAst>().to_string();
         if (result.has_error()) {
+            SPDLOG_ERROR("Failed to decode EightByteEncodedTextAst: {}", result.error().message());
             return std::nullopt;
         }
         return parse_log_level(result.value());
