@@ -47,6 +47,12 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
 
+# Allow `find_package(Boost)` to locate the Boost installation when cross-compiling with Emscripten,
+# whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
+if(Boost_ROOT)
+    list(APPEND CMAKE_FIND_ROOT_PATH "${Boost_ROOT}")
+endif()
+
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
@@ -166,10 +172,7 @@ set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
-# Set up `Boost::headers` as a header-only interface target so that `ystdlib` can link against it
-# without requiring a full Boost installation.
-add_library(Boost::headers IMPORTED INTERFACE)
-target_include_directories(Boost::headers INTERFACE ${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY})
+find_package(Boost REQUIRED COMPONENTS headers)
 
 set(YSTDLIB_CPP_BUILD_TESTING OFF)
 add_subdirectory(${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY})
@@ -195,6 +198,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     # Set up link options
     target_link_libraries(${CLP_FFI_JS_BIN_NAME}
         PRIVATE
+        Boost::headers
         clp_s::search::ast
         clp_s::search::kql
         embind
@@ -225,7 +229,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_BIN_NAME}
         SYSTEM
         PRIVATE
-        ${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY}
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
         ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include

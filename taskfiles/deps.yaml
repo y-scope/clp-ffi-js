@@ -52,30 +52,29 @@ tasks:
   download-boost:
     internal: true
     vars:
-      LIB_NAME: "boost"
-      BOOST_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
       BOOST_VERSION: "1.88.0"
+      B2_USER_CONFIG_FILE: "{{.G_DEPS_DIR}}/b2-user-config.jam"
     run: "once"
+    deps:
+      - ":emsdk"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - >-
+        echo 'using emscripten : : "{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" ;'
+        > "{{.B2_USER_CONFIG_FILE}}"
+      - task: ":utils:boost:download-and-install"
         vars:
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
           FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
-          OUTPUT_DIR: "{{.BOOST_OUTPUT_DIR}}"
           URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
             /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
-      - mkdir -p "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/boost-config"
-      - |-
-        echo 'set(Boost_FOUND TRUE)
-        set(Boost_VERSION "{{.BOOST_VERSION}}")' > \
-        "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/boost-config/BoostConfig.cmake"
-      - |-
-        echo 'set(PACKAGE_VERSION "{{.BOOST_VERSION}}")
-        set(PACKAGE_VERSION_COMPATIBLE TRUE)' > \
-        "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/boost-config/BoostConfigVersion.cmake"
-      - |-
-        echo "set(CLP_FFI_JS_BOOST_SOURCE_DIRECTORY \"{{.BOOST_OUTPUT_DIR}}\")
-        set(Boost_DIR \"{{.G_DEPS_CMAKE_SETTINGS_DIR}}/boost-config\")" > \
-        "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          WORK_DIR: "{{.G_DEPS_DIR}}"
+          TARGETS: [
+            "headers",
+            "exception",
+          ]
+          BUILD_AND_INSTALL_ARGS:
+            - "toolset=emscripten"
+            - "--user-config={{.B2_USER_CONFIG_FILE}}"
 
   download-clp:
     internal: true
