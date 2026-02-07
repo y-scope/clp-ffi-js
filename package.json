@@ -39,7 +39,7 @@
     }
   },
   "devDependencies": {
-    "@types/node": "^22.19.7",
+    "@types/node": "^22.19.9",
     "@vitest/browser-playwright": "^4.0.18",
     "eslint": "^9.39.2",
     "eslint-config-yscope": "^1.1.2",
