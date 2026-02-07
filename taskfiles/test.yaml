@@ -6,4 +6,4 @@ tasks:
 
   js:
     deps: [":clp-ffi-js", ":node-modules"]
-    cmd: "npm run test"
+    cmd: "npm run test {{.CLI_ARGS}}"
