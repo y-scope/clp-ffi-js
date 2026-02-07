@@ -1,0 +1,9 @@
+version: "3"
+
+tasks:
+  default:
+    deps: ["js"]
+
+  js:
+    deps: [":package", ":node-modules"]
+    cmd: "npm run test {{.CLI_ARGS}}"
