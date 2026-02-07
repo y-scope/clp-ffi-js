@@ -1,37 +1,34 @@
-/**
- * Reference:
- * https://github.com/tsconfig/bases/blob/8a1875b367c8a56cd260a4fb5701aed1d3b192d4/bases/node22.json
- */
 {
     "compilerOptions": {
-        "esModuleInterop": true,
-        "lib": [
-            "es2024"
-        ],
-        "module": "nodenext",
-        "moduleResolution": "nodenext",
-        "noEmit": true,
-        "skipLibCheck": true,
+        /* Build */
         "target": "es2022",
-        "alwaysStrict": true,
+        "lib": ["es2024"],
+        "module": "preserve",
+        "noEmit": true,
+
+        /* Type Checking */
+        "strict": true,
         "exactOptionalPropertyTypes": true,
         "noFallthroughCasesInSwitch": true,
-        "noImplicitAny": true,
         "noImplicitOverride": true,
         "noImplicitReturns": true,
-        "noImplicitThis": true,
+        "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "strictBindCallApply": true,
-        "strictFunctionTypes": true,
-        "strictNullChecks": true,
-        "strictPropertyInitialization": true,
-        "useUnknownInCatchVariables": true,
-        "strict": true
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+
+        /* Modules & Tooling */
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noErrorTruncation": true
     },
     "include": [
         "test/**/*.ts",
-        "vitest.config.ts",
+        "vitest.config.ts"
     ]
 }
