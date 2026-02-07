@@ -5,5 +5,5 @@ tasks:
     deps: ["js"]
 
   js:
-    deps: [":clp-ffi-js", ":deps:node-modules"]
+    deps: [":clp-ffi-js", ":node-modules"]
     cmd: "npm run test"
