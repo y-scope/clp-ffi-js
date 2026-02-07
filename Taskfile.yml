@@ -161,6 +161,17 @@ tasks:
       -S "{{.ROOT_DIR}}" \
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
+  node-modules:
+    internal: true
+    sources:
+      - "{{.ROOT_DIR}}/package.json"
+      - "{{.ROOT_DIR}}/package-lock.json"
+      - "{{.TASKFILE}}"
+    generates:
+      - "{{.ROOT_DIR}}/node_modules/**/*"
+    cmds:
+      - "npm clean-install"
+
   init:
     internal: true
     silent: true

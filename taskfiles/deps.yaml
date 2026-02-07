@@ -208,14 +208,3 @@ tasks:
         echo "set(
         CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY \"{{.ZSTD_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
-
-  node-modules:
-    internal: true
-    sources:
-      - "{{.ROOT_DIR}}/package.json"
-      - "{{.ROOT_DIR}}/package-lock.json"
-      - "{{.TASKFILE}}"
-    generates:
-      - "{{.ROOT_DIR}}/node_modules/**/*"
-    cmds:
-      - "npm clean-install"
