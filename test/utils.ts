@@ -120,6 +120,11 @@ const loadTestData = async (filename: string): Promise<Uint8Array> => {
     }
 
     const response = await fetch(`/${TEST_DATA_DIR}/${filename}`);
+    if (false === response.ok) {
+        throw new Error(
+            `Failed to fetch ${filename}: ${response.status} ${response.statusText}`
+        );
+    }
 
     return new Uint8Array(await response.arrayBuffer());
 };
