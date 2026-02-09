@@ -29,6 +29,11 @@ const setup = async () => {
 
         console.log(`Downloading ${filename} from ${url}`);
         const response = await fetch(url);
+        if (false === response.ok) {
+            throw new Error(
+                `Failed to download ${filename}: ${response.status} ${response.statusText}`
+            );
+        }
         const data = new Uint8Array(await response.arrayBuffer());
         fs.writeFileSync(filePath, data);
     });
