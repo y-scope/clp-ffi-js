@@ -13,7 +13,11 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
-    "release": "git diff --exit-code && task package && npm publish"
+    "lint": "npm run lint:check:js",
+    "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
+    "lint:fix:js": "npm run lint:check:js -- --fix",
+    "release": "git diff --exit-code && task package && npm publish",
+    "test": "vitest run"
   },
   "type": "module",
   "files": [
@@ -32,5 +36,12 @@
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
     }
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.9",
+    "eslint": "^9.39.2",
+    "eslint-config-yscope": "^1.1.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
