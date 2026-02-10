@@ -1,0 +1,34 @@
+{
+    "compilerOptions": {
+        /* Build */
+        "target": "es2022",
+        "lib": ["es2024"],
+        "module": "preserve",
+        "noEmit": true,
+
+        /* Type Checking */
+        "strict": true,
+        "exactOptionalPropertyTypes": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noImplicitReturns": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "noUncheckedIndexedAccess": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "allowUnreachableCode": false,
+        "allowUnusedLabels": false,
+
+        /* Modules & Tooling */
+        "verbatimModuleSyntax": true,
+        "moduleDetection": "force",
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "forceConsistentCasingInFileNames": true,
+        "noErrorTruncation": true
+    },
+    "include": [
+        "test/**/*.ts",
+        "vitest.config.ts"
+    ]
+}

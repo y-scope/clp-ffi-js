@@ -10,6 +10,7 @@ tasks:
   check:
     cmds:
       - task: "check-cpp-full"
+      - task: "check-js"
       - task: "check-yaml"
 
   check-cpp-diff:
@@ -22,13 +23,20 @@ tasks:
       - task: "check-cpp-format"
       - task: "check-cpp-static-full"
 
+  check-js:
+    deps: [":node-modules", ":package"]
+    cmds:
+      - "npm run lint:check:js"
+
   check-no-cpp:
     cmds:
+      - task: "check-js"
       - task: "check-yaml"
 
   fix:
     cmds:
       - task: "fix-cpp-full"
+      - task: "fix-js"
       - task: "fix-yaml"
 
   fix-cpp-diff:
@@ -41,8 +49,14 @@ tasks:
       - task: "fix-cpp-format"
       - task: "fix-cpp-static-full"
 
+  fix-js:
+    deps: [":node-modules", ":package"]
+    cmds:
+      - "npm run lint:fix:js"
+
   fix-no-cpp:
     cmds:
+      - task: "fix-js"
       - task: "fix-yaml"
 
   check-cpp-format:
@@ -120,6 +134,7 @@ tasks:
           --strict \
           .github \
           lint-tasks.yml \
+          taskfiles \
           Taskfile.yml
 
   cpp-lint-configs:
