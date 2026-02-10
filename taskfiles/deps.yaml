@@ -68,11 +68,11 @@ tasks:
           URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
             /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
           WORK_DIR: "{{.G_DEPS_DIR}}"
-          TARGETS: [
-            "headers",
-            "exception",
-          ]
+          TARGETS:
+            - "headers"
           BUILD_AND_INSTALL_ARGS:
+            - "address-model=32"
+            - "link=static"
             - "toolset=emscripten"
             - "--user-config={{.B2_USER_CONFIG_FILE}}"
 
