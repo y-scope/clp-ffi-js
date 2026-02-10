@@ -47,12 +47,6 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
 
-# Allow `find_package(Boost)` to locate the Boost installation when cross-compiling with Emscripten,
-# whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
-if(Boost_ROOT)
-    list(APPEND CMAKE_FIND_ROOT_PATH "${Boost_ROOT}")
-endif()
-
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
