@@ -204,6 +204,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         embind
         fmt::fmt
         spdlog::spdlog
+        ystdlib::error_handling
     )
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
@@ -232,7 +233,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
         ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include
-        ${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY}/src
         ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib
     )
 
