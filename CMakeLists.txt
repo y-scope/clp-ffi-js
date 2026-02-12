@@ -44,8 +44,12 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     # Include dependency settings if the project isn't being included as a subproject.
     # NOTE: We mark the file optional because if the user happens to set the necessary dependency
     # location variables, this file is not necessary.
-    include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
+    include("${CMAKE_SOURCE_DIR}/build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
+
+# Emscripten toolchain sets package lookup mode to ONLY. Use BOTH so locally installed
+# packages (e.g., build/deps/*-install) can still be discovered by find_package().
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
 
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
@@ -147,6 +151,10 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
     "List of supported environments."
 )
 
+find_package(Boost REQUIRED COMPONENTS headers)
+find_package(ystdlib REQUIRED)
+message(STATUS "Found ystdlib-cpp ${ystdlib_VERSION}")
+
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
 
@@ -169,11 +177,6 @@ set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
-
-find_package(Boost REQUIRED COMPONENTS headers)
-
-set(YSTDLIB_CPP_BUILD_TESTING OFF)
-add_subdirectory(${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY})
 
 set(ANTLR_BUILD_SHARED OFF)
 set(ANTLR_BUILD_STATIC ON)

@@ -152,7 +152,7 @@ tasks:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
     deps:
       - "deps"
-      - "emsdk"
+    #  - "emsdk"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \

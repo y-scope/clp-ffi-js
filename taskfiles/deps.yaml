@@ -4,6 +4,8 @@ tasks:
   default:
     desc: "Download all dependencies."
     run: "once"
+    #deps:
+    #  - ":emsdk"
     cmds:
       - "rm -rf '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
       - "mkdir -p '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
@@ -17,14 +19,14 @@ tasks:
     internal: true
     deps:
       - "download-antlr-runtime"
-      - "download-boost"
+      - "boost"
       - "download-clp"
       - "download-date"
       - "download-fmt"
       - "download-nlohmann-json"
       - "download-simdjson"
       - "download-spdlog"
-      - "download-ystdlib"
+      - "ystdlib"
       - "download-zstd"
 
   download-antlr-runtime:
@@ -47,14 +49,12 @@ tasks:
         CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY \"{{.ANTLR_RUNTIME_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
-  download-boost:
+  boost:
     internal: true
     vars:
       BOOST_VERSION: "1.88.0"
       B2_USER_CONFIG_FILE: "{{.G_DEPS_DIR}}/b2-user-config.jam"
     run: "once"
-    deps:
-      - ":emsdk"
     cmds:
       - >-
         echo 'using emscripten : : "{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" ;'
@@ -183,22 +183,25 @@ tasks:
         CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY \"{{.SPDLOG_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
-  download-ystdlib:
-    internal: true
-    vars:
-      LIB_NAME: "ystdlib"
-      YSTDLIB_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
+  ystdlib:
+    #internal: true
     run: "once"
+    deps:
+      - task: "boost"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: ":utils:cmake:install-remote-tar"
         vars:
-          FILE_SHA256: "379c04c86715f39cffa09bb3ebc22b4c45af9a63ea3efa2081d210289fcd2af6"
-          OUTPUT_DIR: "{{.YSTDLIB_OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/ystdlib-cpp/archive/c03806a.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY \"{{.YSTDLIB_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/Boost.cmake"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+            - "-Dystdlib_BUILD_TESTING=OFF"
+          CMAKE_PACKAGE_NAME: "ystdlib"
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          TAR_SHA256: "379c04c86715f39cffa09bb3ebc22b4c45af9a63ea3efa2081d210289fcd2af6"
+          TAR_URL: "https://github.com/y-scope/ystdlib-cpp/archive/c03806a.tar.gz"
+          WORK_DIR: "{{.G_DEPS_DIR}}/emscripten"
 
   download-zstd:
     internal: true
