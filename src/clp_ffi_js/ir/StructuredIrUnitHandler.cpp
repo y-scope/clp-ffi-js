@@ -72,10 +72,9 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
     }
 
     if (value.is<clp::ffi::FourByteEncodedTextAst>()) {
-        auto const result
-                = value.get_immutable_view<clp::ffi::FourByteEncodedTextAst>().to_string();
+        auto const result{value.get_immutable_view<clp::ffi::FourByteEncodedTextAst>().to_string()};
         if (result.has_error()) {
-            auto const& error{result.error()};
+            auto const error{result.error()};
             SPDLOG_ERROR(
                     "Failed to decode `clp::ffi::FourByteEncodedTextAst`: {} - {}",
                     error.category().name(),
@@ -87,10 +86,9 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
     }
 
     if (value.is<clp::ffi::EightByteEncodedTextAst>()) {
-        auto const result
-                = value.get_immutable_view<clp::ffi::EightByteEncodedTextAst>().to_string();
+        auto const result{value.get_immutable_view<clp::ffi::EightByteEncodedTextAst>().to_string()};
         if (result.has_error()) {
-            auto const& error{result.error()};
+            auto const error{result.error()};
             SPDLOG_ERROR(
                     "Failed to decode `clp::ffi::EightByteEncodedTextAst`: {} - {}",
                     error.category().name(),
