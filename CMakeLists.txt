@@ -135,6 +135,9 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
     "List of supported environments."
 )
 
+find_package(antlr4-runtime REQUIRED)
+message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
+
 find_package(Boost REQUIRED COMPONENTS headers)
 message(STATUS "Found Boost ${Boost_VERSION}")
 
@@ -172,11 +175,6 @@ set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
-
-set(ANTLR_BUILD_SHARED OFF)
-set(ANTLR_BUILD_STATIC ON)
-set(ANTLR_BUILD_CPP_TESTS OFF)
-add_subdirectory(${CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY})
 
 add_subdirectory(${CLP_FFI_JS_DATE_SOURCE_DIRECTORY})
 add_subdirectory(${CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY})

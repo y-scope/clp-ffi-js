@@ -23,7 +23,7 @@ tasks:
   download-all:
     internal: true
     deps:
-      - "download-antlr-runtime"
+      - "antlr-runtime"
       - "boost"
       - "download-clp"
       - "download-date"
@@ -34,25 +34,24 @@ tasks:
       - "ystdlib"
       - "zstd"
 
-  download-antlr-runtime:
+  antlr-runtime:
     internal: true
-    vars:
-      LIB_NAME: "antlr-runtime"
-      ANTLR_RUNTIME_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
-      ANTLR_RUNTIME_VERSION: "4.13.2"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "9f18272a9b32b622835a3365f850dd1063d60f5045fb1e12ce475ae6e18a35bb"
-          INCLUDE_PATTERNS: ["*/runtime/Cpp"]
-          NUM_COMPONENTS_TO_STRIP: 3
-          OUTPUT_DIR: "{{.ANTLR_RUNTIME_OUTPUT_DIR}}"
-          URL: "https://github.com/antlr/antlr4/archive/refs/tags/{{.ANTLR_RUNTIME_VERSION}}.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_ANTLR_RUNTIME_SOURCE_DIRECTORY \"{{.ANTLR_RUNTIME_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-DANTLR4_INSTALL=ON"
+            - "-DANTLR_BUILD_CPP_TESTS=OFF"
+            - "-DANTLR_BUILD_SHARED=OFF"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            # Set CMP0135 so that extracted files use the current timestamp as their modification
+            # timestamp, which ensures the library gets rebuilt if the extracted files change.
+            - "-DCMAKE_POLICY_DEFAULT_CMP0135=NEW"
+          CMAKE_SOURCE_DIR: "runtime/Cpp"
+          LIB_NAME: "antlr4-runtime"
+          TARBALL_SHA256: "9f18272a9b32b622835a3365f850dd1063d60f5045fb1e12ce475ae6e18a35bb"
+          TARBALL_URL: "https://github.com/antlr/antlr4/archive/refs/tags/4.13.2.tar.gz"
 
   boost:
     internal: true
