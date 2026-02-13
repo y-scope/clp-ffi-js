@@ -47,10 +47,6 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     include("${CMAKE_SOURCE_DIR}/build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
 
-# Emscripten toolchain sets package lookup mode to ONLY. Use BOTH so locally installed
-# packages (e.g., build/deps/*-install) can still be discovered by find_package().
-set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
-
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
