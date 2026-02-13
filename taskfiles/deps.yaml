@@ -69,10 +69,10 @@ tasks:
           TARGETS:
             - "headers"
           BUILD_AND_INSTALL_ARGS:
+            - "--user-config={{.B2_USER_CONFIG_FILE}}"
             - "address-model=32"
             - "link=static"
             - "toolset=emscripten"
-            - "--user-config={{.B2_USER_CONFIG_FILE}}"
 
   download-clp:
     internal: true
