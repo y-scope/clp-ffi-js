@@ -27,12 +27,12 @@ tasks:
       - "boost"
       - "download-clp"
       - "download-date"
-      - "download-fmt"
+      - "fmt"
       - "download-nlohmann-json"
       - "download-simdjson"
-      - "download-spdlog"
+      - "spdlog"
       - "ystdlib"
-      - "download-zstd"
+      - "zstd"
 
   download-antlr-runtime:
     internal: true
@@ -116,22 +116,17 @@ tasks:
         CLP_FFI_JS_DATE_SOURCE_DIRECTORY \"{{.DATE_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
-  download-fmt:
+  fmt:
     internal: true
-    vars:
-      LIB_NAME: "fmt"
-      FMT_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
-          OUTPUT_DIR: "{{.FMT_OUTPUT_DIR}}"
-          URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_FMT_SOURCE_DIRECTORY \"{{.FMT_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "fmt"
+          TARBALL_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
+          TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
 
   download-nlohmann-json:
     internal: true
@@ -172,24 +167,21 @@ tasks:
         CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY \"{{.SIMDJSON_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
-  download-spdlog:
+  spdlog:
     internal: true
-    vars:
-      LIB_NAME: "spdlog"
-      SPDLOG_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     deps:
-      - "download-fmt"
+      - "fmt"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
-          OUTPUT_DIR: "{{.SPDLOG_OUTPUT_DIR}}"
-          URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_SPDLOG_SOURCE_DIRECTORY \"{{.SPDLOG_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/fmt.cmake"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "spdlog"
+          TARBALL_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
+          TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
 
   ystdlib:
     internal: true
@@ -201,29 +193,26 @@ tasks:
         vars:
           CMAKE_GEN_ARGS:
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
-            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
             - "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
             - "-Dystdlib_BUILD_TESTING=OFF"
           LIB_NAME: "ystdlib"
           TARBALL_SHA256: "379c04c86715f39cffa09bb3ebc22b4c45af9a63ea3efa2081d210289fcd2af6"
           TARBALL_URL: "https://github.com/y-scope/ystdlib-cpp/archive/c03806a.tar.gz"
 
-  download-zstd:
+  zstd:
     internal: true
-    vars:
-      LIB_NAME: "zstd"
-      ZSTD_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
-          OUTPUT_DIR: "{{.ZSTD_OUTPUT_DIR}}"
-          URL: "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY \"{{.ZSTD_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          CMAKE_SOURCE_DIR: "build/cmake"
+          LIB_NAME: "zstd"
+          TARBALL_SHA256: "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+          TARBALL_URL: "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz"
 
   # Installs a CMake-based library from a remote tarball, generates a corresponding settings file,
   # and computes a checksum for the installation directory.
