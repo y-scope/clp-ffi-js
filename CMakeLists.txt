@@ -141,8 +141,17 @@ message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
 find_package(Boost REQUIRED COMPONENTS headers)
 message(STATUS "Found Boost ${Boost_VERSION}")
 
+find_package(date REQUIRED)
+message(STATUS "Found date ${date_VERSION}")
+
 find_package(fmt REQUIRED)
 message(STATUS "Found fmt ${fmt_VERSION}")
+
+find_package(nlohmann_json REQUIRED)
+message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
+
+find_package(simdjson REQUIRED)
+message(STATUS "Found simdjson ${simdjson_VERSION}")
 
 find_package(spdlog REQUIRED)
 message(STATUS "Found spdlog ${spdlog_VERSION}")
@@ -176,9 +185,6 @@ set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
-add_subdirectory(${CLP_FFI_JS_DATE_SOURCE_DIRECTORY})
-add_subdirectory(${CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY})
-
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
     add_executable(${CLP_FFI_JS_BIN_NAME})
@@ -195,7 +201,10 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         clp_s::search::ast
         clp_s::search::kql
         embind
+        date::date
         fmt::fmt
+        nlohmann_json::nlohmann_json
+        simdjson::simdjson
         spdlog::spdlog
         ystdlib::error_handling
         zstd::libzstd_static
@@ -226,7 +235,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         PRIVATE
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
-        ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include
     )
 
     target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)

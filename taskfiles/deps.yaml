@@ -1,9 +1,13 @@
 version: "3"
 
 vars:
-   G_BOOST_LIB_NAME: "Boost"
-   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
-      sh: "getconf _NPROCESSORS_ONLN"
+  # Library names
+  G_BOOST_LIB_NAME: "Boost"
+  G_FMT_LIB_NAME: "fmt"
+
+  # Misc
+  G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
+    sh: "getconf _NPROCESSORS_ONLN"
 
 tasks:
   default:
@@ -23,16 +27,16 @@ tasks:
   download-all:
     internal: true
     deps:
-      - "antlr-runtime"
-      - "boost"
-      - "download-clp"
-      - "download-date"
-      - "fmt"
-      - "download-nlohmann-json"
-      - "download-simdjson"
-      - "spdlog"
-      - "ystdlib"
-      - "zstd"
+      - task: "antlr-runtime"
+      - task: "boost"
+      - task: "download-clp"
+      - task: "date"
+      - task: "fmt"
+      - task: "nlohmann-json"
+      - task: "simdjson"
+      - task: "spdlog"
+      - task: "ystdlib"
+      - task: "zstd"
 
   antlr-runtime:
     internal: true
@@ -98,22 +102,17 @@ tasks:
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.CLP_OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
-  download-date:
+  date:
     internal: true
-    vars:
-      LIB_NAME: "date"
-      DATE_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538"
-          OUTPUT_DIR: "{{.DATE_OUTPUT_DIR}}"
-          URL: "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_DATE_SOURCE_DIRECTORY \"{{.DATE_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "date"
+          TARBALL_SHA256: "7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538"
+          TARBALL_URL: "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.tar.gz"
 
   fmt:
     internal: true
@@ -123,48 +122,39 @@ tasks:
         vars:
           CMAKE_GEN_ARGS:
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
-          LIB_NAME: "fmt"
+          LIB_NAME: "{{.G_FMT_LIB_NAME}}"
           TARBALL_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
           TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
 
-  download-nlohmann-json:
+  nlohmann-json:
     internal: true
-    vars:
-      LIB_NAME: "nlohmann_json"
-      NLOHMANN_JSON_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          LIB_NAME: "{{.LIB_NAME}}"
-          FILE_SHA256: "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
-          OUTPUT_DIR: "{{.NLOHMANN_JSON_OUTPUT_DIR}}"
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DJSON_BuildTests=OFF"
+          LIB_NAME: "nlohmann_json"
+          TARBALL_SHA256: "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
 
           # NOTE: We use the GitHub-generated source tarball for this version rather than the
           # release tarball, since the latter is served from githubusercontent.com which is blocked
           # by some developers' firewalls. The contents of the former are a superset of the latter.
-          URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY \"{{.NLOHMANN_JSON_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          TARBALL_URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz"
 
-  download-simdjson:
+  simdjson:
     internal: true
-    vars:
-      LIB_NAME: "simdjson"
-      SIMDJSON_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
     run: "once"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - task: "install-remote-cmake-lib"
         vars:
-          FILE_SHA256: "07a1bb3587aac18fd6a10a83fe4ab09f1100ab39f0cb73baea1317826b9f9e0d"
-          OUTPUT_DIR: "{{.SIMDJSON_OUTPUT_DIR}}"
-          URL: "https://github.com/simdjson/simdjson/archive/refs/tags/v3.13.0.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_SIMDJSON_SOURCE_DIRECTORY \"{{.SIMDJSON_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DSIMDJSON_DEVELOPER_MODE=OFF"
+          LIB_NAME: "simdjson"
+          TARBALL_SHA256: "07a1bb3587aac18fd6a10a83fe4ab09f1100ab39f0cb73baea1317826b9f9e0d"
+          TARBALL_URL: "https://github.com/simdjson/simdjson/archive/refs/tags/v3.13.0.tar.gz"
 
   spdlog:
     internal: true
@@ -175,7 +165,7 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
-            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/fmt.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
             - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
           LIB_NAME: "spdlog"
