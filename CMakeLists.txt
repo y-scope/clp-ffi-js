@@ -50,6 +50,10 @@ endif()
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
 set(CMAKE_CXX_USE_RESPONSE_FILE_FOR_INCLUDES OFF)
 
+# Allow `find_package(Boost)` to locate the Boost installation when cross-compiling with Emscripten,
+# whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
+list(PREPEND CMAKE_FIND_ROOT_PATH "${Boost_ROOT}")
+
 # Set the default build type to Release if not specified
 if(NOT CMAKE_BUILD_TYPE)
     set(CLP_FFI_JS_DEFAULT_BUILD_TYPE "Release")
