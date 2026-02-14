@@ -50,21 +50,29 @@ tasks:
   download-boost:
     internal: true
     vars:
-      LIB_NAME: "boost"
-      BOOST_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}-src"
       BOOST_VERSION: "1.88.0"
+      B2_USER_CONFIG_FILE: "{{.G_DEPS_DIR}}/b2-user-config.jam"
     run: "once"
+    deps:
+      - ":emsdk"
     cmds:
-      - task: ":utils:remote:download-and-extract-tar"
+      - >-
+        echo 'using emscripten : : "{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" ;'
+        > "{{.B2_USER_CONFIG_FILE}}"
+      - task: ":utils:boost:download-and-install"
         vars:
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
           FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
-          OUTPUT_DIR: "{{.BOOST_OUTPUT_DIR}}"
           URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
             /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
-      - >-
-        echo "set(
-        CLP_FFI_JS_BOOST_SOURCE_DIRECTORY \"{{.BOOST_OUTPUT_DIR}}\"
-        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+          WORK_DIR: "{{.G_DEPS_DIR}}"
+          TARGETS:
+            - "headers"
+          BUILD_AND_INSTALL_ARGS:
+            - "--user-config={{.B2_USER_CONFIG_FILE}}"
+            - "address-model=32"
+            - "link=static"
+            - "toolset=emscripten"
 
   download-clp:
     internal: true
@@ -75,9 +83,9 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "00fa3880ac74c00c453832d51f9a533533e59f89b94159f05ad4c767225178f0"
+          FILE_SHA256: "1a70dc757d8e3bc323808cc4b8bc9e060ac3c6add183ed8aef49d918cedc49ff"
           OUTPUT_DIR: "{{.CLP_OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/clp/archive/6a00a87.tar.gz"
+          URL: "https://github.com/y-scope/clp/archive/de9fc08.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.CLP_OUTPUT_DIR}}\"
@@ -184,9 +192,9 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "36fa0e9d96b7307ca92482343d6ba1091c5576370676e6d423cce32c20e34a3d"
+          FILE_SHA256: "379c04c86715f39cffa09bb3ebc22b4c45af9a63ea3efa2081d210289fcd2af6"
           OUTPUT_DIR: "{{.YSTDLIB_OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/ystdlib-cpp/archive/d80cf86.tar.gz"
+          URL: "https://github.com/y-scope/ystdlib-cpp/archive/c03806a.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY \"{{.YSTDLIB_OUTPUT_DIR}}\"
