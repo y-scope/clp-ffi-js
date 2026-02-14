@@ -197,6 +197,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     # Set up link options
     target_link_libraries(${CLP_FFI_JS_BIN_NAME}
         PRIVATE
+        antlr4_static
         Boost::headers
         clp_s::search::ast
         clp_s::search::kql

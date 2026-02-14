@@ -13,23 +13,21 @@ tasks:
   default:
     desc: "Download all dependencies."
     run: "once"
-    #deps:
-    #  - ":emsdk"
+    deps:
+      - ":emsdk"
     cmds:
-      - "rm -rf '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
-      - "mkdir -p '{{.G_DEPS_CMAKE_SETTINGS_DIR}}'"
       - task: ":utils:cmake:install-deps-and-generate-settings"
         vars:
           CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
           CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
-          DEP_TASK: "deps:download-all"
+          DEP_TASK: "deps:all"
 
-  download-all:
+  all:
     internal: true
     deps:
       - task: "antlr-runtime"
       - task: "boost"
-      - task: "download-clp"
+      - task: "clp"
       - task: "date"
       - task: "fmt"
       - task: "nlohmann-json"
@@ -60,8 +58,8 @@ tasks:
   boost:
     internal: true
     vars:
-      BOOST_VERSION: "1.88.0"
       B2_USER_CONFIG_FILE: "{{.G_DEPS_DIR}}/b2-user-config.jam"
+      BOOST_VERSION: "1.88.0"
     run: "once"
     cmds:
       - >-
@@ -85,21 +83,21 @@ tasks:
         echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${'"{{.G_BOOST_LIB_NAME}}"'_ROOT}")'
         >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
 
-  download-clp:
+  clp:
     internal: true
     vars:
       LIB_NAME: "clp"
-      CLP_OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}"
+      OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}"
     run: "once"
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
           FILE_SHA256: "1a70dc757d8e3bc323808cc4b8bc9e060ac3c6add183ed8aef49d918cedc49ff"
-          OUTPUT_DIR: "{{.CLP_OUTPUT_DIR}}"
+          OUTPUT_DIR: "{{.OUTPUT_DIR}}"
           URL: "https://github.com/y-scope/clp/archive/de9fc08.tar.gz"
       - >-
         echo "set(
-        CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.CLP_OUTPUT_DIR}}\"
+        CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.OUTPUT_DIR}}\"
         )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
 
   date:
@@ -176,7 +174,7 @@ tasks:
     internal: true
     run: "once"
     deps:
-      - task: "boost"
+      - "boost"
     cmds:
       - task: "install-remote-cmake-lib"
         vars:
