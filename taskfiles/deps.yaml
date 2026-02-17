@@ -11,7 +11,7 @@ vars:
 
 tasks:
   default:
-    desc: "Download all dependencies."
+    desc: "Download, build, and install all dependencies."
     run: "once"
     deps:
       - ":emsdk"
@@ -196,6 +196,12 @@ tasks:
         vars:
           CMAKE_GEN_ARGS:
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DZSTD_BUILD_COMPRESSION=OFF"
+            - "-DZSTD_BUILD_DICTBUILDER=OFF"
+            - "-DZSTD_BUILD_PROGRAMS=OFF"
+            - "-DZSTD_BUILD_SHARED=OFF"
+            - "-DZSTD_LEGACY_SUPPORT=OFF"
+            - "-DZSTD_MULTITHREAD_SUPPORT=OFF"
           CMAKE_SOURCE_DIR: "build/cmake"
           LIB_NAME: "zstd"
           TARBALL_SHA256: "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"

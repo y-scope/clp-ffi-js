@@ -44,7 +44,7 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     # Include dependency settings if the project isn't being included as a subproject.
     # NOTE: We mark the file optional because if the user happens to set the necessary dependency
     # location variables, this file is not necessary.
-    include("${CMAKE_SOURCE_DIR}/build/deps/cmake-settings/settings.cmake" OPTIONAL)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
 
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
@@ -157,7 +157,7 @@ find_package(spdlog REQUIRED)
 message(STATUS "Found spdlog ${spdlog_VERSION}")
 
 find_package(ystdlib REQUIRED)
-message(STATUS "Found ystdlib-cpp ${ystdlib_VERSION}")
+message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
@@ -201,8 +201,8 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         Boost::headers
         clp_s::search::ast
         clp_s::search::kql
-        embind
         date::date
+        embind
         fmt::fmt
         nlohmann_json::nlohmann_json
         simdjson::simdjson
