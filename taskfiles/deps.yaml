@@ -9,6 +9,18 @@ vars:
   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
     sh: "getconf _NPROCESSORS_ONLN"
 
+# NOTE: For dependencies built using CMake + Emscripten toolchain, we:
+# - Pass the Emscripten toolchain file via `CMAKE_TOOLCHAIN_FILE`
+# - Set CMP0074 to NEW whenever:
+#   - a component's minimum required CMake version is less than 3.27 (where CMP0074 defaults to
+#     OLD); and
+#   - the component depends on another via `<lib_name>_ROOT`.
+# - Set `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE` to `Both` whenever the component depends on another via
+#   `<lib_name>_ROOT`.
+#   In principle this should not be necessary, since we already prepend the dependent library
+#   location to `CMAKE_FIND_ROOT_PATH` via passing `-C <lib_name>.cmake`. However, CMake evaluates
+#   the initial cache file before the Emscripten toolchain is fully applied, so `<lib_name>_ROOT`
+#   inside `CMAKE_FIND_ROOT_PATH` is not honored during `find_package`.
 tasks:
   default:
     desc: "Download, build, and install all dependencies."
@@ -46,7 +58,10 @@ tasks:
             - "-DANTLR4_INSTALL=ON"
             - "-DANTLR_BUILD_CPP_TESTS=OFF"
             - "-DANTLR_BUILD_SHARED=OFF"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+
             # Set CMP0135 so that extracted files use the current timestamp as their modification
             # timestamp, which ensures the library gets rebuilt if the extracted files change.
             - "-DCMAKE_POLICY_DEFAULT_CMP0135=NEW"
@@ -67,18 +82,21 @@ tasks:
         > "{{.B2_USER_CONFIG_FILE}}"
       - task: ":utils:boost:download-and-install"
         vars:
-          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
-          FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
-          URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
-            /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
-          WORK_DIR: "{{.G_DEPS_DIR}}"
-          TARGETS:
-            - "headers"
           BUILD_AND_INSTALL_ARGS:
             - "address-model=32"
             - "link=static"
             - "toolset=emscripten"
             - "--user-config={{.B2_USER_CONFIG_FILE}}"
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
+          TARGETS:
+            - "headers"
+          URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
+            /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
+          WORK_DIR: "{{.G_DEPS_DIR}}"
+
+      # Allow `find_package(Boost)` to locate the Boost installation when cross-compiling with
+      # Emscripten, whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
       - >-
         echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${'"{{.G_BOOST_LIB_NAME}}"'_ROOT}")'
         >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
@@ -107,6 +125,8 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
           LIB_NAME: "date"
           TARBALL_SHA256: "7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538"
@@ -119,7 +139,11 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DFMT_DOC=OFF"
+            - "-DFMT_TEST=OFF"
           LIB_NAME: "{{.G_FMT_LIB_NAME}}"
           TARBALL_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
           TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
@@ -131,6 +155,8 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
             - "-DJSON_BuildTests=OFF"
           LIB_NAME: "nlohmann_json"
@@ -148,6 +174,8 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
             - "-DSIMDJSON_DEVELOPER_MODE=OFF"
           LIB_NAME: "simdjson"
@@ -164,8 +192,13 @@ tasks:
         vars:
           CMAKE_GEN_ARGS:
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
             - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DSPDLOG_BUILD_EXAMPLE=OFF"
+            - "-DSPDLOG_FMT_EXTERNAL=ON"
           LIB_NAME: "spdlog"
           TARBALL_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
           TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
@@ -195,6 +228,8 @@ tasks:
       - task: "install-remote-cmake-lib"
         vars:
           CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
             - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
             - "-DZSTD_BUILD_COMPRESSION=OFF"
             - "-DZSTD_BUILD_DICTBUILDER=OFF"
@@ -238,6 +273,9 @@ tasks:
           TAR_SHA256: "{{.TARBALL_SHA256}}"
           TAR_URL: "{{.TARBALL_URL}}"
           WORK_DIR: "{{.G_DEPS_DIR}}"
+
+      # Allow `find_package(<lib>)` to locate the library installation when cross-compiling with
+      # Emscripten, whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
       - >-
         echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${'"{{.LIB_NAME}}"'_ROOT}")'
         >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"

@@ -191,7 +191,6 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
 
     # Set up compile options
     target_compile_features(${CLP_FFI_JS_BIN_NAME} PRIVATE cxx_std_20)
-    target_compile_definitions(${CLP_FFI_JS_BIN_NAME} PUBLIC SPDLOG_FMT_EXTERNAL=1)
     target_compile_options(${CLP_FFI_JS_BIN_NAME} PRIVATE ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS})
 
     # Set up link options
