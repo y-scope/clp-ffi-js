@@ -14,7 +14,6 @@
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
-#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
 #include <emscripten/val.h>
@@ -39,7 +38,7 @@ namespace {
  * @return The parsed log level forwarded from `parse_log_level`.
  * @return std::nullopt on failures:
  * - The given value's type cannot be decoded as a string.
- * - Forwards `clp::ir::EncodedTextAst::decode_and_unparse`'s return values.
+ * - Forwards `clp::ffi::EncodedTextAst::to_string`'s return values.
  * - Forwards `parse_log_level`'s return values.
  */
 [[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value)
@@ -72,22 +71,32 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
         return parse_log_level(value.get_immutable_view<std::string>());
     }
 
-    if (value.is<clp::ir::FourByteEncodedTextAst>()) {
-        auto const optional_log_level
-                = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
-        if (false == optional_log_level.has_value()) {
+    if (value.is<clp::ffi::FourByteEncodedTextAst>()) {
+        auto const result{value.get_immutable_view<clp::ffi::FourByteEncodedTextAst>().to_string()};
+        if (result.has_error()) {
+            auto const error{result.error()};
+            SPDLOG_ERROR(
+                    "Failed to decode `clp::ffi::FourByteEncodedTextAst`: {} - {}",
+                    error.category().name(),
+                    error.message()
+            );
             return std::nullopt;
         }
-        return parse_log_level(optional_log_level.value());
+        return parse_log_level(result.value());
     }
 
-    if (value.is<clp::ir::EightByteEncodedTextAst>()) {
-        auto const optional_log_level
-                = value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
-        if (false == optional_log_level.has_value()) {
+    if (value.is<clp::ffi::EightByteEncodedTextAst>()) {
+        auto const result{value.get_immutable_view<clp::ffi::EightByteEncodedTextAst>().to_string()};
+        if (result.has_error()) {
+            auto const error{result.error()};
+            SPDLOG_ERROR(
+                    "Failed to decode `clp::ffi::EightByteEncodedTextAst`: {} - {}",
+                    error.category().name(),
+                    error.message()
+            );
             return std::nullopt;
         }
-        return parse_log_level(optional_log_level.value());
+        return parse_log_level(result.value());
     }
 
     SPDLOG_ERROR("Protocol Error: The log level value must be a valid string-convertible type.");
