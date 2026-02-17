@@ -133,9 +133,8 @@ tasks:
           --config-file "{{.ROOT_DIR}}/tools/yscope-dev-utils/exports/lint-configs/.yamllint.yml" \
           --strict \
           .github \
-          lint-tasks.yml \
-          taskfiles \
-          Taskfile.yml
+          taskfile.yaml \
+          taskfiles
 
   cpp-lint-configs:
     internal: true
@@ -148,7 +147,7 @@ tasks:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK | replace \":\" \"#\"}}.md5"
       OUTPUT_DIR: "{{.G_LINT_VENV_DIR}}"
     sources:
-      - "{{.ROOT_DIR}}/Taskfile.yml"
+      - "{{.ROOT_TASKFILE}}"
       - "{{.TASKFILE}}"
       - "lint-requirements.txt"
     generates: ["{{.CHECKSUM_FILE}}"]
