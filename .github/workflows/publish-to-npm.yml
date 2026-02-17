@@ -19,7 +19,7 @@ jobs:
           submodules: "recursive"
 
       - name: "Install task"
-        run: "npm install --global @go-task/cli@3.44.0"
+        run: "npm install --global @go-task/cli@3.48.0"
 
       - run: "task package"
 
