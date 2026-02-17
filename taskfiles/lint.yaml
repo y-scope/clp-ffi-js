@@ -133,7 +133,6 @@ tasks:
           --config-file "{{.ROOT_DIR}}/tools/yscope-dev-utils/exports/lint-configs/.yamllint.yml" \
           --strict \
           .github \
-          taskfiles/lint.yaml \
           taskfiles \
           taskfile.yaml
 
