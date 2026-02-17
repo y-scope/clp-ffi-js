@@ -23,7 +23,7 @@ vars:
 #   inside `CMAKE_FIND_ROOT_PATH` is not honored during `find_package`.
 tasks:
   default:
-    desc: "Download, build, and install all dependencies."
+    desc: "Download, and install (except for clp) all dependencies using Emscripten toolchain."
     run: "once"
     deps:
       - ":emsdk"
@@ -37,16 +37,16 @@ tasks:
   all:
     internal: true
     deps:
-      - task: "antlr-runtime"
-      - task: "boost"
-      - task: "clp"
-      - task: "date"
-      - task: "fmt"
-      - task: "nlohmann-json"
-      - task: "simdjson"
-      - task: "spdlog"
-      - task: "ystdlib"
-      - task: "zstd"
+      - "antlr-runtime"
+      - "boost"
+      - "clp"
+      - "date"
+      - "fmt"
+      - "nlohmann-json"
+      - "simdjson"
+      - "spdlog"
+      - "ystdlib"
+      - "zstd"
 
   antlr-runtime:
     internal: true
