@@ -55,6 +55,7 @@ tasks:
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
+      - "emsdk"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -122,12 +123,12 @@ tasks:
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
+      - "clp-ffi-js"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
-      - task: "clp-ffi-js"
       - "rm -rf {{.OUTPUT_DIR}}"
       - for:
           var: "G_CLP_FFI_JS_ENV_NAMES"
