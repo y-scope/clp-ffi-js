@@ -250,8 +250,8 @@ tasks:
   # @param {string} TARBALL_URL
   # @param {string[]} [CMAKE_GEN_ARGS] Any additional arguments to pass to the CMake generate
   # command.
-  # @param {string} [CMAKE_SOURCE_DIR=.] The path, within the tarball extraction directory,
-  # containing the project's top level CMakeLists.txt.
+  # @param {string} [CMAKE_SOURCE_DIR=.] Path within the extraction directory containing the
+  # top-level CMakeLists.txt.
   install-remote-cmake-lib:
     internal: true
     vars:
