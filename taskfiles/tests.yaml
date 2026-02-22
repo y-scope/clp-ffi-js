@@ -9,5 +9,5 @@ tasks:
     cmd: "npm run test:init"
 
   js:
-    deps: ["init"]
+    #deps: ["init"]
     cmd: "npm run test {{.CLI_ARGS}}"

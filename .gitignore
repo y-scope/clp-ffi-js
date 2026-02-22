@@ -16,5 +16,6 @@ dist
 .idea
 .vscode
 
-# Test data
-/test/data
+# Tests
+/tests/data
+/tests/__screenshots__
