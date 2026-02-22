@@ -47,4 +47,5 @@ jobs:
           npm --version
           task --version
 
-      - run: "task tests:js"
+      - name: "Run JS tests"
+        run: "task tests:js"
