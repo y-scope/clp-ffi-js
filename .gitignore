@@ -2,6 +2,7 @@
 node_modules
 
 # Build
+*.tgz
 .task
 build
 cmake-build-*
@@ -15,5 +16,6 @@ dist
 .idea
 .vscode
 
-# Test data
+# Tests
 /test/data
+/test/__screenshots__

@@ -1,5 +1,5 @@
-import {playwright} from "@vitest/browser-playwright";
 import {defineConfig} from "vitest/config";
+import {playwright} from "@vitest/browser-playwright";
 
 
 export default defineConfig({
@@ -18,7 +18,6 @@ export default defineConfig({
                 test: {
                     name: "browser",
                     include: ["test/**/*.test.ts"],
-                    testTimeout: 30_000,
                     browser: {
                         enabled: true,
                         provider: playwright(),
@@ -29,6 +28,7 @@ export default defineConfig({
                         ],
                         headless: true,
                     },
+                    testTimeout: 30_000,
                 },
             },
         ],

@@ -44,7 +44,7 @@ if(${CLP_FFI_JS_PROJECT_NAME}_IS_TOP_LEVEL)
     # Include dependency settings if the project isn't being included as a subproject.
     # NOTE: We mark the file optional because if the user happens to set the necessary dependency
     # location variables, this file is not necessary.
-    include("build/deps/cmake-settings/settings.cmake" OPTIONAL)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/build/deps/cmake-settings/settings.cmake" OPTIONAL)
 endif()
 
 # Disable response files since `clang-tidy` doesn't seem to be able to use them
@@ -124,24 +124,39 @@ set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
 )
 
-set(CLP_FFI_JS_SRC_ZSTD
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/entropy_common.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/error_private.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/fse_decompress.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/zstd_common.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/common/xxhash.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/decompress/huf_decompress.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/decompress/zstd_ddict.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/decompress/zstd_decompress_block.c
-    ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib/decompress/zstd_decompress.c
-)
-
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
     node
     worker
     CACHE INTERNAL
     "List of supported environments."
 )
+
+find_package(antlr4-runtime REQUIRED)
+message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
+
+find_package(Boost REQUIRED COMPONENTS headers)
+message(STATUS "Found Boost ${Boost_VERSION}")
+
+find_package(date REQUIRED)
+message(STATUS "Found date ${date_VERSION}")
+
+find_package(fmt REQUIRED)
+message(STATUS "Found fmt ${fmt_VERSION}")
+
+find_package(nlohmann_json REQUIRED)
+message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
+
+find_package(simdjson REQUIRED)
+message(STATUS "Found simdjson ${simdjson_VERSION}")
+
+find_package(spdlog REQUIRED)
+message(STATUS "Found spdlog ${spdlog_VERSION}")
+
+find_package(ystdlib REQUIRED)
+message(STATUS "Found ystdlib ${ystdlib_VERSION}")
+
+find_package(zstd REQUIRED)
+message(STATUS "Found zstd ${zstd_VERSION}")
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
@@ -196,17 +211,23 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
 
     # Set up compile options
     target_compile_features(${CLP_FFI_JS_BIN_NAME} PRIVATE cxx_std_20)
-    target_compile_definitions(${CLP_FFI_JS_BIN_NAME} PUBLIC SPDLOG_FMT_EXTERNAL=1)
     target_compile_options(${CLP_FFI_JS_BIN_NAME} PRIVATE ${CLP_FFI_JS_COMMON_COMPILE_OPTIONS})
 
     # Set up link options
     target_link_libraries(${CLP_FFI_JS_BIN_NAME}
         PRIVATE
+        antlr4_static
+        Boost::headers
         clp_s::search::ast
         clp_s::search::kql
+        date::date
         embind
         fmt::fmt
+        nlohmann_json::nlohmann_json
+        simdjson::simdjson
         spdlog::spdlog
+        ystdlib::error_handling
+        zstd::libzstd_static
     )
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
@@ -232,12 +253,8 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_BIN_NAME}
         SYSTEM
         PRIVATE
-        ${CLP_FFI_JS_BOOST_SOURCE_DIRECTORY}
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
-        ${CLP_FFI_JS_NLOHMANN_JSON_SOURCE_DIRECTORY}/include
-        ${CLP_FFI_JS_YSTDLIB_SOURCE_DIRECTORY}/src
-        ${CLP_FFI_JS_ZSTD_SOURCE_DIRECTORY}/lib
     )
 
     target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
@@ -247,6 +264,5 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         PRIVATE
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
-        ${CLP_FFI_JS_SRC_ZSTD}
     )
 endforeach()
