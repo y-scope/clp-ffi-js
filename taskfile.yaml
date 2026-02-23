@@ -12,6 +12,8 @@ vars:
   G_DEPS_DIR: "{{.G_BUILD_DIR}}/deps"
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
+      {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
   G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
   G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
@@ -156,8 +158,7 @@ tasks:
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
-      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/\
-      Emscripten.cmake" \
+      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
