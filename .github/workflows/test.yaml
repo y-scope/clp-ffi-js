@@ -12,7 +12,7 @@ on:
       - "taskfiles/**"
       - "test/**"
       - "tsconfig.json"
-      - "vitest*config.ts"
+      - "vitest.config.ts"
   push:
     paths: *monitored_paths
   schedule:
