@@ -17,5 +17,5 @@ dist
 .vscode
 
 # Tests
-/tests/data
-/tests/__screenshots__
+/test/data
+/test/__screenshots__

@@ -4,12 +4,12 @@ import {playwright} from "@vitest/browser-playwright";
 
 export default defineConfig({
     test: {
-        globalSetup: "tests/globalSetup.ts",
+        globalSetup: "test/globalSetup.ts",
         projects: [
             {
                 test: {
                     name: "node",
-                    include: ["tests/**/*.test.ts"],
+                    include: ["test/**/*.test.ts"],
                     environment: "node",
                     testTimeout: 30_000,
                 },
@@ -17,8 +17,7 @@ export default defineConfig({
             {
                 test: {
                     name: "browser",
-                    include: ["tests/**/*.test.ts"],
-                    testTimeout: 30_000,
+                    include: ["test/**/*.test.ts"],
                     browser: {
                         enabled: true,
                         provider: playwright(),
@@ -29,6 +28,7 @@ export default defineConfig({
                         ],
                         headless: true,
                     },
+                    testTimeout: 30_000,
                 },
             },
         ],
