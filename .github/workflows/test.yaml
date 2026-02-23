@@ -3,7 +3,7 @@ name: "tests"
 on:
   pull_request:
     paths: &monitored_paths
-      - ".github/workflows/tests.yaml"
+      - ".github/workflows/test.yaml"
       - "CMakeLists.txt"
       - "package-lock.json"
       - "package.json"
