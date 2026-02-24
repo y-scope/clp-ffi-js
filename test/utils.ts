@@ -9,6 +9,7 @@ import {
     DEFAULT_READER_OPTIONS,
     DEFAULT_WORKER_MODULE_PATH,
     TEST_DATA_DIR_URL,
+    TEST_DATA_WEB_BASE_PATH,
 } from "./constants.js";
 import type {ReaderOptions} from "./types.js";
 
@@ -113,9 +114,13 @@ const readLocalFile = async (input: string | URL): Promise<Uint8Array> => {
  * @return The file contents as a Uint8Array.
  */
 const loadTestData = async (filename: string): Promise<Uint8Array> => {
-    const fileUrl = new URL(filename, TEST_DATA_DIR_URL);
+    if (true === isNodeRuntime()) {
+        const fileUrl = new URL(filename, TEST_DATA_DIR_URL);
 
-    return readLocalFile(fileUrl);
+        return readLocalFile(fileUrl);
+    }
+
+    return fetchFile(`${TEST_DATA_WEB_BASE_PATH}${filename}`);
 };
 
 

@@ -8,6 +8,7 @@ const DEFAULT_READER_OPTIONS: ReaderOptions = {
 };
 
 const TEST_DATA_DIR_URL = new URL("data/", import.meta.url);
+const TEST_DATA_WEB_BASE_PATH = "/test/data/";
 
 const TEST_DATA_URLS: Readonly<Record<string, string>> = {
     "structured-cockroachdb.clp.zst":
@@ -26,5 +27,6 @@ export {
     DEFAULT_READER_OPTIONS,
     DEFAULT_WORKER_MODULE_PATH,
     TEST_DATA_DIR_URL,
+    TEST_DATA_WEB_BASE_PATH,
     TEST_DATA_URLS,
 };
