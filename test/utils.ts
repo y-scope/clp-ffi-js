@@ -23,17 +23,6 @@ const assertNonNull: <T>(val: T) => asserts val is NonNullable<T> = (val) => {
     expect(val).not.toBeNull();
 };
 
-
-/**
- * Detects whether the current runtime is Node.js.
- *
- * @return True if running in Node.js.
- */
-const isNodeRuntime = (): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    return "undefined" !== typeof process && "string" === typeof process.versions?.node;
-};
-
 /**
  * Creates a new WASM module instance, using the Node.js build when running in Node.js and the
  * worker/browser build otherwise.
@@ -43,15 +32,23 @@ const isNodeRuntime = (): boolean => {
 const createModule = async (): Promise<MainModule> => {
     const modulePath =
         true === isNodeRuntime() ?
+            getViteEnvString(
 
-            // @ts-expect-error TS4111: property comes from index signature
-            import.meta.env.VITE_NODE_MODULE_ABS_PATH ?? DEFAULT_NODE_MODULE_PATH :
+                // @ts-expect-error TS4111: property comes from index signature
+                import.meta.env.VITE_NODE_MODULE_ABS_PATH,
+                DEFAULT_NODE_MODULE_PATH
+            ) :
+            getViteEnvString(
 
-            // @ts-expect-error TS4111: property comes from index signature
-            import.meta.env.VITE_WORKER_MODULE_ABS_PATH ?? DEFAULT_WORKER_MODULE_PATH;
-    const {default: factory} =
+                // @ts-expect-error TS4111: property comes from index signature
+                import.meta.env.VITE_WORKER_MODULE_ABS_PATH,
+                DEFAULT_WORKER_MODULE_PATH
+            );
+    const importedModule = (
         // eslint-disable-next-line no-inline-comments
-        await import(/* @vite-ignore */ modulePath);
+        await import(/* @vite-ignore */ modulePath)
+    ) as {default: () => Promise<MainModule>};
+    const {default: factory} = importedModule;
 
     return factory();
 };
@@ -92,18 +89,26 @@ const fetchFile = async (input: string | URL): Promise<Uint8Array> => {
 };
 
 /**
- * Reads a local file and returns its bytes.
+ * Returns a Vite environment variable value when it is a string, or a fallback otherwise.
  *
- * @param input File path or file URL.
- * @return File contents as a Uint8Array.
+ * @param value Vite environment value.
+ * @param fallbackValue Default value when env value is missing or not a string.
+ * @return Resolved string value.
  */
-const readLocalFile = async (input: string | URL): Promise<Uint8Array> => {
-    if (true === isNodeRuntime()) {
-        const {readFile} = await import("node:fs/promises");
-        return new Uint8Array(await readFile(input));
-    }
+const getViteEnvString = (value: unknown, fallbackValue: string): string => {
+    return "string" === typeof value ?
+        value :
+        fallbackValue;
+};
 
-    return fetchFile(input);
+/**
+ * Detects whether the current runtime is Node.js.
+ *
+ * @return True if running in Node.js.
+ */
+const isNodeRuntime = (): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    return "undefined" !== typeof process && "string" === typeof process.versions?.node;
 };
 
 /**
@@ -121,6 +126,21 @@ const loadTestData = async (filename: string): Promise<Uint8Array> => {
     }
 
     return fetchFile(`${TEST_DATA_WEB_BASE_PATH}${filename}`);
+};
+
+/**
+ * Reads a local file and returns its bytes.
+ *
+ * @param input File path or file URL.
+ * @return File contents as a Uint8Array.
+ */
+const readLocalFile = async (input: string | URL): Promise<Uint8Array> => {
+    if (true === isNodeRuntime()) {
+        const {readFile} = await import("node:fs/promises");
+        return new Uint8Array(await readFile(input));
+    }
+
+    return fetchFile(input);
 };
 
 
