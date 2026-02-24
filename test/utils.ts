@@ -122,25 +122,22 @@ const loadTestData = async (filename: string): Promise<Uint8Array> => {
     if (true === isNodeRuntime()) {
         const fileUrl = new URL(filename, TEST_DATA_DIR_URL);
 
-        return readLocalFile(fileUrl);
+        return readNodeFile(fileUrl);
     }
 
     return fetchFile(`${TEST_DATA_WEB_BASE_PATH}${filename}`);
 };
 
 /**
- * Reads a local file and returns its bytes.
+ * Reads a file in Node.js and returns its bytes.
  *
  * @param input File path or file URL.
  * @return File contents as a Uint8Array.
  */
-const readLocalFile = async (input: string | URL): Promise<Uint8Array> => {
-    if (true === isNodeRuntime()) {
-        const {readFile} = await import("node:fs/promises");
-        return new Uint8Array(await readFile(input));
-    }
+const readNodeFile = async (input: string | URL): Promise<Uint8Array> => {
+    const {readFile} = await import("node:fs/promises");
 
-    return fetchFile(input);
+    return new Uint8Array(await readFile(input));
 };
 
 
@@ -154,5 +151,5 @@ export {
     createReader,
     fetchFile,
     loadTestData,
-    readLocalFile,
+    readNodeFile,
 };

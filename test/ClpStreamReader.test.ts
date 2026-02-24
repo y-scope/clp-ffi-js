@@ -11,6 +11,10 @@ import {
     loadTestData,
     type MainModule,
 } from "./utils.js";
+import {
+    IR_STREAM_TYPE_STRUCTURED,
+    IR_STREAM_TYPE_UNSTRUCTURED,
+} from "./constants.js";
 
 
 let module: MainModule;
@@ -21,8 +25,8 @@ beforeAll(async () => {
 
 describe("Module Constants", () => {
     it("should export IrStreamType enum with correct values", () => {
-        expect(module.IrStreamType.STRUCTURED.value).toBe(0);
-        expect(module.IrStreamType.UNSTRUCTURED.value).toBe(1);
+        expect(module.IrStreamType.STRUCTURED.value).toBe(IR_STREAM_TYPE_STRUCTURED);
+        expect(module.IrStreamType.UNSTRUCTURED.value).toBe(IR_STREAM_TYPE_UNSTRUCTURED);
     });
 
     it("should export MERGED_KV_PAIRS keys as strings", () => {
