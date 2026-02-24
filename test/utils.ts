@@ -1,17 +1,16 @@
 import {expect} from "vitest";
+
 import type {
     ClpStreamReader,
     MainModule,
 } from "../dist/ClpFfiJs-node.js";
-import type {
-    ReaderOptions,
-} from "./types.js";
 import {
     DEFAULT_NODE_MODULE_PATH,
     DEFAULT_READER_OPTIONS,
     DEFAULT_WORKER_MODULE_PATH,
     TEST_DATA_DIR_URL,
 } from "./constants.js";
+import type {ReaderOptions} from "./types.js";
 
 
 /**
@@ -42,9 +41,13 @@ const isNodeRuntime = (): boolean => {
  */
 const createModule = async (): Promise<MainModule> => {
     const modulePath =
-        true === isNodeRuntime()
-            ? import.meta.env.VITE_NODE_MODULE_ABS_PATH ?? DEFAULT_NODE_MODULE_PATH
-            : import.meta.env.VITE_WORKER_MODULE_ABS_PATH ?? DEFAULT_WORKER_MODULE_PATH;
+        true === isNodeRuntime() ?
+
+            // @ts-expect-error TS4111: property comes from index signature
+            import.meta.env.VITE_NODE_MODULE_ABS_PATH ?? DEFAULT_NODE_MODULE_PATH :
+
+            // @ts-expect-error TS4111: property comes from index signature
+            import.meta.env.VITE_WORKER_MODULE_ABS_PATH ?? DEFAULT_WORKER_MODULE_PATH;
     const {default: factory} =
         // eslint-disable-next-line no-inline-comments
         await import(/* @vite-ignore */ modulePath);
@@ -83,6 +86,7 @@ const fetchFile = async (input: string | URL): Promise<Uint8Array> => {
             `Failed to fetch ${response.url}: ${response.status} ${response.statusText}`
         );
     }
+
     return new Uint8Array(await response.arrayBuffer());
 };
 
@@ -97,6 +101,7 @@ const readLocalFile = async (input: string | URL): Promise<Uint8Array> => {
         const {readFile} = await import("node:fs/promises");
         return new Uint8Array(await readFile(input));
     }
+
     return fetchFile(input);
 };
 

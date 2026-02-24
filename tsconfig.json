@@ -22,6 +22,7 @@
         /* Modules & Tooling */
         "verbatimModuleSyntax": true,
         "moduleDetection": "force",
+        "types": ["vite/client"],
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,

@@ -4,11 +4,13 @@ import {
     mkdir,
     writeFile,
 } from "node:fs/promises";
+
 import {
     TEST_DATA_DIR_URL,
     TEST_DATA_URLS,
 } from "./constants.js";
 import {fetchFile} from "./utils.js";
+
 
 /**
  * Downloads all test data files to `TEST_DATA_DIR_URL` if they don't already exist on disk.
@@ -23,6 +25,7 @@ const setup = async () => {
         const dstUrl = new URL(filename, TEST_DATA_DIR_URL);
         try {
             await access(dstUrl, constants.R_OK);
+
             return;
         } catch {
             // File does not exist yet, continue to download.
