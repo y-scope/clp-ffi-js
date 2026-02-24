@@ -17,9 +17,9 @@ const TEST_DATA_URLS: Readonly<Record<string, string>> = {
         "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/yarn-ubuntu-resourcemanager-ip-172-31-17-135.log.1.clp.zst",
 };
 
-const DEFAULT_NODE_MODULE_PATH = "../build/clp-ffi-js/ClpFfiJs-node.js";
+const DEFAULT_NODE_MODULE_PATH = "../dist/ClpFfiJs-node.js";
 
-const DEFAULT_WORKER_MODULE_PATH = "../build/clp-ffi-js/ClpFfiJs-worker.js";
+const DEFAULT_WORKER_MODULE_PATH = "../dist/ClpFfiJs-worker.js";
 
 
 export {
