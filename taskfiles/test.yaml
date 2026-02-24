@@ -5,7 +5,7 @@ tasks:
     deps: ["js"]
 
   init:
-    deps: [":package", ":node-modules"]
+    deps: [":clp-ffi-js", ":node-modules"]
     cmd: "npm run test:init"
 
   js:
