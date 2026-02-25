@@ -123,7 +123,6 @@ tasks:
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      - "clp-ffi-js"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -152,18 +151,16 @@ tasks:
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
-    deps:
-      - "deps"
-      - "emsdk"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
+      -DCLP_FFI_JS_ENABLE_SFA_READER_BINDING=ON \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
   node-modules:
-    internal: true
+    #internal: true
     sources:
       - "{{.ROOT_DIR}}/package.json"
       - "{{.ROOT_DIR}}/package-lock.json"

@@ -107,6 +107,10 @@ set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/utils.cpp
 )
 
+set(CLP_FFI_JS_SRC_SFA
+    src/clp_ffi_js/sfa/ClpSfaReader.cpp
+)
+
 set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/EncodedTextAstError.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
@@ -143,6 +147,9 @@ message(STATUS "Found date ${date_VERSION}")
 find_package(fmt REQUIRED)
 message(STATUS "Found fmt ${fmt_VERSION}")
 
+find_package(msgpack-cxx REQUIRED)
+message(STATUS "Found msgpack-cxx")
+
 find_package(nlohmann_json REQUIRED)
 message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
 
@@ -157,6 +164,9 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
+# `components/core/src/clp_s/CMakeLists.txt` links against `${zstd_TARGET}`.
+# Define it explicitly in this embedding build.
+set(zstd_TARGET zstd::libzstd_static)
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
@@ -179,6 +189,23 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
+
+option(
+    CLP_FFI_JS_ENABLE_SFA_READER_BINDING
+    "Enable experimental CLP-S single-file archive reader Embind surface."
+    OFF
+)
+if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING)
+    find_package(absl REQUIRED)
+    message(STATUS "Found absl")
+    find_package(log_surgeon REQUIRED)
+    message(STATUS "Found log_surgeon")
+
+    set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
+    set(CLP_BUILD_CLP_S_IO ON)
+    set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
+endif()
+
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
@@ -199,12 +226,16 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         date::date
         embind
         fmt::fmt
+        msgpack-cxx
         nlohmann_json::nlohmann_json
         simdjson::simdjson
         spdlog::spdlog
         ystdlib::error_handling
         zstd::libzstd_static
     )
+    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
+        target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE clp_s::ffi::sfa)
+    endif()
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
@@ -241,4 +272,11 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
     )
+    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
+        target_sources(
+            ${CLP_FFI_JS_BIN_NAME}
+            PRIVATE
+            ${CLP_FFI_JS_SRC_SFA}
+        )
+    endif()
 endforeach()
