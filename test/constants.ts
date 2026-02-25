@@ -14,6 +14,7 @@ const DEFAULT_READER_OPTIONS: ReaderOptions = {
  * Filesystem URL for the local test data directory.
  */
 const TEST_DATA_DIR_URL = new URL("data/", import.meta.url);
+
 /**
  * Browser-served base path for test data files.
  */

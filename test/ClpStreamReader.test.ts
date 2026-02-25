@@ -7,16 +7,16 @@ import {
 } from "vitest";
 
 import {
-    createModule,
-    createReader,
-    loadTestData,
-    type ClpStreamReader,
-    type MainModule,
-} from "./utils.js";
-import {
     IR_STREAM_TYPE_STRUCTURED,
     IR_STREAM_TYPE_UNSTRUCTURED,
 } from "./constants.js";
+import {
+    type ClpStreamReader,
+    createModule,
+    createReader,
+    loadTestData,
+    type MainModule,
+} from "./utils.js";
 
 
 let module: MainModule;

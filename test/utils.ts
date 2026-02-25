@@ -24,6 +24,29 @@ const assertNonNull: <T>(val: T) => asserts val is NonNullable<T> = (val) => {
 };
 
 /**
+ * Returns a Vite environment variable value when it is a string, or a fallback otherwise.
+ *
+ * @param value Vite environment value.
+ * @param fallbackValue Default value when env value is missing or not a string.
+ * @return Resolved string value.
+ */
+const getViteEnvString = (value: unknown, fallbackValue: string): string => {
+    return "string" === typeof value ?
+        value :
+        fallbackValue;
+};
+
+/**
+ * Detects whether the current runtime is Node.js.
+ *
+ * @return True if running in Node.js.
+ */
+const isNodeRuntime = (): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    return "undefined" !== typeof process && "string" === typeof process.versions?.node;
+};
+
+/**
  * Creates a new WASM module instance, using the Node.js build when running in Node.js and the
  * worker/browser build otherwise.
  *
@@ -89,26 +112,15 @@ const fetchFile = async (input: string | URL): Promise<Uint8Array> => {
 };
 
 /**
- * Returns a Vite environment variable value when it is a string, or a fallback otherwise.
+ * Reads a file in Node.js and returns its bytes.
  *
- * @param value Vite environment value.
- * @param fallbackValue Default value when env value is missing or not a string.
- * @return Resolved string value.
+ * @param input File path or file URL.
+ * @return File contents as a Uint8Array.
  */
-const getViteEnvString = (value: unknown, fallbackValue: string): string => {
-    return "string" === typeof value ?
-        value :
-        fallbackValue;
-};
+const readNodeFile = async (input: string | URL): Promise<Uint8Array> => {
+    const {readFile} = await import("node:fs/promises");
 
-/**
- * Detects whether the current runtime is Node.js.
- *
- * @return True if running in Node.js.
- */
-const isNodeRuntime = (): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    return "undefined" !== typeof process && "string" === typeof process.versions?.node;
+    return new Uint8Array(await readFile(input));
 };
 
 /**
@@ -126,18 +138,6 @@ const loadTestData = async (filename: string): Promise<Uint8Array> => {
     }
 
     return fetchFile(`${TEST_DATA_WEB_BASE_PATH}${filename}`);
-};
-
-/**
- * Reads a file in Node.js and returns its bytes.
- *
- * @param input File path or file URL.
- * @return File contents as a Uint8Array.
- */
-const readNodeFile = async (input: string | URL): Promise<Uint8Array> => {
-    const {readFile} = await import("node:fs/promises");
-
-    return new Uint8Array(await readFile(input));
 };
 
 
