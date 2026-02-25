@@ -1,4 +1,5 @@
 import {
+    afterEach,
     beforeAll,
     describe,
     expect,
@@ -9,6 +10,7 @@ import {
     createModule,
     createReader,
     loadTestData,
+    type ClpStreamReader,
     type MainModule,
 } from "./utils.js";
 import {
@@ -36,16 +38,25 @@ describe("Module Constants", () => {
 });
 
 describe("ClpStreamReader", () => {
+    let reader: ClpStreamReader | null = null;
+
+    afterEach(() => {
+        if (null !== reader) {
+            reader.delete();
+            reader = null;
+        }
+    });
+
     it("should create a reader for a structured IR stream", async () => {
         const data = await loadTestData("structured-cockroachdb.clp.zst");
-        const reader = createReader(module, data);
+        reader = createReader(module, data);
 
         expect(reader.getIrStreamType()).toBe(module.IrStreamType.STRUCTURED);
     });
 
     it("should create a reader for an unstructured IR stream", async () => {
         const data = await loadTestData("unstructured-yarn.clp.zst");
-        const reader = createReader(module, data);
+        reader = createReader(module, data);
 
         expect(reader.getIrStreamType()).toBe(module.IrStreamType.UNSTRUCTURED);
     });
