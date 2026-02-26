@@ -5,6 +5,7 @@ vars:
   G_BOOST_LIB_NAME: "Boost"
   G_FMT_LIB_NAME: "fmt"
   G_GSL_LIB_NAME: "Microsoft.GSL"
+  G_OPENSSL_LIB_NAME: "openssl"
 
   # Misc
   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
@@ -48,6 +49,7 @@ tasks:
       - "microsoft.gsl"
       - "msgpack-cxx"
       - "nlohmann-json"
+      - "openssl"
       - "simdjson"
       - "spdlog"
       - "ystdlib"
@@ -112,6 +114,7 @@ tasks:
           FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
           TARGETS:
             - "headers"
+            - "regex"
             - "url"
           URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
             /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
@@ -265,6 +268,51 @@ tasks:
           LIB_NAME: "{{.G_GSL_LIB_NAME}}"
           TARBALL_SHA256: "f0e32cb10654fea91ad56bde89170d78cfbf4363ee0b01d8f097de2ba49f6ce9"
           TARBALL_URL: "https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.tar.gz"
+
+  openssl:
+    #internal: true
+    vars:
+      OPENSSL_VERSION: "3.3.2"
+      SOURCE_DIR: "{{.G_DEPS_DIR}}/{{.G_OPENSSL_LIB_NAME}}-extracted"
+      INSTALL_DIR: "{{.G_DEPS_DIR}}/{{.G_OPENSSL_LIB_NAME}}-install"
+      TARBALL_URL: "https://www.openssl.org/source/openssl-{{.OPENSSL_VERSION}}.tar.gz"
+      TARBALL_SHA256: "2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "{{.TARBALL_SHA256}}"
+          OUTPUT_DIR: "{{.SOURCE_DIR}}"
+          URL: "{{.TARBALL_URL}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        CC="{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" \
+        AR="{{.G_EMSDK_DIR}}/upstream/emscripten/emar" \
+        RANLIB="{{.G_EMSDK_DIR}}/upstream/emscripten/emranlib" \
+        ./Configure linux-generic32 \
+          no-asm no-shared no-tests no-dso no-engine no-ssl no-apps no-threads \
+          --prefix="{{.INSTALL_DIR}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        make -j"{{.G_CPP_MAX_PARALLELISM_PER_BUILD_TASK}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        make install_sw
+      - >-
+        echo "set(OPENSSL_ROOT_DIR \"{{.INSTALL_DIR}}\")"
+        > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_USE_STATIC_LIBS ON)"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_INCLUDE_DIR \"{{.INSTALL_DIR}}/include\")"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_CRYPTO_LIBRARY \"{{.INSTALL_DIR}}/lib/libcrypto.a\")"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}")'
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
 
   msgpack-cxx:
     internal: true

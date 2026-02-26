@@ -138,7 +138,7 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
 find_package(antlr4-runtime REQUIRED)
 message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
 
-find_package(Boost REQUIRED COMPONENTS headers)
+find_package(Boost REQUIRED COMPONENTS headers regex url)
 message(STATUS "Found Boost ${Boost_VERSION}")
 
 find_package(date REQUIRED)
@@ -153,6 +153,9 @@ message(STATUS "Found msgpack-cxx")
 find_package(nlohmann_json REQUIRED)
 message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
 
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+message(STATUS "Found OpenSSL ${OPENSSL_VERSION}")
+
 find_package(simdjson REQUIRED)
 message(STATUS "Found simdjson ${simdjson_VERSION}")
 
@@ -164,12 +167,22 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
-# `components/core/src/clp_s/CMakeLists.txt` links against `${zstd_TARGET}`.
-# Define it explicitly in this embedding build.
-set(zstd_TARGET zstd::libzstd_static)
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
+
+option(
+    CLP_FFI_JS_DISABLE_CURL
+    "Disable libcurl-dependent CLP-S code when embedding for JS/WASM."
+    ON
+)
+set(
+    CLP_S_EXCLUDE_LIBCURL
+    ${CLP_FFI_JS_DISABLE_CURL}
+    CACHE BOOL
+    "Exclude libcurl support from clp-s."
+    FORCE
+)
 
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
