@@ -107,6 +107,10 @@ set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/utils.cpp
 )
 
+set(CLP_FFI_JS_SRC_SFA
+    src/clp_ffi_js/sfa/ClpSfaReader.cpp
+)
+
 set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/EncodedTextAstError.cpp
     ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
@@ -134,7 +138,7 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
 find_package(antlr4-runtime REQUIRED)
 message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
 
-find_package(Boost REQUIRED COMPONENTS headers)
+find_package(Boost REQUIRED COMPONENTS headers regex url)
 message(STATUS "Found Boost ${Boost_VERSION}")
 
 find_package(date REQUIRED)
@@ -143,8 +147,14 @@ message(STATUS "Found date ${date_VERSION}")
 find_package(fmt REQUIRED)
 message(STATUS "Found fmt ${fmt_VERSION}")
 
+find_package(msgpack-cxx REQUIRED)
+message(STATUS "Found msgpack-cxx")
+
 find_package(nlohmann_json REQUIRED)
 message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
+
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+message(STATUS "Found OpenSSL ${OPENSSL_VERSION}")
 
 find_package(simdjson REQUIRED)
 message(STATUS "Found simdjson ${simdjson_VERSION}")
@@ -160,6 +170,19 @@ message(STATUS "Found zstd ${zstd_VERSION}")
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
+
+option(
+    CLP_FFI_JS_DISABLE_CURL
+    "Disable libcurl-dependent CLP-S code when embedding for JS/WASM."
+    ON
+)
+set(
+    CLP_S_EXCLUDE_LIBCURL
+    ${CLP_FFI_JS_DISABLE_CURL}
+    CACHE BOOL
+    "Exclude libcurl support from clp-s."
+    FORCE
+)
 
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
@@ -179,6 +202,23 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
+
+option(
+    CLP_FFI_JS_ENABLE_SFA_READER_BINDING
+    "Enable experimental CLP-S single-file archive reader Embind surface."
+    OFF
+)
+if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING)
+    find_package(absl REQUIRED)
+    message(STATUS "Found absl")
+    find_package(log_surgeon REQUIRED)
+    message(STATUS "Found log_surgeon")
+
+    set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
+    set(CLP_BUILD_CLP_S_IO ON)
+    set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
+endif()
+
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
@@ -199,12 +239,16 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         date::date
         embind
         fmt::fmt
+        msgpack-cxx
         nlohmann_json::nlohmann_json
         simdjson::simdjson
         spdlog::spdlog
         ystdlib::error_handling
         zstd::libzstd_static
     )
+    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
+        target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE clp_s::ffi::sfa)
+    endif()
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
@@ -241,4 +285,11 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
     )
+    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
+        target_sources(
+            ${CLP_FFI_JS_BIN_NAME}
+            PRIVATE
+            ${CLP_FFI_JS_SRC_SFA}
+        )
+    endif()
 endforeach()

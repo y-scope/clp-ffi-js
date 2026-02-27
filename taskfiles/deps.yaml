@@ -4,6 +4,8 @@ vars:
   # Library names
   G_BOOST_LIB_NAME: "Boost"
   G_FMT_LIB_NAME: "fmt"
+  G_GSL_LIB_NAME: "Microsoft.GSL"
+  G_OPENSSL_LIB_NAME: "openssl"
 
   # Misc
   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
@@ -37,16 +39,37 @@ tasks:
   all:
     internal: true
     deps:
+      - "absl"
       - "antlr-runtime"
       - "boost"
       - "clp"
       - "date"
       - "fmt"
+      - "log-surgeon"
+      - "microsoft.gsl"
+      - "msgpack-cxx"
       - "nlohmann-json"
+      - "openssl"
       - "simdjson"
       - "spdlog"
       - "ystdlib"
       - "zstd"
+
+  absl:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_CXX_STANDARD=20"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "absl"
+          TARBALL_SHA256: "7262daa7c1711406248c10f41026d685e88223bc92817d16fb93c19adb57f669"
+          TARBALL_URL: "https://github.com/abseil/abseil-cpp/releases/download/20250512.0/\
+                        abseil-cpp-20250512.0.tar.gz"
 
   antlr-runtime:
     internal: true
@@ -91,6 +114,8 @@ tasks:
           FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
           TARGETS:
             - "headers"
+            - "regex"
+            - "url"
           URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
             /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
           WORK_DIR: "{{.G_DEPS_DIR}}"
@@ -202,6 +227,116 @@ tasks:
           LIB_NAME: "spdlog"
           TARBALL_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
           TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
+
+  log-surgeon:
+    internal: true
+    run: "once"
+    deps:
+      - "boost"
+      - "fmt"
+      - "microsoft.gsl"
+      - "ystdlib"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_GSL_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/ystdlib.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-Dlog_surgeon_BUILD_TESTING=OFF"
+          LIB_NAME: "log_surgeon"
+          TARBALL_SHA256: "eebf857962f8fc022bfa5de8d00e10ee4ac36bb8f126a556935a93dde1435aa2"
+          TARBALL_URL: "https://github.com/y-scope/log-surgeon/archive/193e1f9.tar.gz"
+
+  microsoft.gsl:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DGSL_TEST=OFF"
+          LIB_NAME: "{{.G_GSL_LIB_NAME}}"
+          TARBALL_SHA256: "f0e32cb10654fea91ad56bde89170d78cfbf4363ee0b01d8f097de2ba49f6ce9"
+          TARBALL_URL: "https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.tar.gz"
+
+  openssl:
+    #internal: true
+    vars:
+      OPENSSL_VERSION: "3.3.2"
+      SOURCE_DIR: "{{.G_DEPS_DIR}}/{{.G_OPENSSL_LIB_NAME}}-extracted"
+      INSTALL_DIR: "{{.G_DEPS_DIR}}/{{.G_OPENSSL_LIB_NAME}}-install"
+      TARBALL_URL: "https://www.openssl.org/source/openssl-{{.OPENSSL_VERSION}}.tar.gz"
+      TARBALL_SHA256: "2e8a40b01979afe8be0bbfb3de5dc1c6709fedb46d6c89c10da114ab5fc3d281"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "{{.TARBALL_SHA256}}"
+          OUTPUT_DIR: "{{.SOURCE_DIR}}"
+          URL: "{{.TARBALL_URL}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        CC="{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" \
+        AR="{{.G_EMSDK_DIR}}/upstream/emscripten/emar" \
+        RANLIB="{{.G_EMSDK_DIR}}/upstream/emscripten/emranlib" \
+        ./Configure linux-generic32 \
+          no-asm no-shared no-tests no-dso no-engine no-ssl no-apps no-threads \
+          --prefix="{{.INSTALL_DIR}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        make -j"{{.G_CPP_MAX_PARALLELISM_PER_BUILD_TASK}}"
+      - |-
+        cd "{{.SOURCE_DIR}}"
+        make install_sw
+      - >-
+        echo "set(OPENSSL_ROOT_DIR \"{{.INSTALL_DIR}}\")"
+        > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_USE_STATIC_LIBS ON)"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_INCLUDE_DIR \"{{.INSTALL_DIR}}/include\")"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo "set(OPENSSL_CRYPTO_LIBRARY \"{{.INSTALL_DIR}}/lib/libcrypto.a\")"
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+      - >-
+        echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${OPENSSL_ROOT_DIR}")'
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_OPENSSL_LIB_NAME}}.cmake"
+
+  msgpack-cxx:
+    internal: true
+    vars:
+      VERSION: "7.0.0"
+    run: "once"
+    deps:
+      - "boost"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DMSGPACK_BUILD_DOCS=OFF"
+            - "-DMSGPACK_CXX20=ON"
+          LIB_NAME: "msgpack-cxx"
+          TARBALL_SHA256: "7504b7af7e7b9002ce529d4f941e1b7fb1fb435768780ce7da4abaac79bb156f"
+          TARBALL_URL: "https://github.com/msgpack/msgpack-c/releases/download/cpp-{{.VERSION}}\
+            /msgpack-cxx-{{.VERSION}}.tar.gz"
 
   ystdlib:
     internal: true
