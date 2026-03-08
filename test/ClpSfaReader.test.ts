@@ -7,11 +7,15 @@ import {
 } from "vitest";
 
 import {
+    type ClpSfaReader,
     createModule,
     loadTestData,
     type MainModule,
 } from "./utils.js";
 
+
+const COCKROACH_EXPECTED_EVENT_COUNT = 200000n;
+const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 let module: MainModule;
 
@@ -20,8 +24,7 @@ beforeAll(async () => {
 });
 
 describe("ClpSfaReader", () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let reader: any = null;
+    let reader: ClpSfaReader | null = null;
 
     afterEach(() => {
         if (null !== reader) {
@@ -30,11 +33,19 @@ describe("ClpSfaReader", () => {
         }
     });
 
-    it("should read sfa archive from buffer", async () => {
-        const data = await loadTestData("../../sfa.clp");
-        reader = module.ClpSfaReader.create(data, "SFA");
+    it("should read postgresql sfa archive from buffer", async () => {
+        const data = await loadTestData("postgresql.clp");
+        reader = module.ClpSfaReader.create(data, "postgresql");
 
-        expect(reader.getArchiveId()).toBe("SFA");
-        expect(reader.getEventCount()).toBe(1000000);
+        expect(reader.getArchiveId()).toBe("postgresql");
+        expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
+    });
+
+    it("should read cockroach sfa archive from buffer", async () => {
+        const data = await loadTestData("cockroach.clp");
+        reader = module.ClpSfaReader.create(data, "cockroach");
+
+        expect(reader.getArchiveId()).toBe("cockroach");
+        expect(reader.getEventCount()).toBe(COCKROACH_EXPECTED_EVENT_COUNT);
     });
 });
