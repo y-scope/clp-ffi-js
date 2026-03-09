@@ -6,6 +6,7 @@
 
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <fmt/core.h>
 #include <spdlog/spdlog.h>
 #include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
@@ -33,16 +34,41 @@ public:
 
         if (reader_result.has_error()) {
             auto const error = reader_result.error();
-            throw std::runtime_error{"Failed to open SFA archive from buffer"};
+            auto const message
+                    = fmt::format("Failed to open SFA archive from buffer: error_category={}, "
+                                  "error={}",
+                                  error.category().name(),
+                                  error.message());
+            throw std::runtime_error{message};
         }
 
         return std::unique_ptr<SfaReader>{
                 new SfaReader{std::move(reader_result.value()), std::move(data_buffer)}};
     }
 
-    [[nodiscard]] auto get_archive_id() const -> std::string { return m_reader.get_archive_id(); }
+    [[nodiscard]] auto get_archive_id() const -> std::string {
+        auto result = m_reader.get_archive_id();
+        if (result.has_error()) {
+            auto const error = result.error();
+            auto const message = fmt::format("Failed to get archive id: error_category={}, error={}",
+                                             error.category().name(),
+                                             error.message());
+            throw std::runtime_error{message};
+        }
+        return std::move(result).value();
+    }
 
-    [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
+    [[nodiscard]] auto get_event_count() const -> uint64_t {
+        auto result = m_reader.get_event_count();
+        if (result.has_error()) {
+            auto const error = result.error();
+            auto const message = fmt::format("Failed to get event count: error_category={}, error={}",
+                                             error.category().name(),
+                                             error.message());
+            throw std::runtime_error{message};
+        }
+        return std::move(result).value();
+    }
 
 private:
     SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader,
