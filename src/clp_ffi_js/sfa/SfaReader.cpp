@@ -59,15 +59,7 @@ public:
     }
 
     [[nodiscard]] auto get_event_count() const -> uint64_t {
-        auto result = m_reader.get_event_count();
-        if (result.has_error()) {
-            auto const error = result.error();
-            auto const message = fmt::format("Failed to get event count: error_category={}, error={}",
-                                             error.category().name(),
-                                             error.message());
-            throw std::runtime_error{message};
-        }
-        return std::move(result).value();
+        return m_reader.get_event_count();
     }
 
 private:
