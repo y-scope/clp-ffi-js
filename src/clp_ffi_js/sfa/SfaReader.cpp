@@ -62,6 +62,27 @@ public:
         return m_reader.get_event_count();
     }
 
+    [[nodiscard]] auto get_file_names() const -> emscripten::val {
+        auto file_names{emscripten::val::array()};
+        for (auto const& file_name : m_reader.get_file_names()) {
+            file_names.call<void>("push", emscripten::val(file_name));
+        }
+        return file_names;
+    }
+
+    [[nodiscard]] auto get_source_file_ranges() const -> emscripten::val {
+        auto source_file_ranges{emscripten::val::array()};
+        for (auto const& file_info : m_reader.get_source_file_ranges()) {
+            auto entry{emscripten::val::object()};
+            entry.set("fileName", emscripten::val(file_info.get_file_name()));
+            entry.set("logEventIdxStart", emscripten::val(file_info.get_start_index()));
+            entry.set("logEventIdxEnd", emscripten::val(file_info.get_end_index()));
+            entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
+            source_file_ranges.call<void>("push", entry);
+        }
+        return source_file_ranges;
+    }
+
 private:
     SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader,
                  ystdlib::containers::Array<char>&& data_buffer)
@@ -80,5 +101,10 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                             &clp_ffi_js::sfa::SfaReader::create,
                             emscripten::return_value_policy::take_ownership())
             .function("getArchiveId", &clp_ffi_js::sfa::SfaReader::get_archive_id)
-            .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count);
+            .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
+            .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
+            .function(
+                    "getSourceFileRanges",
+                    &clp_ffi_js::sfa::SfaReader::get_source_file_ranges
+            );
 }
