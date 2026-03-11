@@ -36,28 +36,25 @@ describe("ClpSfaReader", () => {
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = module.ClpSfaReader.create(data, "postgresql");
+        reader = module.ClpSfaReader.create(data);
 
         expect(reader.getFileNames()).toEqual(["postgresql.log"]);
-        expect(reader.getArchiveId()).toBe("postgresql");
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
     });
 
     it("should read cockroach sfa archive from buffer", async () => {
         const data = await loadTestData("cockroach.clp");
-        reader = module.ClpSfaReader.create(data, "cockroach");
+        reader = module.ClpSfaReader.create(data);
 
         expect(reader.getFileNames()).toEqual(["cockroach.log"]);
-        expect(reader.getArchiveId()).toBe("cockroach");
         expect(reader.getEventCount()).toBe(COCKROACH_EXPECTED_EVENT_COUNT);
     });
 
     it("should read clp_json_test_log_files sfa archive from buffer", async () => {
         const data = await loadTestData("clp_json_test_log_files.clp");
-        reader = module.ClpSfaReader.create(data, "clp_json_test_log_files");
+        reader = module.ClpSfaReader.create(data);
 
         expect(reader.getFileNames().length).toBe(9);
-        expect(reader.getArchiveId()).toBe("clp_json_test_log_files");
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 });
