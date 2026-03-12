@@ -135,7 +135,7 @@ tasks:
         vars:
           FILE_SHA256: "e4f7f014a635dcc2b4837837dea10c9b78eb51588684909774fa2e49f72352e3"
           OUTPUT_DIR: "{{.OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/clp/archive/5798e0e644eb3827b5a160a608f7d5a427c8a01a.tar.gz"
+          URL: "https://github.com/y-scope/clp/archive/5798e0e.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.OUTPUT_DIR}}\"
