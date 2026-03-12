@@ -123,6 +123,7 @@ tasks:
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
+      - "clp-ffi-js"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -151,6 +152,9 @@ tasks:
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+    deps:
+      - "deps"
+      - "emsdk"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
