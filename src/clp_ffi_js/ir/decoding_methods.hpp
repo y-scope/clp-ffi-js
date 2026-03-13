@@ -40,7 +40,8 @@ auto rewind_reader_and_validate_encoding_type(clp::ReaderInterface& reader) -> v
 
 template <
         clp::ffi::ir_stream::IrUnitHandlerReq IrUnitHandlerType,
-        clp::ffi::ir_stream::search::QueryHandlerReq QueryHandlerType>
+        clp::ffi::ir_stream::search::QueryHandlerReq QueryHandlerType
+>
 auto deserialize_log_events(
         clp::ffi::ir_stream::Deserializer<IrUnitHandlerType, QueryHandlerType>& deserializer,
         clp::ReaderInterface& reader
