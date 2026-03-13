@@ -55,6 +55,20 @@ describe("ClpSfaReader", () => {
         reader = module.ClpSfaReader.create(data);
 
         expect(reader.getFileNames().length).toBe(9);
+        const fileInfos = reader.getFileInfos() as Array<{
+            fileName: string;
+            logEventIdxStart: bigint;
+            logEventIdxEnd: bigint;
+            logEventCount: bigint;
+        }>;
+        expect(fileInfos.length).toBe(9);
+        fileInfos.forEach((range, idx) => {
+            console.log(
+                `[clp_json_test_log_files] range[${idx}] ${range.fileName}: `
+                + `[${range.logEventIdxStart}, ${range.logEventIdxEnd}) `
+                + `count=${range.logEventCount}`
+            );
+        });
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 });

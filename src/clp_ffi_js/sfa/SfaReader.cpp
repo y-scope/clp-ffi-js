@@ -56,7 +56,7 @@ public:
         return file_names;
     }
 
-    [[nodiscard]] auto get_source_file_ranges() const -> emscripten::val {
+    [[nodiscard]] auto get_file_infos() const -> emscripten::val {
         auto source_file_ranges{emscripten::val::array()};
         for (auto const& file_info : m_reader.get_file_infos()) {
             auto entry{emscripten::val::object()};
@@ -83,8 +83,5 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                             emscripten::return_value_policy::take_ownership())
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
-            .function(
-                    "getSourceFileRanges",
-                    &clp_ffi_js::sfa::SfaReader::get_source_file_ranges
-            );
+            .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);
 }
