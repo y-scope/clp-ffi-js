@@ -164,7 +164,6 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
-set(zstd_TARGET zstd::libzstd_static)
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
