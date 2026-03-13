@@ -164,7 +164,6 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
-set(zstd_TARGET zstd::libzstd_static)
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
@@ -188,21 +187,14 @@ set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 
-option(
-    CLP_FFI_JS_ENABLE_SFA_READER_BINDING
-    "Enable experimental CLP-S single-file archive reader Embind surface."
-    OFF
-)
-if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING)
-    find_package(absl REQUIRED)
-    message(STATUS "Found absl")
-    find_package(log_surgeon REQUIRED)
-    message(STATUS "Found log_surgeon")
+find_package(absl REQUIRED)
+message(STATUS "Found absl")
+find_package(log_surgeon REQUIRED)
+message(STATUS "Found log_surgeon")
 
-    set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
-    set(CLP_BUILD_CLP_S_IO ON)
-    set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
-endif()
+set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
+set(CLP_BUILD_CLP_S_IO ON)
+set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
 
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
@@ -231,9 +223,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         ystdlib::error_handling
         zstd::libzstd_static
     )
-    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
-        target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE clp_s::ffi::sfa)
-    endif()
+    target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE clp_s::ffi::sfa)
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
@@ -270,11 +260,9 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
     )
-    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
-        target_sources(
-            ${CLP_FFI_JS_BIN_NAME}
-            PRIVATE
-            ${CLP_FFI_JS_SRC_SFA}
-        )
-    endif()
+    target_sources(
+        ${CLP_FFI_JS_BIN_NAME}
+        PRIVATE
+        ${CLP_FFI_JS_SRC_SFA}
+    )
 endforeach()

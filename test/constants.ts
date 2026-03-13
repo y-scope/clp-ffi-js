@@ -31,8 +31,8 @@ const TEST_DATA_URLS: Readonly<Record<string, string>> = {
         "yarn-ubuntu-resourcemanager-ip-172-31-17-135.log.1.clp.zst",
     "postgresql.clp":
         "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/postgresql.clp",
-    "cockroach.clp":
-        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroach.clp",
+    "cockroachdb.clp":
+        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb.clp",
 };
 
 /**

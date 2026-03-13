@@ -5,6 +5,7 @@ vars:
   G_BOOST_LIB_NAME: "Boost"
   G_FMT_LIB_NAME: "fmt"
   G_GSL_LIB_NAME: "Microsoft.GSL"
+  G_YSTDLIB_LIB_NAME: "ystdlib"
 
   # Misc
   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
@@ -241,7 +242,7 @@ tasks:
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_GSL_LIB_NAME}}.cmake"
-            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/ystdlib.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_YSTDLIB_LIB_NAME}}.cmake"
             - "-DCMAKE_BUILD_TYPE=Release"
             - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
             - "-DCMAKE_INSTALL_MESSAGE=LAZY"

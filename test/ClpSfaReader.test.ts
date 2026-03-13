@@ -14,7 +14,7 @@ import {
 } from "./utils.js";
 
 
-const COCKROACH_EXPECTED_EVENT_COUNT = 200000n;
+const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 let module: MainModule;
@@ -40,10 +40,10 @@ describe("ClpSfaReader", () => {
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
     });
 
-    it("should read cockroach sfa archive from buffer", async () => {
-        const data = await loadTestData("cockroach.clp");
+    it("should read cockroachdb sfa archive from buffer", async () => {
+        const data = await loadTestData("cockroachdb.clp");
         reader = module.ClpSfaReader.create(data);
 
-        expect(reader.getEventCount()).toBe(COCKROACH_EXPECTED_EVENT_COUNT);
+        expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
     });
 });

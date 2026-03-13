@@ -22,10 +22,12 @@
 
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
+#include <clp_ffi_js/types.hpp>
 
 namespace clp_ffi_js::ir {
+using clp_ffi_js::DataArrayTsType;
+
 // JS types used as inputs
-EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
