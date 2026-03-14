@@ -49,5 +49,13 @@ jobs:
           task --version
           uv --version
 
-      - name: "Run lint task"
-        run: "task lint:check"
+      - name: "Lint .cpp files (format only)"
+        run: "task lint:check-cpp-format"
+
+      - name: "Lint .js files"
+        shell: "bash"
+        run: "task lint:check-js"
+
+      - name: "Lint .yaml files"
+        shell: "bash"
+        run: "task lint:check-yaml"
