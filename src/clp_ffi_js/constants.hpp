@@ -4,7 +4,8 @@
 #include <array>
 #include <cstdint>
 #include <string_view>
-#include <type_utils.hpp>
+
+#include <clp/type_utils.hpp>
 
 namespace clp_ffi_js {
 /**
