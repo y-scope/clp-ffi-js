@@ -28,11 +28,9 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
 
     if (reader_result.has_error()) {
         auto const error{reader_result.error()};
-        auto const err_msg{fmt::format(
-                "Failed to open SFA archive from buffer: {} - {}.",
-                error.category().name(),
-                error.message()
-        )};
+        auto const err_msg{fmt::format("Failed to open SFA archive from buffer: {} - {}.",
+                                       error.category().name(),
+                                       error.message())};
         SPDLOG_ERROR("{}", err_msg);
         throw std::runtime_error{err_msg};
     }
@@ -43,9 +41,7 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
-            .constructor(
-                    &clp_ffi_js::sfa::SfaReader::create,
-                    emscripten::return_value_policy::take_ownership()
-            )
+            .constructor(&clp_ffi_js::sfa::SfaReader::create,
+                         emscripten::return_value_policy::take_ownership())
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count);
 }

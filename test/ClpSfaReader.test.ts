@@ -35,14 +35,14 @@ describe("ClpSfaReader", () => {
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = module.ClpSfaReader.create(data);
+        reader = new module.ClpSfaReader(data);
 
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
     });
 
     it("should read cockroachdb sfa archive from buffer", async () => {
         const data = await loadTestData("cockroachdb.clp");
-        reader = module.ClpSfaReader.create(data);
+        reader = new module.ClpSfaReader(data);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
     });
