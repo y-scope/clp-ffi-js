@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 
+#include <clp/ErrorCode.hpp>
+#include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
-#include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
+
 #include <clp_ffi_js/ir/StreamReader.hpp>
+#include <clp_ffi_js/ClpFfiJsException.hpp>
 
 namespace clp_ffi_js::sfa {
 class SfaReader {
@@ -21,32 +24,32 @@ public:
         // Copy array from JavaScript to C++.
         std::vector<char> data_buffer(length);
         // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-        emscripten::val::module_property("HEAPU8").call<void>(
-                "set",
-                data_array,
-                reinterpret_cast<uintptr_t>(data_buffer.data()));
+        emscripten::val::module_property("HEAPU8")
+                .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
         // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
-        auto reader_result = clp_s::ffi::sfa::ClpArchiveReader::create(
-                std::move(data_buffer));
+        auto reader_result = clp_s::ffi::sfa::ClpArchiveReader::create(std::move(data_buffer));
 
         if (reader_result.has_error()) {
-            auto const error = reader_result.error();
-            auto const message
-                    = fmt::format("Failed to open SFA archive from buffer: error_category={}, "
-                                  "error={}",
-                                  error.category().name(),
-                                  error.message());
-            throw std::runtime_error{message};
+            auto const error{reader_result.error()};
+            auto const err_msg{fmt::format(
+                    "Failed to open SFA archive from buffer: {} - {}.",
+                    error.category().name(),
+                    error.message()
+            )};
+            SPDLOG_ERROR("{}", err_msg);
+            throw ClpFfiJsException{
+                    clp::ErrorCode::ErrorCode_Failure,
+                    __FILENAME__,
+                    __LINE__,
+                    err_msg
+            };
         }
 
-        return std::unique_ptr<SfaReader>{
-                new SfaReader{std::move(reader_result.value())}};
+        return std::unique_ptr<SfaReader>{new SfaReader{std::move(reader_result.value())}};
     }
 
-    [[nodiscard]] auto get_event_count() const -> uint64_t {
-        return m_reader.get_event_count();
-    }
+    [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
 
     [[nodiscard]] auto get_file_names() const -> emscripten::val {
         auto file_names{emscripten::val::array()};
@@ -78,9 +81,11 @@ private:
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
-            .class_function("create",
-                            &clp_ffi_js::sfa::SfaReader::create,
-                            emscripten::return_value_policy::take_ownership())
+            .class_function(
+                    "create",
+                    &clp_ffi_js::sfa::SfaReader::create,
+                    emscripten::return_value_policy::take_ownership()
+            )
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);
