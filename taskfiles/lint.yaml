@@ -9,7 +9,7 @@ vars:
 tasks:
   check:
     cmds:
-      - task: "check-cpp-full"
+      - task: "check-cpp-diff"
       - task: "check-js"
       - task: "check-yaml"
 
