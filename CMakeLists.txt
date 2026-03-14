@@ -230,7 +230,6 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         SYSTEM
         PRIVATE
         ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
-        ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
     )
 
     target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
