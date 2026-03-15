@@ -107,21 +107,24 @@ set(CLP_FFI_JS_SRC_MAIN
     src/clp_ffi_js/utils.cpp
 )
 
+set(CLP_FFI_JS_CLP_CORE_SRC_DIR ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src)
+
 set(CLP_FFI_JS_SRC_CLP_CORE
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/EncodedTextAstError.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/ErrorCode.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/utils.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/utils.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/SchemaTree.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ir/EncodedTextAst.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ir/LogEventDeserializer.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ReaderInterface.cpp
-    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/EncodedTextAstError.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/decoding_methods.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/IrDeserializationError.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/ErrorCode.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/utils.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/utils.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/SchemaTree.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ir/EncodedTextAst.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ir/LogEventDeserializer.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ReadOnlyMemoryMappedFile.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ReaderInterface.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/streaming_compression/zstd/Decompressor.cpp
 )
 
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
@@ -159,7 +162,7 @@ find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
 
 set(CLP_BUILD_CLP_STRING_UTILS ON)
-add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
+add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/string_utils)
 
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
@@ -179,7 +182,7 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
-add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
+add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp_s)
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
@@ -229,8 +232,7 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_BIN_NAME}
         SYSTEM
         PRIVATE
-        ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
-        ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
+        ${CLP_FFI_JS_CLP_CORE_SRC_DIR}
     )
 
     target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)
