@@ -20,13 +20,11 @@
 #include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
+#include <clp_ffi_js/binding_types.hpp>
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
-#include <clp_ffi_js/types.hpp>
 
 namespace clp_ffi_js::ir {
-using clp_ffi_js::DataArrayTsType;
-
 // JS types used as inputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
@@ -68,7 +66,7 @@ public:
      * @throw ClpFfiJsException if any error occurs.
      */
     [[nodiscard]] static auto
-    create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
+    create(clp_ffi_js::DataArrayTsType const& data_array, ReaderOptions const& reader_options)
             -> std::unique_ptr<StreamReader>;
 
     // Destructor
