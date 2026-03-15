@@ -1,16 +1,23 @@
 #include "SfaReader.hpp"
 
+#include <cstddef>
+#include <cstdint>
 #include <memory>
-#include <span>
 #include <stdexcept>
-#include <string>
+#include <utility>
+#include <vector>
 
+#include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
+#include <clp_ffi_js/binding_types.hpp>
+
 namespace clp_ffi_js::sfa {
+using clp_ffi_js::DataArrayTsType;
+
 auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<SfaReader> {
     auto const length{data_array["length"].as<size_t>()};
     SPDLOG_INFO("SfaReader::create: got buffer of length={}", length);

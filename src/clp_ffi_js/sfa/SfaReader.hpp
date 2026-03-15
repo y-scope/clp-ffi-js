@@ -3,10 +3,11 @@
 
 #include <cstdint>
 #include <memory>
+#include <utility>
 
 #include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
 
-#include <clp_ffi_js/types.hpp>
+#include <clp_ffi_js/binding_types.hpp>
 
 namespace clp_ffi_js::sfa {
 class SfaReader {
@@ -18,7 +19,7 @@ public:
      * @return The created instance.
      * @throw std::runtime_error if the archive cannot be opened.
      */
-    [[nodiscard]] static auto create(DataArrayTsType const& data_array)
+    [[nodiscard]] static auto create(clp_ffi_js::DataArrayTsType const& data_array)
             -> std::unique_ptr<SfaReader>;
 
     [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
