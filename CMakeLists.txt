@@ -261,8 +261,8 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
     target_sources(
         ${CLP_FFI_JS_BIN_NAME}
         PRIVATE
+        ${CLP_FFI_JS_SRC_CLP_CORE}
         ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_SFA}
-        ${CLP_FFI_JS_SRC_CLP_CORE}
     )
 endforeach()

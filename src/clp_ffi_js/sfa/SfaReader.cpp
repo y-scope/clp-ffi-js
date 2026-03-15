@@ -31,7 +31,7 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
             reinterpret_cast<uintptr_t>(data_buffer.data()));
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
-    auto reader_result = clp_s::ffi::sfa::ClpArchiveReader::create(std::move(data_buffer));
+    auto reader_result{clp_s::ffi::sfa::ClpArchiveReader::create(std::move(data_buffer))};
 
     if (reader_result.has_error()) {
         auto const error{reader_result.error()};
