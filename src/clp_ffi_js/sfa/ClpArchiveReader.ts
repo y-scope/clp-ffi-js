@@ -79,10 +79,10 @@ class ClpArchiveReader {
      *
      * @return Decoded log events.
      */
-    decode (): LogEvent[] {
+    decodeAll (): LogEvent[] {
         this.#assertOpen();
 
-        return (this.#native.decode() as Array<{
+        return (this.#native.decodeAll() as Array<{
             logEventIdx: bigint;
             message: string;
             timestamp: bigint;

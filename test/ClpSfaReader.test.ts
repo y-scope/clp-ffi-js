@@ -18,7 +18,7 @@ import {
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT = 9;
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT = 132n;
 const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
-const COCKROACHDB_TIMESTAMP_CHECK_COUNT = 5;
+const COCKROACHDB_TIMESTAMP_CHECK_COUNT = 1000;
 const MAX_LOG_EVENT_INDEX_CHECKS = 1000;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
@@ -29,7 +29,7 @@ beforeAll(async () => {
 });
 
 const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint): void => {
-    const decodedEvents = reader.decode();
+    const decodedEvents = reader.decodeAll();
     expect(decodedEvents.length).toBe(Number(expectedCount));
 
     const numChecks = Math.min(decodedEvents.length, MAX_LOG_EVENT_INDEX_CHECKS);
@@ -82,9 +82,9 @@ describe("ClpSfaReader", () => {
         reader = ClpArchiveReader.create(module, data);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
-        //assertLogEventIndices(reader, COCKROACHDB_EXPECTED_EVENT_COUNT);
+        assertLogEventIndices(reader, COCKROACHDB_EXPECTED_EVENT_COUNT);
 
-        const decodedEvents = reader.decode();
+        const decodedEvents = reader.decodeAll();
         expect(decodedEvents.length).toBe(Number(COCKROACHDB_EXPECTED_EVENT_COUNT));
 
         for (let i = 0; i < Math.min(COCKROACHDB_TIMESTAMP_CHECK_COUNT, decodedEvents.length); i += 1) {

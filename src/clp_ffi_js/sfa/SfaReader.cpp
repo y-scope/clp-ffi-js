@@ -54,8 +54,8 @@ auto SfaReader::get_file_names() const -> StringArrayTsType {
     return StringArrayTsType{file_names};
 }
 
-auto SfaReader::decode() -> LogEventArrayTsType {
-    auto decoded_result{m_reader.decode()};
+auto SfaReader::decode_all() -> LogEventArrayTsType {
+    auto decoded_result{m_reader.decode_all()};
     if (decoded_result.has_error()) {
         auto const error{decoded_result.error()};
         auto const err_msg{fmt::format(
@@ -106,7 +106,7 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                     &clp_ffi_js::sfa::SfaReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
-            .function("decode", &clp_ffi_js::sfa::SfaReader::decode)
+            .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all)
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);

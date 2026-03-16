@@ -28,7 +28,7 @@ public:
 
     [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
 
-    [[nodiscard]] auto decode() -> LogEventArrayTsType;
+    [[nodiscard]] auto decode_all() -> LogEventArrayTsType;
     [[nodiscard]] auto get_file_names() const -> clp_ffi_js::StringArrayTsType;
     [[nodiscard]] auto get_file_infos() const -> FileInfoArrayTsType;
 
