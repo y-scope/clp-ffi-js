@@ -59,7 +59,7 @@ const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
     return null;
 };
 
-describe("ClpSfaReader", () => {
+describe("ClpArchiveReader", () => {
     let reader: ClpArchiveReader | null = null;
 
     afterEach(() => {
