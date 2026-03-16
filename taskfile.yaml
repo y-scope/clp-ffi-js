@@ -124,7 +124,7 @@ tasks:
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      #- "clp-ffi-js"
+      - "clp-ffi-js"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -165,7 +165,7 @@ tasks:
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
 
   node-modules:
-    # internal: true
+    internal: true
     sources:
       - "{{.ROOT_DIR}}/package.json"
       - "{{.ROOT_DIR}}/package-lock.json"
