@@ -7,7 +7,8 @@ import type {FileInfoArray} from "./types.js";
 
 
 /**
- * Type-safe wrapper around the native `ClpSfaReader` binding.
+ * JavaScript FFI binding for the C++ SFA archive reader:
+ * [`clp_s::ffi::sfa::ClpArchiveReader`](../../../build/deps/clp/components/core/src/clp_s/ffi/sfa/ClpArchiveReader.hpp).
  */
 class ClpArchiveReader {
     readonly #native: ClpSfaReader;
