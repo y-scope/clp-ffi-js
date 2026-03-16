@@ -54,7 +54,7 @@ auto SfaReader::get_file_names() const -> StringArrayTsType {
     return StringArrayTsType{file_names};
 }
 
-auto SfaReader::decode() -> StringArrayTsType {
+auto SfaReader::decode() -> LogEventArrayTsType {
     auto decoded_result{m_reader.decode()};
     if (decoded_result.has_error()) {
         auto const error{decoded_result.error()};
@@ -69,9 +69,13 @@ auto SfaReader::decode() -> StringArrayTsType {
 
     auto decoded_events{emscripten::val::array()};
     for (auto const& event : decoded_result.value()) {
-        decoded_events.call<void>("push", emscripten::val(event));
+        auto entry{emscripten::val::object()};
+        entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
+        entry.set("timestamp", emscripten::val(event.get_timestamp()));
+        entry.set("message", emscripten::val(event.get_message()));
+        decoded_events.call<void>("push", entry);
     }
-    return StringArrayTsType{decoded_events};
+    return LogEventArrayTsType{decoded_events};
 }
 
 auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
@@ -90,8 +94,11 @@ auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::register_type<clp_ffi_js::sfa::FileInfoArrayTsType>(
-            "Array<{fileName: string, logEventIdxStart: bigint, logEventIdxEnd: bigint, "
-            "logEventCount: bigint}>"
+            "Array<{fileName: string, logEventIdxStart: number, logEventIdxEnd: number, "
+            "logEventCount: number}>"
+    );
+    emscripten::register_type<clp_ffi_js::sfa::LogEventArrayTsType>(
+            "Array<{logEventIdx: number, timestamp: number, message: string}>"
     );
 
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")

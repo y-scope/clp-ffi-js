@@ -3,14 +3,22 @@
  */
 interface FileInfo {
     fileName: string;
-    logEventIdxStart: number;
-    logEventIdxEnd: number;
-    logEventCount: number;
+    logEventIdxStart: bigint;
+    logEventIdxEnd: bigint;
+    logEventCount: bigint;
 }
 
 type FileInfoArray = FileInfo[];
+type FieldValue =
+    | number
+    | string
+    | boolean
+    | null
+    | {[key: string]: FieldValue}
+    | FieldValue[];
 
 export type {
+    FieldValue,
     FileInfo,
     FileInfoArray,
 };

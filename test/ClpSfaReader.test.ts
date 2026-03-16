@@ -6,9 +6,9 @@ import {
     it,
 } from "vitest";
 
-import type {FileInfoArray} from "../src/clp_ffi_js/sfa/types.js";
+import {ClpArchiveReader} from "../src/clp_ffi_js/sfa/ClpArchiveReader.js";
+import type {FieldValue} from "../src/clp_ffi_js/sfa/types.js";
 import {
-    type ClpSfaReader,
     createModule,
     loadTestData,
     type MainModule,
@@ -18,7 +18,8 @@ import {
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT = 9;
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT = 132n;
 const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
-const NUM_DECODED_EVENTS_TO_PRINT = 3;
+const COCKROACHDB_TIMESTAMP_CHECK_COUNT = 5;
+const MAX_LOG_EVENT_INDEX_CHECKS = 1000;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 let module: MainModule;
@@ -27,61 +28,89 @@ beforeAll(async () => {
     module = await createModule();
 });
 
+const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint): void => {
+    const decodedEvents = reader.decode();
+    expect(decodedEvents.length).toBe(Number(expectedCount));
+
+    const numChecks = Math.min(decodedEvents.length, MAX_LOG_EVENT_INDEX_CHECKS);
+    for (let i = 0; i < numChecks; i += 1) {
+        const event = decodedEvents[i];
+        expect(event).toBeDefined();
+        expect(event?.logEventIdx).toBe(BigInt(i));
+    }
+};
+
+const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
+    if ("number" === typeof value) {
+        return BigInt(Math.trunc(value));
+    }
+    if ("string" === typeof value) {
+        if (value.includes(".")) {
+            const asNumber = Number.parseFloat(value);
+            if (Number.isFinite(asNumber)) {
+                return BigInt(Math.trunc(asNumber * 1000));
+            }
+            return null;
+        }
+        if (/^-?\d+$/.test(value)) {
+            return BigInt(value);
+        }
+    }
+    return null;
+};
+
 describe("ClpSfaReader", () => {
-    let reader: ClpSfaReader | null = null;
+    let reader: ClpArchiveReader | null = null;
 
     afterEach(() => {
         if (null !== reader) {
-            reader.delete();
+            reader.close();
             reader = null;
         }
     });
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = new module.ClpSfaReader(data);
+        reader = ClpArchiveReader.create(module, data);
 
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
+        assertLogEventIndices(reader, POSTGRESQL_EXPECTED_EVENT_COUNT);
     });
 
     it("should read cockroachdb sfa archive from buffer", async () => {
         const data = await loadTestData("cockroachdb.clp");
-        reader = new module.ClpSfaReader(data);
+        reader = ClpArchiveReader.create(module, data);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
+        //assertLogEventIndices(reader, COCKROACHDB_EXPECTED_EVENT_COUNT);
+
+        const decodedEvents = reader.decode();
+        expect(decodedEvents.length).toBe(Number(COCKROACHDB_EXPECTED_EVENT_COUNT));
+
+        for (let i = 0; i < Math.min(COCKROACHDB_TIMESTAMP_CHECK_COUNT, decodedEvents.length); i += 1) {
+            const event = decodedEvents[i];
+            expect(event).toBeDefined();
+            const kvPairs = event?.getKvPairs();
+            expect(kvPairs).not.toBeNull();
+            const timestampField = kvPairs?.["timestamp"];
+            expect(timestampField).toBeDefined();
+            const parsedTimestamp = parseTimestampFieldToMs(timestampField as FieldValue);
+            expect(parsedTimestamp).not.toBeNull();
+            expect(parsedTimestamp).toBe(event?.timestamp);
+        }
     });
 
     it("should read clp_json_test_log_files sfa archive from buffer", async () => {
         const data = await loadTestData("clp_json_test_log_files.clp");
-        reader = new module.ClpSfaReader(data);
+        reader = ClpArchiveReader.create(module, data);
 
-        const fileNames = reader.getFileNames() as string[];
+        const fileNames = reader.getFileNames();
         expect(fileNames.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
-        const fileInfos = reader.getFileInfos() as FileInfoArray;
+        const fileInfos = reader.getFileInfos();
         expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
-        fileInfos.forEach((range: FileInfoArray[number], idx: number) => {
-            console.log(
-                `[clp_json_test_log_files] range[${idx}] ${range.fileName}: ` +
-                `[${range.logEventIdxStart}, ${range.logEventIdxEnd}) ` +
-                `count=${range.logEventCount}`
-            );
-        });
-
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
-    });
-
-    it("should print decoded events from clp_json_test_log_files sfa archive", async () => {
-        const data = await loadTestData("clp_json_test_log_files.clp");
-        reader = new module.ClpSfaReader(data);
-
-        const decodedEvents = reader.decode() as string[];
-        expect(decodedEvents.length).toBe(Number(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT));
-
-        const numToPrint = Math.min(NUM_DECODED_EVENTS_TO_PRINT, decodedEvents.length);
-        for (let i = 0; i < numToPrint; i += 1) {
-            console.log(`[clp_json_test_log_files] decoded[${i}]: ${decodedEvents[i]}`);
-        }
+        assertLogEventIndices(reader, CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 });
