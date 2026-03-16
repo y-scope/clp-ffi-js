@@ -9,23 +9,25 @@ const EslintConfig = [
         ignores: [
             "build/",
             "dist/",
+            "docs/",
             "node_modules/",
+            "test/",
         ],
     },
-    CommonConfig,
-    ...TsConfigArray,
     {
         files: [
-            "**/*.ts",
-            "**/*.tsx",
+            "src/**/*.ts",
+            "src/**/*.tsx",
         ],
         plugins: {
             tsdoc: TsdocPlugin,
         },
         rules: {
-            "tsdoc/syntax": "warn",
+            "tsdoc/syntax": "error",
         },
     },
+    CommonConfig,
+    ...TsConfigArray,
     ...StylisticConfigArray,
 ];
 
