@@ -1,0 +1,37 @@
+{
+	"tags":
+	{
+		"allowUnknownTags" : true
+	},
+	"plugins":[
+		 "plugins/markdown"
+		,"/home/bingranhu/.npm/_npx/39334eb8977a914a/node_modules/tsdoc/template/plugins/TSDoc.js"
+	],
+	"opts":
+	{
+		"template"	:"/home/bingranhu/.npm/_npx/39334eb8977a914a/node_modules/tsdoc/template",
+		"recurse"	:"true"
+	},
+	"templates" : {
+		"cleverLinks"     : false,
+		"monospaceLinks"  : false
+	},
+	"source":
+	{
+		"includePattern": "(\\.d)?\\.ts$"
+	},
+	"markdown"  : {
+		"parser"   : "gfm",
+		"hardwrap" : true
+	},
+	"tsdoc":{
+		"source"		:"/home/bingranhu/clp/components/core/build/clp-ffi-js/src/",
+		"destination"	:"/home/bingranhu/clp/components/core/build/clp-ffi-js/docs",
+		"tutorials"		:"",
+		"systemName"	: "clp-ffi-js",
+		"footer"		: "",
+		"copyright"		: "clp-ffi-js Copyright © 2026 bingranhu.",
+		"outputSourceFiles" : true,
+		"commentsOnly": true
+	}
+}

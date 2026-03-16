@@ -1,0 +1,99 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="./"><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>clp-ffi-js</title><meta name="description" content="Documentation for clp-ffi-js"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => window.app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><a href="index.html" class="title">clp-ffi-js</a><div id="tsd-toolbar-links"></div><button id="tsd-search-trigger" class="tsd-widget" aria-label="Search"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></button><dialog id="tsd-search" aria-label="Search"><input role="combobox" id="tsd-search-input" aria-controls="tsd-search-results" aria-autocomplete="list" aria-expanded="true" autocapitalize="off" autocomplete="off" placeholder="Search the docs" maxLength="100"/><ul role="listbox" id="tsd-search-results"></ul><div id="tsd-search-status" aria-live="polite" aria-atomic="true"><div>Preparing search index...</div></div></dialog><a href="#" class="tsd-widget menu" id="tsd-toolbar-menu-trigger" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>clp-ffi-js</h1></div><div class="tsd-panel tsd-typography"><p>clp-ffi-js is a JavaScript FFI library for <a href="https://github.com/y-scope/clp">CLP</a>. It currently supports decoding log events from CLP
+IR streams. Other CLP features are being added incrementally.</p>
+<p>You can use GitHub issues to <a href="https://github.com/y-scope/clp-ffi-js/issues/new?labels=enhancement&amp;template=feature-request.yml">request features</a> or <a href="https://github.com/y-scope/clp-ffi-js/issues/new?labels=bug&amp;template=bug-report.yml">report bugs</a>.</p>
+<h1 id="building" class="tsd-anchor-link">Building<a href="#building" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<h2 id="requirements" class="tsd-anchor-link">Requirements<a href="#requirements" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<ul>
+<li>CMake &gt;= 3.16</li>
+<li>GNU Make</li>
+<li>Python 3</li>
+<li><a href="https://taskfile.dev">Task</a> &gt;= 3.48.0</li>
+</ul>
+<h2 id="setup" class="tsd-anchor-link">Setup<a href="#setup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Initialize and update submodules:</p>
+<pre><code class="shell"><span class="hl-0">git</span><span class="hl-1"> </span><span class="hl-2">submodule</span><span class="hl-1"> </span><span class="hl-2">update</span><span class="hl-1"> </span><span class="hl-3">--init</span><span class="hl-1"> </span><span class="hl-3">--recursive</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="common-build-commands" class="tsd-anchor-link">Common build commands<a href="#common-build-commands" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>To build the project:</p>
+<pre><code class="shell"><span class="hl-0">task</span>
+</code><button type="button">Copy</button></pre>
+
+<p>To clean the build:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">clean</span>
+</code><button type="button">Copy</button></pre>
+
+<h1 id="contributing" class="tsd-anchor-link">Contributing<a href="#contributing" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1>
+<p>Follow the steps below to develop and contribute to the project.</p>
+<h2 id="set-up" class="tsd-anchor-link">Set up<a href="#set-up" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Before opening the project in an IDE, run the commands below.</p>
+<p>Download and install <a href="https://emscripten.org">emscripten</a>:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">emsdk</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Download the required source dependencies:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">deps</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Set up the config files for our C++ linting tools:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">lint:cpp-configs</span>
+</code><button type="button">Copy</button></pre>
+
+<h2 id="linting" class="tsd-anchor-link">Linting<a href="#linting" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2>
+<p>Before submitting a pull request, ensure you’ve run the linting commands below and either fixed any
+violations or suppressed the warning.</p>
+<p>To run all linting checks:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">lint:check</span>
+</code><button type="button">Copy</button></pre>
+
+<p>To run all linting checks AND automatically fix any fixable issues:</p>
+<pre><code class="shell"><span class="hl-0">task</span><span class="hl-1"> </span><span class="hl-2">lint:fix</span>
+</code><button type="button">Copy</button></pre>
+
+<h3 id="running-specific-linters" class="tsd-anchor-link">Running specific linters<a href="#running-specific-linters" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3>
+<p>The commands above run all linting checks, but for performance you may want to run a subset (e.g.,
+if you only changed C++ files, you don't need to run the YAML linting checks) using one of the tasks
+in the table below.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lint:cpp-check</code></td>
+<td>Runs the C++ linters (formatters and static analyzers).</td>
+</tr>
+<tr>
+<td><code>lint:cpp-fix</code></td>
+<td>Runs the C++ linters and fixes some violations.</td>
+</tr>
+<tr>
+<td><code>lint:cpp-format-check</code></td>
+<td>Runs the C++ formatters.</td>
+</tr>
+<tr>
+<td><code>lint:cpp-format-fix</code></td>
+<td>Runs the C++ formatters and fixes some violations.</td>
+</tr>
+<tr>
+<td><code>lint:cpp-static-check</code></td>
+<td>Runs the C++ static analyzers.</td>
+</tr>
+<tr>
+<td><code>lint:cpp-static-fix</code></td>
+<td>Runs the C++ static analyzers and fixes some violations.</td>
+</tr>
+<tr>
+<td><code>lint:yml-check</code></td>
+<td>Runs the YAML linters.</td>
+</tr>
+<tr>
+<td><code>lint:yml-fix</code></td>
+<td>Runs the YAML linters and fixes some violations.</td>
+</tr>
+</tbody>
+</table>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg><h3>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#building"><span>Building</span></a><ul><li><a href="#requirements"><span>Requirements</span></a></li><li><a href="#setup"><span>Setup</span></a></li><li><a href="#common-build-commands"><span>Common build commands</span></a></li></ul><a href="#contributing"><span>Contributing</span></a><ul><li><a href="#set-up"><span>Set up</span></a></li><li><a href="#linting"><span>Linting</span></a></li><li><ul><li><a href="#running-specific-linters"><span>Running specific linters</span></a></li></ul></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">clp-ffi-js</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>

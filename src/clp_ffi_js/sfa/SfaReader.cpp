@@ -94,11 +94,11 @@ auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::register_type<clp_ffi_js::sfa::FileInfoArrayTsType>(
-            "Array<{fileName: string, logEventIdxStart: number, logEventIdxEnd: number, "
-            "logEventCount: number}>"
+            "Array<{fileName: string, logEventIdxStart: bigint, logEventIdxEnd: bigint, "
+            "logEventCount: bigint}>"
     );
     emscripten::register_type<clp_ffi_js::sfa::LogEventArrayTsType>(
-            "Array<{logEventIdx: number, timestamp: number, message: string}>"
+            "Array<{logEventIdx: bigint, timestamp: bigint, message: string}>"
     );
 
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
