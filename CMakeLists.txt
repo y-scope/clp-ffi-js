@@ -98,6 +98,7 @@ execute_process(
 )
 
 set(CLP_FFI_JS_SRC_MAIN
+    src/clp_ffi_js/binding_types.cpp
     src/clp_ffi_js/ir/decoding_methods.cpp
     src/clp_ffi_js/ir/query_methods.cpp
     src/clp_ffi_js/ir/StreamReader.cpp
@@ -137,6 +138,9 @@ set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
     "List of supported environments."
 )
 
+find_package(absl REQUIRED)
+message(STATUS "Found absl")
+
 find_package(antlr4-runtime REQUIRED)
 message(STATUS "Found antlr4-runtime ${antlr4-runtime_VERSION}")
 
@@ -148,6 +152,12 @@ message(STATUS "Found date ${date_VERSION}")
 
 find_package(fmt REQUIRED)
 message(STATUS "Found fmt ${fmt_VERSION}")
+
+find_package(log_surgeon REQUIRED)
+message(STATUS "Found log_surgeon")
+
+find_package(msgpack-cxx REQUIRED)
+message(STATUS "Found msgpack-cxx")
 
 find_package(nlohmann_json REQUIRED)
 message(STATUS "Found nlohmann_json ${nlohmann_json_VERSION}")
@@ -175,10 +185,11 @@ add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/string_utils)
 # number of dependencies needed during the build process.
 set(CLP_BUILD_EXECUTABLES OFF)
 set(CLP_BUILD_TESTING OFF)
-set(CLP_BUILD_CLP_S_ARCHIVEREADER OFF)
+set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
 set(CLP_BUILD_CLP_S_ARCHIVEWRITER OFF)
-set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES OFF)
-set(CLP_BUILD_CLP_S_IO OFF)
+set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
+set(CLP_BUILD_CLP_S_ENABLE_CURL OFF)
+set(CLP_BUILD_CLP_S_IO ON)
 set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR OFF)
 set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES OFF)
 set(CLP_BUILD_CLP_S_SEARCH OFF)
@@ -186,25 +197,11 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
+set(CLP_BUILD_TESTING OFF)
 
-option(
-    CLP_FFI_JS_ENABLE_SFA_READER_BINDING
-    "Enable experimental CLP-S single-file archive reader Embind surface."
-    OFF
-)
-if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING)
-    find_package(absl REQUIRED)
-    message(STATUS "Found absl")
-    find_package(log_surgeon REQUIRED)
-    message(STATUS "Found log_surgeon")
-    find_package(msgpack-cxx REQUIRED)
-    message(STATUS "Found msgpack-cxx")
-
-    set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
-    set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
-    set(CLP_BUILD_CLP_S_ENABLE_CURL OFF)
-    set(CLP_BUILD_CLP_S_IO ON)
-endif()
+# Sanity check CLP build flags
+include("${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/cmake/Options/options.cmake")
+validate_and_setup_all_clp_dependency_flags()
 
 add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp_s)
 
@@ -224,6 +221,7 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         PRIVATE
         antlr4_static
         Boost::headers
+        clp_s::ffi::sfa
         clp_s::search::ast
         clp_s::search::kql
         date::date
@@ -235,9 +233,6 @@ foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
         ystdlib::error_handling
         zstd::libzstd_static
     )
-    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
-        target_link_libraries(${CLP_FFI_JS_BIN_NAME} PRIVATE clp_s::ffi::sfa)
-    endif()
     set(CLP_FFI_JS_LINK_OPTIONS
         ${CLP_FFI_JS_COMMON_LINK_OPTIONS}
         --emit-tsd=${CLP_FFI_JS_BIN_NAME}.d.ts
@@ -270,14 +265,8 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
     target_sources(
         ${CLP_FFI_JS_BIN_NAME}
         PRIVATE
-        ${CLP_FFI_JS_SRC_MAIN}
         ${CLP_FFI_JS_SRC_CLP_CORE}
+        ${CLP_FFI_JS_SRC_MAIN}
+        ${CLP_FFI_JS_SRC_SFA}
     )
-    if(CLP_FFI_JS_ENABLE_SFA_READER_BINDING AND TARGET clp_s::ffi::sfa)
-        target_sources(
-            ${CLP_FFI_JS_BIN_NAME}
-            PRIVATE
-            ${CLP_FFI_JS_SRC_SFA}
-        )
-    endif()
 endforeach()

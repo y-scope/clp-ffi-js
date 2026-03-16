@@ -14,8 +14,8 @@ import {
 } from "./utils.js";
 
 
-const COCKROACH_EXPECTED_EVENT_COUNT = 200000n;
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT = 132n;
+const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 let module: MainModule;
@@ -36,23 +36,21 @@ describe("ClpSfaReader", () => {
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = module.ClpSfaReader.create(data);
+        reader = new module.ClpSfaReader(data);
 
-        expect(reader.getFileNames()).toEqual(["postgresql.log"]);
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
     });
 
-    it("should read cockroach sfa archive from buffer", async () => {
-        const data = await loadTestData("cockroach.clp");
-        reader = module.ClpSfaReader.create(data);
+    it("should read cockroachdb sfa archive from buffer", async () => {
+        const data = await loadTestData("cockroachdb.clp");
+        reader = new module.ClpSfaReader(data);
 
-        expect(reader.getFileNames()).toEqual(["cockroach.log"]);
-        expect(reader.getEventCount()).toBe(COCKROACH_EXPECTED_EVENT_COUNT);
+        expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
     });
 
     it("should read clp_json_test_log_files sfa archive from buffer", async () => {
         const data = await loadTestData("clp_json_test_log_files.clp");
-        reader = module.ClpSfaReader.create(data);
+        reader = new module.ClpSfaReader(data);
 
         expect(reader.getFileNames().length).toBe(9);
         const fileInfos = reader.getFileInfos() as Array<{

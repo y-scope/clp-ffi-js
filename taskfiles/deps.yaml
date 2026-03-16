@@ -5,6 +5,7 @@ vars:
   G_BOOST_LIB_NAME: "Boost"
   G_FMT_LIB_NAME: "fmt"
   G_GSL_LIB_NAME: "Microsoft.GSL"
+  G_YSTDLIB_LIB_NAME: "ystdlib"
 
   # Misc
   G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
@@ -133,9 +134,9 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "739e8d45436302304fbd8f0f1e3c73dcb45e1bc2ea8833e35d40dd52542d11ce"
+          FILE_SHA256: "e4f7f014a635dcc2b4837837dea10c9b78eb51588684909774fa2e49f72352e3"
           OUTPUT_DIR: "{{.OUTPUT_DIR}}"
-          URL: "https://github.com/Bill-hbrhbr/clp/archive/4b086b213ef65d399dddbd93ce5fb43f4f40eb9d.tar.gz"
+          URL: "https://github.com/y-scope/clp/archive/5798e0e.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.OUTPUT_DIR}}\"
@@ -241,7 +242,7 @@ tasks:
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
             - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_GSL_LIB_NAME}}.cmake"
-            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/ystdlib.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_YSTDLIB_LIB_NAME}}.cmake"
             - "-DCMAKE_BUILD_TYPE=Release"
             - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
             - "-DCMAKE_INSTALL_MESSAGE=LAZY"
