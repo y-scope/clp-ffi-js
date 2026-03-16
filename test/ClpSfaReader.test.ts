@@ -14,6 +14,7 @@ import {
 } from "./utils.js";
 
 
+const CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT = 9;
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT = 132n;
 const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
@@ -52,21 +53,26 @@ describe("ClpSfaReader", () => {
         const data = await loadTestData("clp_json_test_log_files.clp");
         reader = new module.ClpSfaReader(data);
 
-        expect(reader.getFileNames().length).toBe(9);
+        const fileNames = reader.getFileNames() as string[];
+        expect(fileNames.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
+
         const fileInfos = reader.getFileInfos() as Array<{
             fileName: string;
             logEventIdxStart: bigint;
             logEventIdxEnd: bigint;
             logEventCount: bigint;
         }>;
-        expect(fileInfos.length).toBe(9);
+
+        expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
+
         fileInfos.forEach((range, idx) => {
             console.log(
-                `[clp_json_test_log_files] range[${idx}] ${range.fileName}: `
-                + `[${range.logEventIdxStart}, ${range.logEventIdxEnd}) `
-                + `count=${range.logEventCount}`
+                `[clp_json_test_log_files] range[${idx}] ${range.fileName}: ` +
+                `[${range.logEventIdxStart}, ${range.logEventIdxEnd}) ` +
+                `count=${range.logEventCount}`
             );
         });
+
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 });
