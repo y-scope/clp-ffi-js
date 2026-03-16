@@ -45,7 +45,6 @@
     "eslint": "^9.39.2",
     "eslint-config-yscope": "^1.1.2",
     "eslint-plugin-tsdoc": "^0.4.0",
-    "jsdoc": "^4.0.5",
     "typedoc": "^0.28.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
