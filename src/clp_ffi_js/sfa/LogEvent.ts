@@ -16,7 +16,7 @@ class LogEvent {
      * @param timestamp Epoch timestamp.
      * @param message Serialized message string.
      */
-    constructor(logEventIdx: bigint, timestamp: bigint, message: string) {
+    constructor (logEventIdx: bigint, timestamp: bigint, message: string) {
         this.logEventIdx = logEventIdx;
         this.timestamp = timestamp;
         this.message = message;
@@ -25,9 +25,9 @@ class LogEvent {
     /**
      * Returns the key-value pairs of this log event by parsing the message as JSON.
      *
-     * @returns The key-value pairs, or null if the message is not valid JSON.
+     * @return The key-value pairs, or null if the message is not valid JSON.
      */
-    getKvPairs(): Readonly<{[key: string]: FieldValue}> | null {
+    getKvPairs (): Readonly<{[key: string]: FieldValue}> | null {
         try {
             return JSON.parse(this.message) as {[key: string]: FieldValue};
         } catch {

@@ -29,6 +29,11 @@ const EslintConfig = [
     CommonConfig,
     ...TsConfigArray,
     ...StylisticConfigArray,
+    {
+        rules: {
+            "tsdoc/syntax": "off",
+        },
+    },
 ];
 
 

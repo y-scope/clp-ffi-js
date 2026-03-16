@@ -1,7 +1,10 @@
-import type {ClpSfaReader, MainModule} from "../../../dist/ClpFfiJs-node.js";
-
+import type {
+    ClpSfaReader,
+    MainModule,
+} from "../../../dist/ClpFfiJs-node.js";
 import {LogEvent} from "./LogEvent.js";
 import type {FileInfoArray} from "./types.js";
+
 
 /**
  * Type-safe wrapper around the native `ClpSfaReader` binding.
@@ -11,7 +14,7 @@ class ClpArchiveReader {
 
     #closed: boolean = false;
 
-    private constructor(native: ClpSfaReader) {
+    private constructor (native: ClpSfaReader) {
         this.#native = native;
     }
 
@@ -20,54 +23,65 @@ class ClpArchiveReader {
      *
      * @param module Loaded WASM module.
      * @param archiveData Single-file archive bytes.
-     * @returns Reader instance.
+     * @return Reader instance.
      */
-    static create(module: MainModule, archiveData: Uint8Array): ClpArchiveReader {
+    static create (module: MainModule, archiveData: Uint8Array): ClpArchiveReader {
         return new ClpArchiveReader(new module.ClpSfaReader(archiveData));
     }
 
     /**
      * Releases native resources.
      */
-    close(): void {
+    close (): void {
         if (this.#closed) {
             return;
         }
+
         this.#closed = true;
         this.#native.delete();
     }
 
     /**
-     * @returns Total number of events in the archive.
+     * Gets the total number of events in the archive.
+     *
+     * @return Total number of events in the archive.
      */
-    getEventCount(): bigint {
+    getEventCount (): bigint {
         this.#assertOpen();
-        return this.#native.getEventCount() as bigint;
+
+        return this.#native.getEventCount();
     }
 
     /**
-     * @returns Source file names in range-index order.
+     * Gets source file names in range-index order.
+     *
+     * @return Source file names in range-index order.
      */
-    getFileNames(): string[] {
+    getFileNames (): string[] {
         this.#assertOpen();
+
         return this.#native.getFileNames();
     }
 
     /**
-     * @returns Source file metadata in range-index order.
+     * Gets source file metadata in range-index order.
+     *
+     * @return Source file metadata in range-index order.
      */
-    getFileInfos(): FileInfoArray {
+    getFileInfos (): FileInfoArray {
         this.#assertOpen();
+
         return this.#native.getFileInfos() as FileInfoArray;
     }
 
     /**
      * Decodes all log events in global log-event-index order.
      *
-     * @returns Decoded log events.
+     * @return Decoded log events.
      */
-    decode(): LogEvent[] {
+    decode (): LogEvent[] {
         this.#assertOpen();
+
         return (this.#native.decode() as Array<{
             logEventIdx: bigint;
             message: string;
@@ -81,7 +95,7 @@ class ClpArchiveReader {
         });
     }
 
-    #assertOpen(): void {
+    #assertOpen (): void {
         if (this.#closed) {
             throw new Error("ClpArchiveReader is closed.");
         }

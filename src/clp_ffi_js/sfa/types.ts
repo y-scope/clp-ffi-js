@@ -9,13 +9,14 @@ interface FileInfo {
 }
 
 type FileInfoArray = FileInfo[];
+
 type FieldValue =
-    | number
-    | string
-    | boolean
-    | null
-    | {[key: string]: FieldValue}
-    | FieldValue[];
+    number |
+    string |
+    boolean |
+    null |
+    {[key: string]: FieldValue} |
+    FieldValue[];
 
 export type {
     FieldValue,
