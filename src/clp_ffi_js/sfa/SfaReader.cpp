@@ -36,7 +36,8 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
         auto const err_msg{fmt::format(
                 "Failed to open SFA archive from buffer: {} - {}.",
                 error.category().name(),
-                error.message())};
+                error.message()
+        )};
         SPDLOG_ERROR("{}", err_msg);
         throw std::runtime_error{err_msg};
     }
@@ -68,8 +69,10 @@ auto SfaReader::get_file_infos() const -> emscripten::val {
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
-            .constructor(&clp_ffi_js::sfa::SfaReader::create,
-                         emscripten::return_value_policy::take_ownership())
+            .constructor(
+                    &clp_ffi_js::sfa::SfaReader::create,
+                    emscripten::return_value_policy::take_ownership()
+            )
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);

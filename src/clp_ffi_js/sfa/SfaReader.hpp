@@ -5,9 +5,8 @@
 #include <memory>
 #include <utility>
 
-#include <emscripten/val.h>
-
 #include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
+#include <emscripten/val.h>
 
 #include <clp_ffi_js/binding_types.hpp>
 
@@ -25,6 +24,7 @@ public:
             -> std::unique_ptr<SfaReader>;
 
     [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
+
     [[nodiscard]] auto get_file_names() const -> emscripten::val;
     [[nodiscard]] auto get_file_infos() const -> emscripten::val;
 
