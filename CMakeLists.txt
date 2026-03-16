@@ -117,6 +117,7 @@ set(CLP_FFI_JS_CLP_CORE_SRC_DIR ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/co
 set(CLP_FFI_JS_SRC_CLP_CORE
     ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/EncodedTextAstError.cpp
     ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/decoding_methods.cpp
+    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/IrDeserializationError.cpp
     ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
     ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/ErrorCode.cpp
     ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
@@ -197,16 +198,12 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
-set(CLP_BUILD_TESTING OFF)
 
 # Sanity check CLP build flags
-include("${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/cmake/Options/options.cmake")
+include("${CLP_FFI_JS_CLP_CORE_SRC_DIR}/../Options/options.cmake")
 validate_and_setup_all_clp_dependency_flags()
 
 add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp_s)
-
-include("${CLP_FFI_JS_CLP_CORE_SRC_DIR}/../cmake/Options/options.cmake")
-validate_and_setup_all_clp_dependency_flags()
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
