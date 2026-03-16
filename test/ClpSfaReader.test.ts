@@ -6,6 +6,7 @@ import {
     it,
 } from "vitest";
 
+import type {FileInfoArray} from "../src/clp_ffi_js/sfa/types.js";
 import {
     type ClpSfaReader,
     createModule,
@@ -56,16 +57,10 @@ describe("ClpSfaReader", () => {
         const fileNames = reader.getFileNames() as string[];
         expect(fileNames.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
-        const fileInfos = reader.getFileInfos() as Array<{
-            fileName: string;
-            logEventIdxStart: bigint;
-            logEventIdxEnd: bigint;
-            logEventCount: bigint;
-        }>;
-
+        const fileInfos = reader.getFileInfos() as FileInfoArray;
         expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
-        fileInfos.forEach((range, idx) => {
+        fileInfos.forEach((range: FileInfoArray[number], idx: number) => {
             console.log(
                 `[clp_json_test_log_files] range[${idx}] ${range.fileName}: ` +
                 `[${range.logEventIdxStart}, ${range.logEventIdxEnd}) ` +

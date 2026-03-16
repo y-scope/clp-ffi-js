@@ -17,6 +17,7 @@
 
 namespace clp_ffi_js::sfa {
 using clp_ffi_js::DataArrayTsType;
+using clp_ffi_js::StringArrayTsType;
 
 auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<SfaReader> {
     auto const length{data_array["length"].as<size_t>()};
@@ -45,15 +46,15 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
     return std::unique_ptr<SfaReader>{new SfaReader{std::move(reader_result.value())}};
 }
 
-auto SfaReader::get_file_names() const -> emscripten::val {
+auto SfaReader::get_file_names() const -> StringArrayTsType {
     auto file_names{emscripten::val::array()};
     for (auto const& file_name : m_reader.get_file_names()) {
         file_names.call<void>("push", emscripten::val(file_name));
     }
-    return file_names;
+    return StringArrayTsType{file_names};
 }
 
-auto SfaReader::get_file_infos() const -> emscripten::val {
+auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
     auto file_infos{emscripten::val::array()};
     for (auto const& file_info : m_reader.get_file_infos()) {
         auto entry{emscripten::val::object()};
@@ -63,11 +64,16 @@ auto SfaReader::get_file_infos() const -> emscripten::val {
         entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
         file_infos.call<void>("push", entry);
     }
-    return file_infos;
+    return FileInfoArrayTsType{file_infos};
 }
 }  // namespace clp_ffi_js::sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
+    emscripten::register_type<clp_ffi_js::sfa::FileInfoArrayTsType>(
+            "Array<{fileName: string, logEventIdxStart: bigint, logEventIdxEnd: bigint, "
+            "logEventCount: bigint}>"
+    );
+
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
             .constructor(
                     &clp_ffi_js::sfa::SfaReader::create,

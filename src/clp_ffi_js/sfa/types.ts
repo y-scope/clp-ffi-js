@@ -8,4 +8,9 @@ interface FileInfo {
     logEventCount: number;
 }
 
-export type {FileInfo};
+type FileInfoArray = FileInfo[];
+
+export type {
+    FileInfo,
+    FileInfoArray,
+};
