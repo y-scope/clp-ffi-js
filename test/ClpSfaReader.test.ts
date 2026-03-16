@@ -18,6 +18,7 @@ import {
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT = 9;
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT = 132n;
 const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
+const NUM_DECODED_EVENTS_TO_PRINT = 3;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 let module: MainModule;
@@ -69,5 +70,18 @@ describe("ClpSfaReader", () => {
         });
 
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
+    });
+
+    it("should print decoded events from clp_json_test_log_files sfa archive", async () => {
+        const data = await loadTestData("clp_json_test_log_files.clp");
+        reader = new module.ClpSfaReader(data);
+
+        const decodedEvents = reader.decode() as string[];
+        expect(decodedEvents.length).toBe(Number(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT));
+
+        const numToPrint = Math.min(NUM_DECODED_EVENTS_TO_PRINT, decodedEvents.length);
+        for (let i = 0; i < numToPrint; i += 1) {
+            console.log(`[clp_json_test_log_files] decoded[${i}]: ${decodedEvents[i]}`);
+        }
     });
 });

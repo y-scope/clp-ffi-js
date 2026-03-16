@@ -54,6 +54,26 @@ auto SfaReader::get_file_names() const -> StringArrayTsType {
     return StringArrayTsType{file_names};
 }
 
+auto SfaReader::decode() -> StringArrayTsType {
+    auto decoded_result{m_reader.decode()};
+    if (decoded_result.has_error()) {
+        auto const error{decoded_result.error()};
+        auto const err_msg{fmt::format(
+                "Failed to decode SFA archive: {} - {}.",
+                error.category().name(),
+                error.message()
+        )};
+        SPDLOG_ERROR("{}", err_msg);
+        throw std::runtime_error{err_msg};
+    }
+
+    auto decoded_events{emscripten::val::array()};
+    for (auto const& event : decoded_result.value()) {
+        decoded_events.call<void>("push", emscripten::val(event));
+    }
+    return StringArrayTsType{decoded_events};
+}
+
 auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
     auto file_infos{emscripten::val::array()};
     for (auto const& file_info : m_reader.get_file_infos()) {
@@ -79,6 +99,7 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                     &clp_ffi_js::sfa::SfaReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
+            .function("decode", &clp_ffi_js::sfa::SfaReader::decode)
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);
