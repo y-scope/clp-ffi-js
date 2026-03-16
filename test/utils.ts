@@ -1,6 +1,7 @@
 import {expect} from "vitest";
 
 import type {
+    ClpSfaReader,
     ClpStreamReader,
     MainModule,
 } from "../dist/ClpFfiJs-node.js";
@@ -142,6 +143,7 @@ const loadTestData = async (filename: string): Promise<Uint8Array> => {
 
 
 export type {
+    ClpSfaReader,
     ClpStreamReader,
     MainModule,
 };
