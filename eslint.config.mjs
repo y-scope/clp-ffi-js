@@ -1,7 +1,6 @@
 import CommonConfig from "eslint-config-yscope/CommonConfig.mjs";
 import StylisticConfigArray from "eslint-config-yscope/StylisticConfigArray.mjs";
 import TsConfigArray from "eslint-config-yscope/TsConfigArray.mjs";
-import TsdocPlugin from "eslint-plugin-tsdoc";
 
 
 const EslintConfig = [
@@ -14,26 +13,9 @@ const EslintConfig = [
             "test/",
         ],
     },
-    {
-        files: [
-            "src/**/*.ts",
-            "src/**/*.tsx",
-        ],
-        plugins: {
-            tsdoc: TsdocPlugin,
-        },
-        rules: {
-            "tsdoc/syntax": "error",
-        },
-    },
     CommonConfig,
     ...TsConfigArray,
     ...StylisticConfigArray,
-    {
-        rules: {
-            "tsdoc/syntax": "off",
-        },
-    },
 ];
 
 
