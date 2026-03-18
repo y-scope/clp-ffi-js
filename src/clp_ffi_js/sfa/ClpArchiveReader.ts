@@ -1,9 +1,10 @@
+import {LogEvent} from "./LogEvent.js";
+import type {FileInfoArray} from "./types.js";
+
 import type {
     ClpSfaReader,
     MainModule,
-} from "../../../dist/ClpFfiJs-node.js";
-import {LogEvent} from "./LogEvent.js";
-import type {FileInfoArray} from "./types.js";
+} from "#clp-ffi-js/node";
 
 
 /**

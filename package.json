@@ -24,6 +24,10 @@
     "test": "PLAYWRIGHT_BROWSERS_PATH=0 vitest run"
   },
   "type": "module",
+  "imports": {
+    "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
+    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
+  },
   "files": [
     "dist"
   ],
