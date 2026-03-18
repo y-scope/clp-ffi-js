@@ -30,6 +30,7 @@ task clean
 
 ## Docs
 To build the TypeDoc documentation:
+
 ```shell
 task docs:build
 ```
@@ -37,6 +38,7 @@ task docs:build
 The generated site is written to `build/docs`.
 
 To serve the generated documentation locally:
+
 ```shell
 task docs:serve
 ```
