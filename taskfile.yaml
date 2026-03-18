@@ -126,8 +126,8 @@ tasks:
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-    #  - "clp-ffi-js"
-    #  - "node-modules"
+      - "clp-ffi-js"
+      - "node-modules"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
