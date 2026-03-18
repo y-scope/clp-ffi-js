@@ -1,0 +1,7 @@
+{
+  // TODO: Switch entrypoint to src folder once we have our first .ts file.
+  "entryPoints": ["dist"],
+  "entryPointStrategy": "expand",
+  "out": "build/docs",
+  "tsconfig": "tsconfig.json"
+}
