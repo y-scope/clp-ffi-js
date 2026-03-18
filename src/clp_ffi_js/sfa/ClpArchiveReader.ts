@@ -1,5 +1,8 @@
 import {LogEvent} from "./LogEvent.js";
 import type {FileInfoArray} from "./types.js";
+import {isNodeRuntime} from "../utils.js";
+import NodeModuleFactory from "#clp-ffi-js/node";
+import WorkerModuleFactory from "#clp-ffi-js/worker";
 
 import type {
     ClpSfaReader,
@@ -14,6 +17,8 @@ import type {
  * ).
  */
 class ClpArchiveReader {
+    static #modulePromise: Promise<MainModule> | null = null;
+
     readonly #native: ClpSfaReader;
 
     #closed: boolean = false;
@@ -24,12 +29,13 @@ class ClpArchiveReader {
 
     /**
      * Creates a reader from in-memory archive bytes.
+     * Lazily initializes and caches the underlying module instance on first use.
      *
-     * @param module Loaded WASM module.
      * @param archiveData Single-file archive bytes.
      * @return Reader instance.
      */
-    static create (module: MainModule, archiveData: Uint8Array): ClpArchiveReader {
+    static async create (archiveData: Uint8Array): Promise<ClpArchiveReader> {
+        const module = await ClpArchiveReader.#init();
         return new ClpArchiveReader(new module.ClpSfaReader(archiveData));
     }
 
@@ -103,6 +109,23 @@ class ClpArchiveReader {
         if (this.#closed) {
             throw new Error("ClpArchiveReader is closed.");
         }
+    }
+
+    /**
+     * Initializes and caches the WASM module promise.
+     *
+     * @return The cached module promise.
+     */
+    static #init (): Promise<MainModule> {
+        if (null === ClpArchiveReader.#modulePromise) {
+            const moduleFactory = (
+                true === isNodeRuntime() ?
+                    NodeModuleFactory :
+                    WorkerModuleFactory
+            ) as () => Promise<MainModule>;
+            ClpArchiveReader.#modulePromise = moduleFactory();
+        }
+        return ClpArchiveReader.#modulePromise;
     }
 }
 

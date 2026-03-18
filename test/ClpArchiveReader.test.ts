@@ -1,6 +1,5 @@
 import {
     afterEach,
-    beforeAll,
     describe,
     expect,
     it,
@@ -11,9 +10,7 @@ import {
     type FieldValue,
 } from "clp-ffi-js/sfa";
 import {
-    createModule,
     loadTestData,
-    type MainModule,
 } from "./utils.js";
 
 
@@ -23,12 +20,6 @@ const COCKROACHDB_EXPECTED_EVENT_COUNT = 200000n;
 const COCKROACHDB_TIMESTAMP_CHECK_COUNT = 1000;
 const MAX_LOG_EVENT_INDEX_CHECKS = 1000;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
-
-let module: MainModule;
-
-beforeAll(async () => {
-    module = await createModule();
-});
 
 const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint): void => {
     const decodedEvents = reader.decodeAll();
@@ -78,7 +69,7 @@ describe("ClpArchiveReader", () => {
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = ClpArchiveReader.create(module, data);
+        reader = await ClpArchiveReader.create(data);
 
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
         assertLogEventIndices(reader, POSTGRESQL_EXPECTED_EVENT_COUNT);
@@ -86,10 +77,10 @@ describe("ClpArchiveReader", () => {
 
     it("should read cockroachdb sfa archive from buffer", async () => {
         const data = await loadTestData("cockroachdb.clp");
-        reader = ClpArchiveReader.create(module, data);
+        reader = await ClpArchiveReader.create(data);
 
         const data_wo_ts = await loadTestData("cockroachdb_wo_ts.clp");
-        readerWoTs = ClpArchiveReader.create(module, data_wo_ts);
+        readerWoTs = await ClpArchiveReader.create(data_wo_ts);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
         expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
@@ -124,7 +115,7 @@ describe("ClpArchiveReader", () => {
 
     it("should read clp_json_test_log_files sfa archive from buffer", async () => {
         const data = await loadTestData("clp_json_test_log_files.clp");
-        reader = ClpArchiveReader.create(module, data);
+        reader = await ClpArchiveReader.create(data);
 
         const fileNames = reader.getFileNames();
         expect(fileNames.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
