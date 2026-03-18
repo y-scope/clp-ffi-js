@@ -6,8 +6,10 @@ import {
     it,
 } from "vitest";
 
-import {ClpArchiveReader} from "../src/clp_ffi_js/sfa/ClpArchiveReader.js";
-import type {FieldValue} from "../src/clp_ffi_js/sfa/types.js";
+import {
+    ClpArchiveReader,
+    type FieldValue,
+} from "clp-ffi-js/sfa";
 import {
     createModule,
     loadTestData,

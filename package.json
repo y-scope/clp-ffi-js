@@ -13,6 +13,7 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
+    "build:ts": "tsc -p tsconfig.build.json",
     "docs:build": "npm exec -- typedoc",
     "docs:serve": "npm exec -- serve",
     "lint": "npm run lint:check:js",
@@ -38,6 +39,10 @@
     "./worker": {
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
+    },
+    "./sfa": {
+      "import": "./dist/clp_ffi_js/sfa/index.js",
+      "types": "./dist/clp_ffi_js/sfa/index.d.ts"
     }
   },
   "devDependencies": {

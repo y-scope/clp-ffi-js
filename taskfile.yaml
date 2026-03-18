@@ -120,11 +120,14 @@ tasks:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
       OUTPUT_DIR: "{{.G_DIST_DIR}}"
     sources:
+      - "src/**/*.ts"
+      - "tsconfig.build.json"
       - "{{.G_CLP_FFI_JS_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      - "clp-ffi-js"
+    #  - "clp-ffi-js"
+    #  - "node-modules"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -137,6 +140,7 @@ tasks:
           rsync -a
           "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_PREFIX}}{{.ITEM}}."{d.ts,js,wasm}
           "{{.OUTPUT_DIR}}/"
+      - "npm run build:ts -- --outDir '{{.OUTPUT_DIR}}'"
       - "npm pack"
       # This command must be last
       - task: "utils:checksum:compute"
