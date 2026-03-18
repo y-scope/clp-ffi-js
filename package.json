@@ -12,7 +12,12 @@
   "bugs": {
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
+  "imports": {
+    "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
+    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
+  },
   "scripts": {
+    "build:ts": "tsc -p tsconfig.build.json",
     "lint": "npm run lint:check:js",
     "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
     "lint:fix:js": "npm run lint:check:js -- --fix",
@@ -36,6 +41,16 @@
     "./worker": {
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
+    },
+    "./sfa": {
+      "node": {
+        "import": "./dist/clp_ffi_js/sfa/index-node.js",
+        "types": "./dist/clp_ffi_js/sfa/index-node.d.ts"
+      },
+      "default": {
+        "import": "./dist/clp_ffi_js/sfa/index-worker.js",
+        "types": "./dist/clp_ffi_js/sfa/index-worker.d.ts"
+      }
     }
   },
   "devDependencies": {
