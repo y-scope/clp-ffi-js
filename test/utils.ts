@@ -4,7 +4,7 @@ import type {
     ClpSfaReader,
     ClpStreamReader,
     MainModule,
-} from "../dist/ClpFfiJs-node.js";
+} from "clp-ffi-js/node";
 import {
     DEFAULT_NODE_MODULE_PATH,
     DEFAULT_READER_OPTIONS,
