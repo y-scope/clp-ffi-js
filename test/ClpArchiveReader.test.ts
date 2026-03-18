@@ -61,11 +61,16 @@ const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
 
 describe("ClpArchiveReader", () => {
     let reader: ClpArchiveReader | null = null;
+    let readerWoTs: ClpArchiveReader | null = null;
 
     afterEach(() => {
         if (null !== reader) {
             reader.close();
             reader = null;
+        }
+        if (null !== readerWoTs) {
+            readerWoTs.close();
+            readerWoTs = null;
         }
     });
 
@@ -81,15 +86,30 @@ describe("ClpArchiveReader", () => {
         const data = await loadTestData("cockroachdb.clp");
         reader = ClpArchiveReader.create(module, data);
 
+        const data_wo_ts = await loadTestData("cockroachdb_wo_ts.clp");
+        readerWoTs = ClpArchiveReader.create(module, data_wo_ts);
+
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
+        expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
         assertLogEventIndices(reader, COCKROACHDB_EXPECTED_EVENT_COUNT);
+        assertLogEventIndices(readerWoTs, COCKROACHDB_EXPECTED_EVENT_COUNT);
 
         const decodedEvents = reader.decodeAll();
+        const decodedEventsWoTs = readerWoTs.decodeAll();
         expect(decodedEvents.length).toBe(Number(COCKROACHDB_EXPECTED_EVENT_COUNT));
+        expect(decodedEventsWoTs.length).toBe(decodedEvents.length);
+
+        for (let i = 0; i < decodedEvents.length; i += 1) {
+            expect(decodedEventsWoTs[i]?.message).toBe(decodedEvents[i]?.message);
+        }
 
         for (let i = 0; i < Math.min(COCKROACHDB_TIMESTAMP_CHECK_COUNT, decodedEvents.length); i += 1) {
             const event = decodedEvents[i];
+            const eventWoTs = decodedEventsWoTs[i];
             expect(event).toBeDefined();
+            expect(eventWoTs).toBeDefined();
+            expect(eventWoTs?.logEventIdx).toBe(event?.logEventIdx);
+            expect(eventWoTs?.timestamp).toBe(0n);
             const kvPairs = event?.getKvPairs();
             expect(kvPairs).not.toBeNull();
             const timestampField = kvPairs?.["timestamp"];
