@@ -25,19 +25,19 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
     // Copy array from JavaScript to C++.
     std::vector<char> data_buffer(length);
     // NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-    emscripten::val::module_property("HEAPU8").call<void>(
-            "set",
-            data_array,
-            reinterpret_cast<uintptr_t>(data_buffer.data()));
+    emscripten::val::module_property("HEAPU8")
+            .call<void>("set", data_array, reinterpret_cast<uintptr_t>(data_buffer.data()));
     // NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
     auto reader_result{clp_s::ffi::sfa::ClpArchiveReader::create(std::move(data_buffer))};
 
     if (reader_result.has_error()) {
         auto const error{reader_result.error()};
-        auto const err_msg{fmt::format("Failed to open SFA archive from buffer: {} - {}.",
-                                       error.category().name(),
-                                       error.message())};
+        auto const err_msg{fmt::format(
+                "Failed to open SFA archive from buffer: {} - {}.",
+                error.category().name(),
+                error.message()
+        )};
         SPDLOG_ERROR("{}", err_msg);
         throw std::runtime_error{err_msg};
     }
@@ -48,7 +48,9 @@ auto SfaReader::create(DataArrayTsType const& data_array) -> std::unique_ptr<Sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
-            .constructor(&clp_ffi_js::sfa::SfaReader::create,
-                         emscripten::return_value_policy::take_ownership())
+            .constructor(
+                    &clp_ffi_js::sfa::SfaReader::create,
+                    emscripten::return_value_policy::take_ownership()
+            )
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count);
 }
