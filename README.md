@@ -32,7 +32,7 @@ task clean
 To build the TypeDoc documentation:
 
 ```shell
-task docs:build
+task docs:site
 ```
 
 The generated site is written to `build/docs`.
