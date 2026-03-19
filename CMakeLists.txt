@@ -200,7 +200,7 @@ set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
 
 # Sanity check CLP build flags
-include("${CLP_FFI_JS_CLP_CORE_SRC_DIR}/../Options/options.cmake")
+include("${CLP_FFI_JS_CLP_CORE_SRC_DIR}/../cmake/Options/options.cmake")
 validate_and_setup_all_clp_dependency_flags()
 
 add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp_s)
