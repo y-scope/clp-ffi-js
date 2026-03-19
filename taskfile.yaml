@@ -31,16 +31,19 @@ tasks:
     deps: ["clp-ffi-js"]
 
   clean:
+    run: "once"
     cmds:
       - task: "clean-emsdk"
       - task: "clean-clp-ffi-js"
       - "rm -rf '{{.G_BUILD_DIR}}'"
 
   clean-emsdk:
+    run: "once"
     cmds:
       - "rm -rf '{{.G_EMSDK_DIR}}'"
 
   clean-clp-ffi-js:
+    run: "once"
     cmds:
       - "rm -rf '{{.G_CLP_FFI_JS_BUILD_DIR}}'"
 
@@ -55,6 +58,7 @@ tasks:
       - "CMakeLists.txt"
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - "emsdk"
       - task: "utils:checksum:validate"
@@ -125,6 +129,7 @@ tasks:
       - "{{.G_CLP_FFI_JS_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - "clp-ffi-js"
       - "node-modules"
@@ -157,6 +162,7 @@ tasks:
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+    run: "once"
     deps:
       - "deps"
       - "emsdk"
@@ -176,6 +182,7 @@ tasks:
       - "{{.TASKFILE}}"
     generates:
       - "{{.ROOT_DIR}}/node_modules/**/*"
+    run: "once"
     cmds:
       - "npm clean-install"
 

@@ -8,12 +8,12 @@ tasks:
     cmds:
       - "rm -rf '{{.G_DOCS_BUILD_DIR}}'"
 
-  build:
+  site:
     deps: [":init", ":node-modules", ":package"]
     cmds:
-      - "npm run docs:build -- --out '{{.G_DOCS_BUILD_DIR}}'"
+      - "npm run docs:site -- --out '{{.G_DOCS_BUILD_DIR}}'"
 
   serve:
-    deps: ["build"]
+    deps: ["site"]
     cmds:
       - "npm run docs:serve -- '{{.G_DOCS_BUILD_DIR}}'"
