@@ -89,7 +89,7 @@ tasks:
     # NOTE: We alias the fix task until we determine which clang-tidy fixes can be applied safely.
     aliases: ["fix-cpp-static-diff"]
     deps:
-      - ":config-cmake-project"
+      - ":config-cmake-project-lint"
       - "cpp-lint-configs"
       - "venv"
     cmds:
@@ -97,9 +97,9 @@ tasks:
         vars:
           FLAGS: &clang_tidy_flags
             - "--config-file '{{.ROOT_DIR}}/.clang-tidy'"
-            - "-p '{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json'"
+            - "-p '{{.G_CLP_FFI_JS_LINT_BUILD_DIR}}/compile_commands.json'"
             - >-
-              $(cat "{{.G_CLP_FFI_JS_BUILD_DIR}}/compiler-extra-args.txt" \
+              $(cat "{{.G_CLP_FFI_JS_LINT_BUILD_DIR}}/compiler-extra-args.txt" \
                 | tr ' ' '\n' \
                 | sed 's/^/--extra-arg /' \
                 | tr '\n' ' ')

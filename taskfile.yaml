@@ -9,11 +9,15 @@ includes:
 vars:
   G_BUILD_DIR: "{{.ROOT_DIR}}/build"
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
+  G_CLP_FFI_JS_LINT_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js-lint"
   G_DEPS_DIR: "{{.G_BUILD_DIR}}/deps"
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
   G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
       {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+  G_EMSCRIPTEN_SYSROOT: "{{.G_EMSDK_DIR}}/upstream/emscripten/cache/sysroot"
+  G_EMSDK_CLANG_C_COMPILER: "{{.G_EMSDK_DIR}}/upstream/bin/clang"
+  G_EMSDK_CLANG_CXX_COMPILER: "{{.G_EMSDK_DIR}}/upstream/bin/clang++"
 
   G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
   G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
@@ -161,6 +165,26 @@ tasks:
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
+
+  config-cmake-project-lint:
+    internal: true
+    sources:
+      - "{{.G_EMSDK_CHECKSUM}}"
+      - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+    generates:
+      - "{{.G_CLP_FFI_JS_LINT_BUILD_DIR}}/CMakeCache.txt"
+      - "{{.G_CLP_FFI_JS_LINT_BUILD_DIR}}/compile_commands.json"
+    cmd: |-
+      cmake \
+      -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
+      -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
+      -DCMAKE_C_COMPILER="{{.G_EMSDK_CLANG_C_COMPILER}}" \
+      -DCMAKE_CXX_COMPILER="{{.G_EMSDK_CLANG_CXX_COMPILER}}" \
+      -DCMAKE_C_FLAGS="--target=wasm32-unknown-emscripten --sysroot={{.G_EMSCRIPTEN_SYSROOT}} -isystem {{.G_EMSDK_DIR}}/upstream/emscripten/system/include -isystem {{.G_EMSDK_DIR}}/upstream/emscripten/system/include/compat" \
+      -DCMAKE_CXX_FLAGS="--target=wasm32-unknown-emscripten --sysroot={{.G_EMSCRIPTEN_SYSROOT}} -isystem {{.G_EMSDK_DIR}}/upstream/emscripten/system/include -isystem {{.G_EMSDK_DIR}}/upstream/emscripten/system/include/compat" \
+      -S "{{.ROOT_DIR}}" \
+      -B "{{.G_CLP_FFI_JS_LINT_BUILD_DIR}}"
 
   node-modules:
     internal: true
