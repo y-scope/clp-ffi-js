@@ -6,10 +6,10 @@ You can use GitHub issues to [request features][feature-req] or [report bugs][bu
 # Building
 
 ## Requirements
-* CMake 3.16 or higher
+* CMake >= 3.16
 * GNU Make
 * Python 3
-* [Task] 3.38.0 or higher
+* [Task] >= 3.48.0
 
 ## Setup
 Initialize and update submodules:
@@ -37,6 +37,11 @@ Before opening the project in an IDE, run the commands below.
 Download and install [emscripten]:
 ```shell
 task emsdk
+```
+
+Download the required source dependencies:
+```shell
+task deps
 ```
 
 Set up the config files for our C++ linting tools:

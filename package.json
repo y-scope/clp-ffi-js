@@ -1,6 +1,6 @@
 {
   "name": "clp-ffi-js",
-  "version": "0.5.0",
+  "version": "0.6.1",
   "description": "clp-ffi-js is a JavaScript FFI library for CLP.",
   "author": "YScope Inc. <dev@yscope.com>",
   "license": "Apache-2.0",
@@ -13,7 +13,12 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
+    "lint": "npm run lint:check:js",
+    "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
+    "lint:fix:js": "npm run lint:check:js -- --fix",
     "release": "git diff --exit-code && task package && npm publish --provenance"
+    "test:init": "PLAYWRIGHT_BROWSERS_PATH=0 npm exec playwright -- install --with-deps",
+    "test": "PLAYWRIGHT_BROWSERS_PATH=0 vitest run"
   },
   "type": "module",
   "files": [
@@ -32,5 +37,13 @@
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
     }
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.9",
+    "@vitest/browser-playwright": "^4.0.18",
+    "eslint": "^9.39.2",
+    "eslint-config-yscope": "^1.1.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

@@ -1,6 +1,7 @@
 #include "UnstructuredIrStreamReader.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <format>
 #include <iterator>
@@ -10,17 +11,19 @@
 #include <system_error>
 #include <utility>
 
-#include <clp/Array.hpp>
 #include <clp/ErrorCode.hpp>
 #include <clp/ir/LogEventDeserializer.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/TraceableException.hpp>
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
+#include <ystdlib/containers/Array.hpp>
 
 #include <clp_ffi_js/ClpFfiJsException.hpp>
 #include <clp_ffi_js/constants.hpp>
+#include <clp_ffi_js/ir/decoding_methods.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
@@ -31,8 +34,14 @@ using clp::ir::four_byte_encoded_variable_t;
 
 auto UnstructuredIrStreamReader::create(
         std::unique_ptr<ZstdDecompressor>&& zstd_decompressor,
-        clp::Array<char> data_array
+        ystdlib::containers::Array<char> data_array
 ) -> UnstructuredIrStreamReader {
+    // Deserialize metadata from the IR stream's preamble.
+    rewind_reader_and_validate_encoding_type(*zstd_decompressor);
+    auto const pos{zstd_decompressor->get_pos()};
+    auto metadata_json = deserialize_metadata(*zstd_decompressor);
+    zstd_decompressor->seek_from_begin(pos);
+
     auto result{UnstructuredIrDeserializer::create(*zstd_decompressor)};
     if (result.has_error()) {
         auto const error_code{result.error()};
@@ -52,7 +61,11 @@ auto UnstructuredIrStreamReader::create(
             std::move(zstd_decompressor),
             std::move(result.value())
     );
-    return UnstructuredIrStreamReader(std::move(data_context));
+    return UnstructuredIrStreamReader{std::move(data_context), std::move(metadata_json)};
+}
+
+auto UnstructuredIrStreamReader::get_metadata() const -> MetadataTsType {
+    return convert_metadata_to_js_object(m_metadata);
 }
 
 auto UnstructuredIrStreamReader::get_num_events_buffered() const -> size_t {
@@ -67,7 +80,16 @@ auto UnstructuredIrStreamReader::get_filtered_log_event_map() const -> FilteredL
     return FilteredLogEventMapTsType{emscripten::val::array(m_filtered_log_event_map.value())};
 }
 
-void UnstructuredIrStreamReader::filter_log_events(LogLevelFilterTsType const& log_level_filter) {
+void UnstructuredIrStreamReader::filter_log_events(
+        LogLevelFilterTsType const& log_level_filter,
+        [[maybe_unused]] std::string const& kql_filter
+) {
+    if (false == kql_filter.empty()) {
+        SPDLOG_WARN(
+                "KQL filters aren't supported for unstructured IR streams, so they're being "
+                "ignored."
+        );
+    }
     generic_filter_log_events(m_filtered_log_event_map, log_level_filter, m_encoded_log_events);
 }
 
@@ -83,7 +105,7 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
         auto result{m_stream_reader_data_context->get_deserializer().deserialize_log_event()};
         if (result.has_error()) {
             auto const error{result.error()};
-            if (std::errc::no_message_available == error) {
+            if (std::errc::no_message == error) {
                 break;
             }
             if (std::errc::result_out_of_range == error) {
@@ -123,7 +145,12 @@ auto UnstructuredIrStreamReader::deserialize_stream() -> size_t {
             }
         }
 
-        m_encoded_log_events.emplace_back(log_event, log_level, log_event.get_timestamp());
+        m_encoded_log_events.emplace_back(
+                log_event,
+                log_level,
+                log_event.get_timestamp(),
+                std::chrono::duration_cast<UtcOffset>(log_event.get_utc_offset())
+        );
     }
     m_stream_reader_data_context.reset(nullptr);
     return m_encoded_log_events.size();
@@ -162,9 +189,11 @@ auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(
-        StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context
+        StreamReaderDataContext<UnstructuredIrDeserializer>&& stream_reader_data_context,
+        nlohmann::json metadata
 )
-        : m_stream_reader_data_context{
+        : m_metadata(std::move(metadata)),
+          m_stream_reader_data_context{
                   std::make_unique<StreamReaderDataContext<UnstructuredIrDeserializer>>(
                           std::move(stream_reader_data_context)
                   )

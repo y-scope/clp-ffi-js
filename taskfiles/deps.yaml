@@ -1,0 +1,373 @@
+version: "3"
+
+vars:
+  # Library names
+  G_BOOST_LIB_NAME: "Boost"
+  G_FMT_LIB_NAME: "fmt"
+  G_GSL_LIB_NAME: "Microsoft.GSL"
+  G_YSTDLIB_LIB_NAME: "ystdlib"
+
+  # Misc
+  G_CPP_MAX_PARALLELISM_PER_BUILD_TASK:
+    sh: "getconf _NPROCESSORS_ONLN"
+
+# NOTE: For dependencies built using CMake + Emscripten toolchain, we:
+# - Pass the Emscripten toolchain file via `CMAKE_TOOLCHAIN_FILE`
+# - Set CMP0074 to NEW whenever:
+#   - a component's minimum required CMake version is less than 3.27 (where CMP0074 defaults to
+#     OLD); and
+#   - the component depends on another via `<lib_name>_ROOT`.
+# - Set `CMAKE_FIND_ROOT_PATH_MODE_PACKAGE` to `Both` whenever the component depends on another via
+#   `<lib_name>_ROOT`.
+#   In principle this should not be necessary, since we already prepend the dependent library
+#   location to `CMAKE_FIND_ROOT_PATH` via passing `-C <lib_name>.cmake`. However, CMake evaluates
+#   the initial cache file before the Emscripten toolchain is fully applied, so `<lib_name>_ROOT`
+#   inside `CMAKE_FIND_ROOT_PATH` is not honored during `find_package`.
+tasks:
+  default:
+    desc: "Download, and install (except for clp) all dependencies using Emscripten toolchain."
+    run: "once"
+    deps:
+      - ":emsdk"
+    cmds:
+      - task: ":utils:cmake:install-deps-and-generate-settings"
+        vars:
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
+          DEP_TASK: "deps:all"
+
+  all:
+    internal: true
+    deps:
+      - "absl"
+      - "antlr-runtime"
+      - "boost"
+      - "clp"
+      - "date"
+      - "fmt"
+      - "log-surgeon"
+      - "microsoft.gsl"
+      - "msgpack-cxx"
+      - "nlohmann-json"
+      - "simdjson"
+      - "spdlog"
+      - "ystdlib"
+      - "zstd"
+
+  absl:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_CXX_STANDARD=20"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "absl"
+          TARBALL_SHA256: "7262daa7c1711406248c10f41026d685e88223bc92817d16fb93c19adb57f669"
+          TARBALL_URL: "https://github.com/abseil/abseil-cpp/releases/download/20250512.0/\
+                        abseil-cpp-20250512.0.tar.gz"
+
+  antlr-runtime:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DANTLR4_INSTALL=ON"
+            - "-DANTLR_BUILD_CPP_TESTS=OFF"
+            - "-DANTLR_BUILD_SHARED=OFF"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+
+            # Set CMP0135 so that extracted files use the current timestamp as their modification
+            # timestamp, which ensures the library gets rebuilt if the extracted files change.
+            - "-DCMAKE_POLICY_DEFAULT_CMP0135=NEW"
+          CMAKE_SOURCE_DIR: "runtime/Cpp"
+          LIB_NAME: "antlr4-runtime"
+          TARBALL_SHA256: "9f18272a9b32b622835a3365f850dd1063d60f5045fb1e12ce475ae6e18a35bb"
+          TARBALL_URL: "https://github.com/antlr/antlr4/archive/refs/tags/4.13.2.tar.gz"
+
+  boost:
+    internal: true
+    vars:
+      B2_USER_CONFIG_FILE: "{{.G_DEPS_DIR}}/b2-user-config.jam"
+      BOOST_VERSION: "1.88.0"
+    run: "once"
+    cmds:
+      - >-
+        echo 'using emscripten : : "{{.G_EMSDK_DIR}}/upstream/emscripten/emcc" ;'
+        > "{{.B2_USER_CONFIG_FILE}}"
+      - task: ":utils:boost:download-and-install"
+        vars:
+          BUILD_AND_INSTALL_ARGS:
+            - "address-model=32"
+            - "link=static"
+            - "toolset=emscripten"
+            - "--user-config={{.B2_USER_CONFIG_FILE}}"
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          FILE_SHA256: "85138e4a185a7e7535e82b011179c5b5fb72185bea9f59fe8e2d76939b2f5c51"
+          TARGETS:
+            - "headers"
+            - "regex"
+            - "url"
+          URL: "https://github.com/boostorg/boost/releases/download/boost-{{.BOOST_VERSION}}\
+            /boost-{{.BOOST_VERSION}}-b2-nodocs.tar.gz"
+          WORK_DIR: "{{.G_DEPS_DIR}}"
+
+      # Allow `find_package(Boost)` to locate the Boost installation when cross-compiling with
+      # Emscripten, whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
+      - >-
+        echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${'"{{.G_BOOST_LIB_NAME}}"'_ROOT}")'
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+
+  clp:
+    internal: true
+    vars:
+      LIB_NAME: "clp"
+      OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}"
+    run: "once"
+    cmds:
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          FILE_SHA256: "e4f7f014a635dcc2b4837837dea10c9b78eb51588684909774fa2e49f72352e3"
+          OUTPUT_DIR: "{{.OUTPUT_DIR}}"
+          URL: "https://github.com/y-scope/clp/archive/5798e0e.tar.gz"
+      - >-
+        echo "set(
+        CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.OUTPUT_DIR}}\"
+        )" > "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"
+
+  date:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+          LIB_NAME: "date"
+          TARBALL_SHA256: "7a390f200f0ccd207e8cff6757e04817c1a0aec3e327b006b7eb451c57ee3538"
+          TARBALL_URL: "https://github.com/HowardHinnant/date/archive/refs/tags/v3.0.1.tar.gz"
+
+  fmt:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DFMT_DOC=OFF"
+            - "-DFMT_TEST=OFF"
+          LIB_NAME: "{{.G_FMT_LIB_NAME}}"
+          TARBALL_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
+          TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
+
+  nlohmann-json:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DJSON_BuildTests=OFF"
+          LIB_NAME: "nlohmann_json"
+          TARBALL_SHA256: "4b92eb0c06d10683f7447ce9406cb97cd4b453be18d7279320f7b2f025c10187"
+
+          # NOTE: We use the GitHub-generated source tarball for this version rather than the
+          # release tarball, since the latter is served from githubusercontent.com which is blocked
+          # by some developers' firewalls. The contents of the former are a superset of the latter.
+          TARBALL_URL: "https://github.com/nlohmann/json/archive/refs/tags/v3.12.0.tar.gz"
+
+  simdjson:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DSIMDJSON_DEVELOPER_MODE=OFF"
+          LIB_NAME: "simdjson"
+          TARBALL_SHA256: "07a1bb3587aac18fd6a10a83fe4ab09f1100ab39f0cb73baea1317826b9f9e0d"
+          TARBALL_URL: "https://github.com/simdjson/simdjson/archive/refs/tags/v3.13.0.tar.gz"
+
+  spdlog:
+    internal: true
+    run: "once"
+    deps:
+      - "fmt"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DSPDLOG_BUILD_EXAMPLE=OFF"
+            - "-DSPDLOG_FMT_EXTERNAL=ON"
+          LIB_NAME: "spdlog"
+          TARBALL_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
+          TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
+
+  log-surgeon:
+    internal: true
+    run: "once"
+    deps:
+      - "boost"
+      - "fmt"
+      - "microsoft.gsl"
+      - "ystdlib"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_FMT_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_GSL_LIB_NAME}}.cmake"
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_YSTDLIB_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-Dlog_surgeon_BUILD_TESTING=OFF"
+          LIB_NAME: "log_surgeon"
+          TARBALL_SHA256: "eebf857962f8fc022bfa5de8d00e10ee4ac36bb8f126a556935a93dde1435aa2"
+          TARBALL_URL: "https://github.com/y-scope/log-surgeon/archive/193e1f9.tar.gz"
+
+  microsoft.gsl:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DGSL_TEST=OFF"
+          LIB_NAME: "{{.G_GSL_LIB_NAME}}"
+          TARBALL_SHA256: "f0e32cb10654fea91ad56bde89170d78cfbf4363ee0b01d8f097de2ba49f6ce9"
+          TARBALL_URL: "https://github.com/microsoft/GSL/archive/refs/tags/v4.0.0.tar.gz"
+
+  msgpack-cxx:
+    internal: true
+    vars:
+      VERSION: "7.0.0"
+    run: "once"
+    deps:
+      - "boost"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DMSGPACK_BUILD_DOCS=OFF"
+            - "-DMSGPACK_CXX20=ON"
+          LIB_NAME: "msgpack-cxx"
+          TARBALL_SHA256: "7504b7af7e7b9002ce529d4f941e1b7fb1fb435768780ce7da4abaac79bb156f"
+          TARBALL_URL: "https://github.com/msgpack/msgpack-c/releases/download/cpp-{{.VERSION}}\
+            /msgpack-cxx-{{.VERSION}}.tar.gz"
+
+  ystdlib:
+    internal: true
+    run: "once"
+    deps:
+      - "boost"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-C {{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_POLICY_DEFAULT_CMP0074=NEW"
+            - "-DCMAKE_POSITION_INDEPENDENT_CODE=ON"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-Dystdlib_BUILD_TESTING=OFF"
+          LIB_NAME: "ystdlib"
+          TARBALL_SHA256: "379c04c86715f39cffa09bb3ebc22b4c45af9a63ea3efa2081d210289fcd2af6"
+          TARBALL_URL: "https://github.com/y-scope/ystdlib-cpp/archive/c03806a.tar.gz"
+
+  zstd:
+    internal: true
+    run: "once"
+    cmds:
+      - task: "install-remote-cmake-lib"
+        vars:
+          CMAKE_GEN_ARGS:
+            - "-DCMAKE_BUILD_TYPE=Release"
+            - "-DCMAKE_INSTALL_MESSAGE=LAZY"
+            - "-DCMAKE_TOOLCHAIN_FILE={{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}"
+            - "-DZSTD_BUILD_COMPRESSION=OFF"
+            - "-DZSTD_BUILD_DICTBUILDER=OFF"
+            - "-DZSTD_BUILD_PROGRAMS=OFF"
+            - "-DZSTD_BUILD_SHARED=OFF"
+            - "-DZSTD_LEGACY_SUPPORT=OFF"
+            - "-DZSTD_MULTITHREAD_SUPPORT=OFF"
+          CMAKE_SOURCE_DIR: "build/cmake"
+          LIB_NAME: "zstd"
+          TARBALL_SHA256: "37d7284556b20954e56e1ca85b80226768902e2edabd3b649e9e72c0c9012ee3"
+          TARBALL_URL: "https://github.com/facebook/zstd/archive/refs/tags/v1.5.7.tar.gz"
+
+  # Installs a CMake-based library from a remote tarball, generates a corresponding settings file,
+  # and computes a checksum for the installation directory.
+  #
+  # @param {string} LIB_NAME
+  # @param {string} TARBALL_SHA256
+  # @param {string} TARBALL_URL
+  # @param {string[]} [CMAKE_GEN_ARGS] Any additional arguments to pass to the CMake generate
+  # command.
+  # @param {string} [CMAKE_SOURCE_DIR=.] Path within the extraction directory containing the
+  # top-level CMakeLists.txt.
+  install-remote-cmake-lib:
+    internal: true
+    vars:
+      CMAKE_GEN_ARGS:
+        ref: "default (list) .CMAKE_GEN_ARGS"
+      CMAKE_SOURCE_DIR: >-
+        {{default "." .CMAKE_SOURCE_DIR}}
+    requires:
+      vars: ["LIB_NAME", "TARBALL_SHA256", "TARBALL_URL"]
+    cmds:
+      - task: ":utils:cmake:install-remote-tar"
+        vars:
+          CMAKE_GEN_ARGS:
+            ref: ".CMAKE_GEN_ARGS"
+          CMAKE_JOBS: "{{.G_CPP_MAX_PARALLELISM_PER_BUILD_TASK}}"
+          CMAKE_PACKAGE_NAME: "{{.LIB_NAME}}"
+          CMAKE_SETTINGS_DIR: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}"
+          CMAKE_SOURCE_DIR: "{{.CMAKE_SOURCE_DIR}}"
+          TAR_SHA256: "{{.TARBALL_SHA256}}"
+          TAR_URL: "{{.TARBALL_URL}}"
+          WORK_DIR: "{{.G_DEPS_DIR}}"
+
+      # Allow `find_package(<lib>)` to locate the library installation when cross-compiling with
+      # Emscripten, whose toolchain file restricts package searches to `CMAKE_FIND_ROOT_PATH`.
+      - >-
+        echo 'list(PREPEND CMAKE_FIND_ROOT_PATH "${'"{{.LIB_NAME}}"'_ROOT}")'
+        >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.LIB_NAME}}.cmake"

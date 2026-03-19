@@ -12,24 +12,27 @@
 #include <vector>
 
 #include <clp/ir/types.hpp>
+#include <clp/ReaderInterface.hpp>
 #include <clp/streaming_compression/zstd/Decompressor.hpp>
 #include <clp/type_utils.hpp>
 #include <emscripten/em_asm.h>
 #include <emscripten/val.h>
+#include <nlohmann/json.hpp>
 #include <spdlog/spdlog.h>
 
+#include <clp_ffi_js/binding_types.hpp>
 #include <clp_ffi_js/constants.hpp>
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 
 namespace clp_ffi_js::ir {
 // JS types used as inputs
-EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogLevelFilterTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 
 // JS types used as outputs
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(MetadataTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 
 enum class StreamType : uint8_t {
@@ -63,7 +66,7 @@ public:
      * @throw ClpFfiJsException if any error occurs.
      */
     [[nodiscard]] static auto
-    create(DataArrayTsType const& data_array, ReaderOptions const& reader_options)
+    create(clp_ffi_js::DataArrayTsType const& data_array, ReaderOptions const& reader_options)
             -> std::unique_ptr<StreamReader>;
 
     // Destructor
@@ -79,6 +82,11 @@ public:
     auto operator=(StreamReader&&) -> StreamReader& = delete;
 
     // Methods
+    /**
+     * @return The metadata of the IR stream as a JavaScript object.
+     */
+    [[nodiscard]] virtual auto get_metadata() const -> MetadataTsType = 0;
+
     [[nodiscard]] virtual auto get_ir_stream_type() const -> StreamType = 0;
 
     /**
@@ -88,15 +96,31 @@ public:
 
     /**
      * @return The filtered log events map.
+     * This is a sorted list of log event indices that match the filter.
+     * If all log events match the filter, it returns `null` or a vector of all log events.
      */
     [[nodiscard]] virtual auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType = 0;
 
     /**
      * Generates a filtered collection from all log events.
      *
-     * @param log_level_filter Array of selected log levels
+     * @param log_level_filter Array of selected log levels.
+     * @param kql_filter: A KQL expression used to filter kv-pairs.
+     * - For structured IR: the filter is applied when non-empty.
+     * - For unstructured IR: the filter is always ignored, and a warning is logged when non-empty.
      */
-    virtual void filter_log_events(LogLevelFilterTsType const& log_level_filter) = 0;
+    virtual void
+    filter_log_events(LogLevelFilterTsType const& log_level_filter, std::string const& kql_filter)
+            = 0;
+
+    /**
+     * Generates a filtered collection from all log events.
+     *
+     * @param log_level_filter Array of selected log levels.
+     */
+    void filter_log_events(LogLevelFilterTsType const& log_level_filter) {
+        filter_log_events(log_level_filter, "");
+    }
 
     /**
      * Deserializes all log events in the stream.
@@ -113,11 +137,13 @@ public:
      * @param begin_idx
      * @param end_idx
      * @param use_filter Whether to decode from the filtered or unfiltered log events collection.
-     * @return An array where each element is a decoded log event represented by an array of:
-     * - The log event's message
-     * - The log event's timestamp as milliseconds since the Unix epoch
-     * - The log event's log level as an integer that indexes into `cLogLevelNames`
-     * - The log event's number (1-indexed) in the stream
+     * @return An array of objects, where each object represents a decoded log event with the
+     * following properties:
+     * - logEventNum: The log event's number (1-indexed) in the stream.
+     * - logLevelKey: The log event's log level as an integer (indexes into `cLogLevelNames`).
+     * - message: The log event's message.
+     * - timestamp: The log event's timestamp in milliseconds since the Unix epoch.
+     * - utcOffset: The log event's local time zone offset from UTC, in minutes.
      * @return null if any log event in the range doesn't exist (e.g. the range exceeds the number
      * of log events in the collection).
      * @throw ClpFfiJsException if a message cannot be decoded.
@@ -254,14 +280,24 @@ auto StreamReader::generic_decode_range(
         auto const& log_event = log_event_with_filter_data.get_log_event();
         auto const& timestamp = log_event_with_filter_data.get_timestamp();
         auto const& log_level = log_event_with_filter_data.get_log_level();
+        auto const& utc_offset = log_event_with_filter_data.get_utc_offset().count();
 
         EM_ASM(
-                { Emval.toValue($0).push([UTF8ToString($1), $2, $3, $4]); },
+                {
+                    Emval.toValue($0).push({
+                        "logEventNum": $1,
+                        "logLevel": $2,
+                        "message": UTF8ToString($3),
+                        "timestamp": $4,
+                        "utcOffset": $5
+                    });
+                },
                 results.as_handle(),
+                log_event_idx + 1,
+                log_level,
                 log_event_to_string(log_event).c_str(),
                 timestamp,
-                log_level,
-                log_event_idx + 1
+                utc_offset
         );
     }
 

@@ -14,7 +14,6 @@
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
 #include <clp/ffi/SchemaTree.hpp>
 #include <clp/ffi/Value.hpp>
-#include <clp/ir/EncodedTextAst.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
 #include <emscripten/val.h>
@@ -39,7 +38,7 @@ namespace {
  * @return The parsed log level forwarded from `parse_log_level`.
  * @return std::nullopt on failures:
  * - The given value's type cannot be decoded as a string.
- * - Forwards `clp::ir::EncodedTextAst::decode_and_unparse`'s return values.
+ * - Forwards `clp::ffi::EncodedTextAst::to_string`'s return values.
  * - Forwards `parse_log_level`'s return values.
  */
 [[nodiscard]] auto parse_log_level_from_value(clp::ffi::Value const& value)
@@ -55,7 +54,7 @@ auto parse_log_level(std::string_view str) -> std::optional<LogLevel> {
             [](unsigned char c) { return std::toupper(c); }
     );
 
-    auto const* it = std::ranges::find(
+    auto const it = std::ranges::find(
             cLogLevelNames.begin() + clp::enum_to_underlying_type(cValidLogLevelsBeginIdx),
             cLogLevelNames.end(),
             log_level_name_upper_case
@@ -72,22 +71,32 @@ auto parse_log_level_from_value(clp::ffi::Value const& value) -> std::optional<L
         return parse_log_level(value.get_immutable_view<std::string>());
     }
 
-    if (value.is<clp::ir::FourByteEncodedTextAst>()) {
-        auto const optional_log_level
-                = value.get_immutable_view<clp::ir::FourByteEncodedTextAst>().decode_and_unparse();
-        if (false == optional_log_level.has_value()) {
+    if (value.is<clp::ffi::FourByteEncodedTextAst>()) {
+        auto const result{value.get_immutable_view<clp::ffi::FourByteEncodedTextAst>().to_string()};
+        if (result.has_error()) {
+            auto const error{result.error()};
+            SPDLOG_ERROR(
+                    "Failed to decode `clp::ffi::FourByteEncodedTextAst`: {} - {}",
+                    error.category().name(),
+                    error.message()
+            );
             return std::nullopt;
         }
-        return parse_log_level(optional_log_level.value());
+        return parse_log_level(result.value());
     }
 
-    if (value.is<clp::ir::EightByteEncodedTextAst>()) {
-        auto const optional_log_level
-                = value.get_immutable_view<clp::ir::EightByteEncodedTextAst>().decode_and_unparse();
-        if (false == optional_log_level.has_value()) {
+    if (value.is<clp::ffi::EightByteEncodedTextAst>()) {
+        auto const result{value.get_immutable_view<clp::ffi::EightByteEncodedTextAst>().to_string()};
+        if (result.has_error()) {
+            auto const error{result.error()};
+            SPDLOG_ERROR(
+                    "Failed to decode `clp::ffi::EightByteEncodedTextAst`: {} - {}",
+                    error.category().name(),
+                    error.message()
+            );
             return std::nullopt;
         }
-        return parse_log_level(optional_log_level.value());
+        return parse_log_level(result.value());
     }
 
     SPDLOG_ERROR("Protocol Error: The log level value must be a valid string-convertible type.");
@@ -129,12 +138,15 @@ auto StructuredIrUnitHandler::SchemaTreeFullBranch::match(
     return true;
 }
 
-auto StructuredIrUnitHandler::handle_log_event(StructuredLogEvent&& log_event)
-        -> clp::ffi::ir_stream::IRErrorCode {
+auto StructuredIrUnitHandler::handle_log_event(
+        StructuredLogEvent&& log_event,
+        [[maybe_unused]] size_t log_event_idx
+) -> clp::ffi::ir_stream::IRErrorCode {
     auto const timestamp = get_timestamp(log_event);
     auto const log_level = get_log_level(log_event);
+    auto const utc_offset = get_utc_offset(log_event);
 
-    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp);
+    m_deserialized_log_events->emplace_back(std::move(log_event), log_level, timestamp, utc_offset);
 
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
@@ -176,6 +188,15 @@ auto StructuredIrUnitHandler::handle_schema_tree_node_insertion(
         }
     }
 
+    if (false == m_optional_utc_offset_node_id.has_value()
+        && m_optional_utc_offset_full_branch.has_value()
+        && is_auto_generated == m_optional_utc_offset_full_branch->is_auto_generated())
+    {
+        if (m_optional_utc_offset_full_branch->match(*schema_tree, schema_tree_node_locator)) {
+            m_optional_utc_offset_node_id.emplace(inserted_node_id);
+        }
+    }
+
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
 
@@ -189,6 +210,13 @@ auto StructuredIrUnitHandler::handle_end_of_stream() const -> clp::ffi::ir_strea
         && false == m_optional_timestamp_node_id.has_value())
     {
         SPDLOG_WARN("Timestamp filter option is given, but the key is not found in the IR stream.");
+    }
+    if (m_optional_utc_offset_full_branch.has_value()
+        && false == m_optional_utc_offset_node_id.has_value())
+    {
+        SPDLOG_WARN(
+                "Utc offset filter option is given, but the key is not found in the IR stream."
+        );
     }
     return clp::ffi::ir_stream::IRErrorCode::IRErrorCode_Success;
 }
@@ -273,5 +301,49 @@ auto StructuredIrUnitHandler::get_timestamp(StructuredLogEvent const& log_event)
     return static_cast<clp::ir::epoch_time_ms_t>(
             timestamp.get_immutable_view<clp::ffi::value_int_t>()
     );
+}
+
+auto StructuredIrUnitHandler::get_utc_offset(StructuredLogEvent const& log_event) const
+        -> UtcOffset {
+    constexpr std::chrono::minutes cDefaultUtcOffset{0};
+
+    if (false == m_optional_utc_offset_full_branch.has_value()) {
+        return cDefaultUtcOffset;
+    }
+
+    if (false == m_optional_utc_offset_node_id.has_value()) {
+        return cDefaultUtcOffset;
+    }
+
+    auto const utc_offset_node_id = m_optional_utc_offset_node_id.value();
+    auto const& node_id_value_pairs = m_optional_utc_offset_full_branch->is_auto_generated()
+                                              ? log_event.get_auto_gen_node_id_value_pairs()
+                                              : log_event.get_user_gen_node_id_value_pairs();
+    if (false == node_id_value_pairs.contains(utc_offset_node_id)) {
+        return cDefaultUtcOffset;
+    }
+
+    auto const& optional_utc_offset_value = node_id_value_pairs.at(utc_offset_node_id);
+    if (false == optional_utc_offset_value.has_value()) {
+        SPDLOG_ERROR(
+                "Protocol error: The utc offset cannot be an empty value. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
+        return cDefaultUtcOffset;
+    }
+
+    auto const& utc_offset_value{optional_utc_offset_value.value()};
+    if (false == utc_offset_value.is<clp::ffi::value_int_t>()) {
+        SPDLOG_ERROR(
+                "Protocol error: The utc offset must be a valid integer. Log event index: {}",
+                m_deserialized_log_events->size()
+        );
+        return cDefaultUtcOffset;
+    }
+    // TODO: Support parsing of other time units, e.g., minutes, hours, etc..
+    auto const utc_offset_seconds{
+            std::chrono::seconds{utc_offset_value.get_immutable_view<clp::ffi::value_int_t>()}
+    };
+    return std::chrono::duration_cast<UtcOffset>(utc_offset_seconds);
 }
 }  // namespace clp_ffi_js::ir

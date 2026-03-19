@@ -4,14 +4,14 @@
 #include <memory>
 #include <utility>
 
-#include <clp/Array.hpp>
 #include <clp/ReaderInterface.hpp>
+#include <ystdlib/containers/Array.hpp>
 
 namespace clp_ffi_js::ir {
 /**
  * The data context for a `StreamReader`. It encapsulates a chain of the following resources:
  * An IR deserializer class that reads from a `clp::ReaderInterface`, which in turn reads from a
- * `clp::Array`.
+ * `ystdlib::containers::Array`.
  * @tparam Deserializer Type of deserializer.
  */
 template <typename Deserializer>
@@ -19,7 +19,7 @@ class StreamReaderDataContext {
 public:
     // Constructors
     StreamReaderDataContext(
-            clp::Array<char>&& data_buffer,
+            ystdlib::containers::Array<char>&& data_buffer,
             std::unique_ptr<clp::ReaderInterface>&& reader,
             Deserializer deserializer
     )
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] auto get_reader() -> clp::ReaderInterface& { return *m_reader; }
 
 private:
-    clp::Array<char> m_data_buffer;
+    ystdlib::containers::Array<char> m_data_buffer;
     std::unique_ptr<clp::ReaderInterface> m_reader;
     Deserializer m_deserializer;
 };
