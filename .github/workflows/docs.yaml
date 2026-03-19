@@ -9,7 +9,7 @@ on:
       - "src/**/*.ts"
       - "taskfile.yaml"
       - "taskfiles/docs.yaml"
-      - "typedoc.jsonc"
+      - "typedoc.json"
   push:
     paths: *monitored_paths
   schedule:
