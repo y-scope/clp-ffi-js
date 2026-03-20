@@ -81,12 +81,12 @@ collect_matched_log_event_indices(clp::ReaderInterface& reader, std::string cons
         -> std::vector<size_t> {
     std::istringstream query_string_stream{query_string};
     auto query_handler_result{
-            clp::ffi::ir_stream::search::QueryHandler<
-                    decltype(&trivial_new_projected_schema_tree_node_callback)>::
-                    create(&trivial_new_projected_schema_tree_node_callback,
-                           clp_s::search::kql::parse_kql_expression(query_string_stream),
-                           {},
-                           false)
+            clp::ffi::ir_stream::search::
+                    QueryHandler<decltype(&trivial_new_projected_schema_tree_node_callback)>::
+                            create(&trivial_new_projected_schema_tree_node_callback,
+                                   clp_s::search::kql::parse_kql_expression(query_string_stream),
+                                   {},
+                                   false)
     };
 
     if (query_handler_result.has_error()) {
