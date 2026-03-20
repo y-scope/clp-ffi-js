@@ -1,6 +1,6 @@
 {
   "name": "clp-ffi-js",
-  "version": "0.6.1",
+  "version": "0.7.0-beta.1",
   "description": "clp-ffi-js is a JavaScript FFI library for CLP.",
   "author": "YScope Inc. <dev@yscope.com>",
   "license": "Apache-2.0",
@@ -13,6 +13,9 @@
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
   "scripts": {
+    "build:ts": "tsc -p tsconfig.build.json",
+    "docs:build": "npm exec -- typedoc",
+    "docs:serve": "npm exec -- serve",
     "lint": "npm run lint:check:js",
     "lint:check:js": "tsc --noEmit && eslint . --max-warnings 0",
     "lint:fix:js": "npm run lint:check:js -- --fix",
@@ -20,6 +23,10 @@
     "test": "PLAYWRIGHT_BROWSERS_PATH=0 vitest run"
   },
   "type": "module",
+  "imports": {
+    "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
+    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
+  },
   "files": [
     "dist"
   ],
@@ -35,13 +42,19 @@
     "./worker": {
       "import": "./dist/ClpFfiJs-worker.js",
       "types": "./dist/ClpFfiJs-worker.d.ts"
+    },
+    "./sfa": {
+      "import": "./dist/clp_ffi_js/sfa/index.js",
+      "types": "./dist/clp_ffi_js/sfa/index.d.ts"
     }
   },
   "devDependencies": {
-    "@types/node": "^22.19.9",
+    "@types/node": "^22.19.15",
     "@vitest/browser-playwright": "^4.0.18",
     "eslint": "^9.39.2",
     "eslint-config-yscope": "^1.1.2",
+    "serve": "^14.2.6",
+    "typedoc": "^0.28.17",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }

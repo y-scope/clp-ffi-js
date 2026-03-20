@@ -28,6 +28,19 @@ To clean the build:
 task clean
 ```
 
+## Docs
+To build the TypeDoc documentation:
+```shell
+task docs:build
+```
+
+The generated site is written to `build/docs`.
+
+To serve the generated documentation locally:
+```shell
+task docs:serve
+```
+
 # Contributing 
 Follow the steps below to develop and contribute to the project.
 

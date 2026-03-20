@@ -2,6 +2,7 @@ version: "3"
 
 includes:
   deps: "taskfiles/deps.yaml"
+  docs: "taskfiles/docs.yaml"
   lint: "taskfiles/lint.yaml"
   test: "taskfiles/test.yaml"
   utils: "tools/yscope-dev-utils/exports/taskfiles/utils/utils.yaml"
@@ -119,11 +120,14 @@ tasks:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
       OUTPUT_DIR: "{{.G_DIST_DIR}}"
     sources:
+      - "src/**/*.ts"
+      - "tsconfig.build.json"
       - "{{.G_CLP_FFI_JS_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
       - "clp-ffi-js"
+      - "node-modules"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -136,6 +140,7 @@ tasks:
           rsync -a
           "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_PREFIX}}{{.ITEM}}."{d.ts,js,wasm}
           "{{.OUTPUT_DIR}}/"
+      - "npm run build:ts -- --outDir '{{.OUTPUT_DIR}}'"
       - "npm pack"
       # This command must be last
       - task: "utils:checksum:compute"
@@ -157,6 +162,7 @@ tasks:
       - "emsdk"
     cmd: |-
       cmake \
+      -DCLP_FFI_JS_ENABLE_SFA_READER_BINDING=ON \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
