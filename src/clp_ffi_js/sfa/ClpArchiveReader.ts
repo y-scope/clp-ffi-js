@@ -52,8 +52,9 @@ class ClpArchiveReader {
      */
     close (): void {
         if (null !== this.#nativeReader) {
-            this.#nativeReader.delete();
+            const reader = this.#nativeReader;
             this.#nativeReader = null;
+            reader.delete();
         }
     }
 
