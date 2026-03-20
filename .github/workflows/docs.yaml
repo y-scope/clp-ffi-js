@@ -9,7 +9,7 @@ on:
       - "src/**/*.ts"
       - "taskfile.yaml"
       - "taskfiles/docs.yaml"
-      - "typedoc.jsonc"
+      - "typedoc.json"
   push:
     paths: *monitored_paths
   schedule:
@@ -46,35 +46,3 @@ jobs:
 
       - name: "Build docs"
         run: "task docs:site"
-
-      - if: >-
-          contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
-          && 'ubuntu-24.04' == matrix.os
-        name: "Upload docs artifact"
-        uses: "actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa"  # v3.0.1
-        with:
-          name: "docs"
-          path: "build/docs"
-          if-no-files-found: "error"
-
-          # Retain the artifact for a week in case there was a deployment issue
-          retention-days: 7
-
-  deploy:
-    if: >-
-      contains(fromJSON('["push", "workflow_dispatch"]'), github.event_name)
-    needs: ["docs"]
-    permissions:
-      contents: "read"
-      # Required by actions/deploy-pages for OIDC authentication.
-      id-token: "write"
-      # Required to deploy the uploaded artifact to GitHub Pages.
-      pages: "write"
-    runs-on: "ubuntu-24.04"
-    environment:
-      name: "github-pages"
-      url: "${{steps.deployment.outputs.page_url}}"
-    steps:
-      - name: "Deploy to GitHub Pages"
-        id: "deployment"
-        uses: "actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e"  # v4.0.5
