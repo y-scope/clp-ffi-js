@@ -26,13 +26,8 @@ class ClpArchiveReader {
      *
      * @param dataArray A Uint8Array containing the SFA archive bytes.
      * @return A new ClpArchiveReader instance.
-     * @throws {Error} If the WASM module has not been initialized or if the archive is invalid.
-     * @throws {TypeError} If `dataArray` is not a Uint8Array.
      */
     static create (dataArray: Uint8Array): ClpArchiveReader {
-        if (false === (dataArray instanceof Uint8Array)) {
-            throw new TypeError("dataArray must be a Uint8Array.");
-        }
         const module = getModule();
 
         return new ClpArchiveReader(new module.ClpSfaReader(dataArray));
