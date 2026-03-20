@@ -5,8 +5,8 @@ import type {ClpSfaReader} from "#clp-ffi-js/node";
 
 /**
  * A high-level wrapper around the WASM-based `ClpSfaReader` module for reading CLP single-file
- * archives (SFA). This class manages the lifecycle of the underlying WASM object automatically,
- * including creation and deletion.
+ * archives (SFA). This class manages the lifecycle of the underlying WASM module and the wrapped
+ * WASM object, so consumers do not need to interact with the WASM layer directly.
  *
  * Use {@link ClpArchiveReader.create} to construct an instance, and {@link ClpArchiveReader.close}
  * to release the resources.
