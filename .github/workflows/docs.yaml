@@ -1,0 +1,48 @@
+name: "docs"
+
+on:
+  pull_request:
+    paths: &monitored_paths
+      - ".github/workflows/docs.yaml"
+      - "package-lock.json"
+      - "package.json"
+      - "src/**/*.ts"
+      - "taskfile.yaml"
+      - "taskfiles/docs.yaml"
+      - "typedoc.json"
+  push:
+    paths: *monitored_paths
+  schedule:
+    # Run daily at 00:15 UTC (the 15 is to avoid periods of high load)
+    - cron: "15 0 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: "${{github.workflow}}-${{github.ref}}"
+  # Cancel in-progress jobs for efficiency
+  cancel-in-progress: true
+
+jobs:
+  docs:
+    permissions:
+      contents: "read"
+    strategy:
+      matrix:
+        os: ["macos-latest", "ubuntu-24.04"]
+    runs-on: "${{matrix.os}}"
+    steps:
+      - uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"  # v6.0.2
+        with:
+          submodules: "recursive"
+
+      - name: "Install task"
+        run: "npm install -g @go-task/cli@3.48.0"
+
+      - if: "matrix.os == 'macos-latest'"
+        name: "Install coreutils (for md5sum)"
+        run: "brew install coreutils"
+
+      - name: "Build docs"
+        run: "task docs:site"
