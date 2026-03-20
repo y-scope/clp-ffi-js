@@ -1,7 +1,6 @@
-import type {
-    ClpSfaReader as NativeClpSfaReader,
-    MainModule,
-} from "#clp-ffi-js/node";
+import {getModule} from "./module.js";
+
+import type {ClpSfaReader} from "#clp-ffi-js/node";
 
 
 /**
@@ -13,31 +12,13 @@ import type {
  * to release the resources.
  */
 class ClpArchiveReader {
-    static #modulePromise: Promise<MainModule> | null = null;
-
-    #nativeReader: NativeClpSfaReader | null;
+    #nativeReader: ClpSfaReader | null;
 
     /**
      * @param nativeReader The underlying WASM SfaReader instance.
      */
-    private constructor (nativeReader: NativeClpSfaReader) {
+    private constructor (nativeReader: ClpSfaReader) {
         this.#nativeReader = nativeReader;
-    }
-
-    /**
-     * Sets the WASM module promise used by {@link create}. Must be called exactly once before any
-     * call to `create`. This is called automatically by the entry-point modules (`index-node` /
-     * `index-worker`).
-     *
-     * @internal
-     * @param modulePromise Promise resolving to the loaded WASM module.
-     * @throws {Error} If `init` has already been called.
-     */
-    static init (modulePromise: Promise<MainModule>): void {
-        if (null !== ClpArchiveReader.#modulePromise) {
-            throw new Error("ClpArchiveReader.init() has already been called.");
-        }
-        ClpArchiveReader.#modulePromise = modulePromise;
     }
 
     /**
@@ -45,13 +26,14 @@ class ClpArchiveReader {
      *
      * @param dataArray A Uint8Array containing the SFA archive bytes.
      * @return A new ClpArchiveReader instance.
-     * @throws {Error} If {@link init} has not been called or if the archive is invalid.
+     * @throws {Error} If the WASM module has not been initialized or if the archive is invalid.
+     * @throws {TypeError} If `dataArray` is not a Uint8Array.
      */
-    static async create (dataArray: Uint8Array): Promise<ClpArchiveReader> {
-        if (null === ClpArchiveReader.#modulePromise) {
-            throw new Error("ClpArchiveReader.init() must be called before create().");
+    static create (dataArray: Uint8Array): ClpArchiveReader {
+        if (false === (dataArray instanceof Uint8Array)) {
+            throw new TypeError("dataArray must be a Uint8Array.");
         }
-        const module = await ClpArchiveReader.#modulePromise;
+        const module = getModule();
 
         return new ClpArchiveReader(new module.ClpSfaReader(dataArray));
     }
@@ -85,7 +67,7 @@ class ClpArchiveReader {
      * @return The native reader instance.
      * @throws {Error} If the reader has been closed.
      */
-    #getNativeReader (): NativeClpSfaReader {
+    #getNativeReader (): ClpSfaReader {
         if (null === this.#nativeReader) {
             throw new Error("ClpArchiveReader has been closed.");
         }

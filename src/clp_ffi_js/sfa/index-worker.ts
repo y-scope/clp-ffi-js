@@ -3,12 +3,11 @@
  *
  * @module
  */
-import {ClpArchiveReader} from "./ClpArchiveReader.js";
+import {setModule} from "./module.js";
 
-import MainModuleFactory from "#clp-ffi-js/worker";
+import mainModuleFactory from "#clp-ffi-js/worker";
 
 
-// eslint-disable-next-line new-cap
-ClpArchiveReader.init(MainModuleFactory());
+setModule(await mainModuleFactory());
 
 export * from "./index.js";
