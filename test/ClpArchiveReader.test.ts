@@ -52,6 +52,5 @@ describe("ClpArchiveReader", () => {
         expect(() => {
             closedReader.close();
         }).not.toThrow();
-        reader = null;
     });
 });
