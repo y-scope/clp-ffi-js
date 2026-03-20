@@ -31,5 +31,6 @@ const getModule = (): MainModule => {
 };
 
 export {
-    getModule, setModule,
+    getModule,
+    setModule,
 };
