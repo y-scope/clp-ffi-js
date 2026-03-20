@@ -1,6 +1,6 @@
 import {getModule} from "./module.js";
 
-import type {ClpSfaReader} from "#clp-ffi-js/node";
+import type {ClpSfaReader as WasmClpArchiveReader} from "#clp-ffi-js/node";
 
 
 /**
@@ -12,13 +12,13 @@ import type {ClpSfaReader} from "#clp-ffi-js/node";
  * to release the resources.
  */
 class ClpArchiveReader {
-    #nativeReader: ClpSfaReader | null;
+    #wasmReader: WasmClpArchiveReader | null;
 
     /**
-     * @param nativeReader The underlying WASM SfaReader instance.
+     * @param wasmReader The underlying WASM SfaReader instance.
      */
-    private constructor (nativeReader: ClpSfaReader) {
-        this.#nativeReader = nativeReader;
+    private constructor (wasmReader: WasmClpArchiveReader) {
+        this.#wasmReader = wasmReader;
     }
 
     /**
@@ -41,7 +41,7 @@ class ClpArchiveReader {
      * @throws {Error} If the reader has been closed.
      */
     getEventCount (): bigint {
-        return this.#getNativeReader().getEventCount();
+        return this.#getWasmReader().getEventCount();
     }
 
     /**
@@ -51,25 +51,25 @@ class ClpArchiveReader {
      * This method is idempotent — calling it multiple times has no effect.
      */
     close (): void {
-        if (null !== this.#nativeReader) {
-            const reader = this.#nativeReader;
-            this.#nativeReader = null;
+        if (null !== this.#wasmReader) {
+            const reader = this.#wasmReader;
+            this.#wasmReader = null;
             reader.delete();
         }
     }
 
     /**
-     * Returns the underlying native reader, throwing if it has been closed.
+     * Returns the underlying WASM reader, throwing if it has been closed.
      *
-     * @return The native reader instance.
+     * @return The WASM reader instance.
      * @throws {Error} If the reader has been closed.
      */
-    #getNativeReader (): ClpSfaReader {
-        if (null === this.#nativeReader) {
+    #getWasmReader (): WasmClpArchiveReader {
+        if (null === this.#wasmReader) {
             throw new Error("ClpArchiveReader has been closed.");
         }
 
-        return this.#nativeReader;
+        return this.#wasmReader;
     }
 }
 

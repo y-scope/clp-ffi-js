@@ -35,6 +35,7 @@ describe("ClpArchiveReader", () => {
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
     });
+
     it("should throw when calling getEventCount after close", async () => {
         const data = await loadTestData("postgresql.clp");
         const closedReader = ClpArchiveReader.create(data);
