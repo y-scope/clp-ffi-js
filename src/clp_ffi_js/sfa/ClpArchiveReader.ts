@@ -26,6 +26,7 @@ class ClpArchiveReader {
      *
      * @param dataArray A Uint8Array containing the SFA archive bytes.
      * @return A new ClpArchiveReader instance.
+     * @throws {Error} If the archive data cannot be parsed.
      */
     static create (dataArray: Uint8Array): ClpArchiveReader {
         const module = getModule();
