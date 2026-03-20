@@ -20,7 +20,7 @@ const setModule = (newMainModule: MainModule): void => {
  * Returns the shared WASM module.
  *
  * @return The loaded module.
- * @throws {Error} If {@link initModule} has not been called.
+ * @throws {Error} If module has not been set.
  */
 const getModule = (): MainModule => {
     if (null === mainModule) {
