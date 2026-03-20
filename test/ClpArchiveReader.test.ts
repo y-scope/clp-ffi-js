@@ -46,10 +46,12 @@ describe("ClpArchiveReader", () => {
 
     it("should not throw when calling close multiple times", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = ClpArchiveReader.create(data);
-        reader.close();
+        const closedReader = ClpArchiveReader.create(data);
+        closedReader.close();
 
-        expect(() => reader.close()).not.toThrow();
+        expect(() => {
+            closedReader.close();
+        }).not.toThrow();
         reader = null;
     });
 });
