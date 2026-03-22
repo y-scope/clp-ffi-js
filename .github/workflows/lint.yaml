@@ -9,9 +9,7 @@ on:
     - cron: "15 0 * * *"
   workflow_dispatch:
 
-permissions:
-  # So the workflow can cancel in-progress jobs
-  contents: "write"
+permissions: {}
 
 concurrency:
   group: "${{github.workflow}}-${{github.ref}}"
@@ -25,31 +23,24 @@ jobs:
         os: ["macos-latest", "ubuntu-latest"]
     runs-on: "${{matrix.os}}"
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8"  # v6.0.1
         with:
           submodules: "recursive"
 
-      - uses: "actions/setup-python@v5"
-        with:
-          python-version: "3.8"
-
-      - name: "Install uv"
-        uses: "astral-sh/setup-uv@f0ec1fc3b38f5e7cd731bb6ce540c5af426746bb"
-
       - name: "Install task"
-        run: "npm install -g @go-task/cli"
+        run: "npm install -g @go-task/cli@3.48.0"
 
       - if: "matrix.os == 'macos-latest'"
         name: "Install coreutils (for md5sum)"
         run: "brew install coreutils"
 
-      - name: "Log tool versions"
-        run: |-
-          md5sum --version
-          python --version
-          tar --version
-          task --version
-          uv --version
+      - name: "Lint .cpp files (format only)"
+        run: "task lint:check-cpp-format"
 
-      - name: "Run lint task"
-        run: "task lint:check"
+      - name: "Lint .js files"
+        shell: "bash"
+        run: "task lint:check-js"
+
+      - name: "Lint .yaml files"
+        shell: "bash"
+        run: "task lint:check-yaml"

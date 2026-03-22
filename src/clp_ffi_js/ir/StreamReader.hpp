@@ -193,9 +193,7 @@ protected:
      */
     template <typename LogEvent, typename ToStringFunc>
     requires requires(ToStringFunc func, LogEvent const& log_event) {
-        {
-            func(log_event)
-        } -> std::convertible_to<std::string>;
+        { func(log_event) } -> std::convertible_to<std::string>;
     }
     static auto generic_decode_range(
             size_t begin_idx,
@@ -239,9 +237,7 @@ protected:
 
 template <typename LogEvent, typename ToStringFunc>
 requires requires(ToStringFunc func, LogEvent const& log_event) {
-    {
-        func(log_event)
-    } -> std::convertible_to<std::string>;
+    { func(log_event) } -> std::convertible_to<std::string>;
 }
 auto StreamReader::generic_decode_range(
         size_t begin_idx,
