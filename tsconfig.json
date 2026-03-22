@@ -29,6 +29,7 @@
         "noErrorTruncation": true
     },
     "include": [
+        "src/**/*.ts",
         "test/**/*.ts",
         "vitest.config.ts"
     ]
