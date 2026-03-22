@@ -101,9 +101,8 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             .function(
                     "filterLogEvents",
                     emscripten::select_overload<
-                            void(clp_ffi_js::ir::LogLevelFilterTsType const&, std::string const&)>(
-                            &clp_ffi_js::ir::StreamReader::filter_log_events
-                    )
+                            void(clp_ffi_js::ir::LogLevelFilterTsType const&, std::string const&)
+                    >(&clp_ffi_js::ir::StreamReader::filter_log_events)
             )
             .function("deserializeStream", &clp_ffi_js::ir::StreamReader::deserialize_stream)
             .function("decodeRange", &clp_ffi_js::ir::StreamReader::decode_range)
