@@ -2,6 +2,7 @@ version: "3"
 
 includes:
   emsdk: "./emsdk.yaml"
+  node-modules: "./node-modules.yaml"
 
 vars:
   # Library names

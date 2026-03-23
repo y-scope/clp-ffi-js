@@ -26,6 +26,7 @@ tasks:
     deps: ["package"]
 
   clean:
+    run: "once"
     cmds:
       - "rm -rf '{{.G_BUILD_DIR}}'"
 
@@ -40,6 +41,7 @@ tasks:
       - "CMakeLists.txt"
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - task: "utils:checksum:validate"
         vars:
@@ -70,9 +72,10 @@ tasks:
       - "{{.G_CLP_FFI_JS_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
     deps:
       - "clp-ffi-js"
-      - "node-modules"
+      - "deps:node-modules"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -102,25 +105,16 @@ tasks:
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
+    run: "once"
     deps:
       - "deps"
+      - "deps:emsdk"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
       -B "{{.G_CLP_FFI_JS_BUILD_DIR}}"
-
-  node-modules:
-    internal: true
-    sources:
-      - "{{.ROOT_DIR}}/package.json"
-      - "{{.ROOT_DIR}}/package-lock.json"
-      - "{{.TASKFILE}}"
-    generates:
-      - "{{.ROOT_DIR}}/node_modules/**/*"
-    cmds:
-      - "npm clean-install"
 
   init:
     internal: true
