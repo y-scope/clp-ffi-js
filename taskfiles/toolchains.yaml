@@ -8,7 +8,7 @@ vars:
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
 
 tasks:
-  default:
+  emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
       EMSDK_VERSION: "4.0.10"
@@ -17,8 +17,8 @@ tasks:
     generates: ["{{.CHECKSUM_FILE}}"]
     run: "once"
     deps:
-      - "::init"
-      - task: "::utils:checksum:validate"
+      - ":init"
+      - task: ":utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           EXCLUDE_PATTERNS: &emsdk_checksum_exclude_paths
@@ -43,7 +43,7 @@ tasks:
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
         PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
       # This command must be last
-      - task: "::utils:checksum:compute"
+      - task: ":utils:checksum:compute"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
