@@ -1,0 +1,50 @@
+version: "3"
+
+vars:
+  G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+
+  G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
+      {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+  G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
+
+tasks:
+  default:
+    vars:
+      CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      EMSDK_VERSION: "4.0.10"
+      OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+    sources: ["{{.TASKFILE}}"]
+    generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
+    deps:
+      - "::init"
+      - task: "::utils:checksum:validate"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATTERNS: &emsdk_checksum_exclude_paths
+            - "upstream/emscripten/__pycache__"
+            - "upstream/emscripten/cache/sanity.txt"
+            - "upstream/emscripten/cache/symbol_lists"
+            - "upstream/emscripten/cache/symbol_lists.lock"
+            - "upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/lto"
+            - "upstream/emscripten/third_party/leb128/__pycache__"
+            - "upstream/emscripten/tools/__pycache__"
+            - "upstream/emscripten/tools/ports/__pycache__"
+            - "upstream/emscripten/tools/ports/contrib/__pycache__"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
+    cmds:
+      - "rm -rf '{{.G_EMSDK_DIR}}'"
+      - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
+      - |-
+        cd "{{.G_EMSDK_DIR}}"
+        ./emsdk install {{.EMSDK_VERSION}}
+        ./emsdk activate {{.EMSDK_VERSION}}
+      - |-
+        cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
+        PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
+      # This command must be last
+      - task: "::utils:checksum:compute"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]

@@ -1,7 +1,7 @@
 version: "3"
 
 includes:
-  deps: "taskfiles/deps.yaml"
+  deps: "taskfiles/deps/main.yaml"
   lint: "taskfiles/lint.yaml"
   test: "taskfiles/test.yaml"
   utils: "tools/yscope-dev-utils/exports/taskfiles/utils/utils.yaml"
@@ -11,9 +11,6 @@ vars:
   G_CLP_FFI_JS_BUILD_DIR: "{{.G_BUILD_DIR}}/clp-ffi-js"
   G_DEPS_DIR: "{{.G_BUILD_DIR}}/deps"
   G_DIST_DIR: "{{.ROOT_DIR}}/dist"
-  G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
-  G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
-      {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 
   G_CLP_FFI_JS_ENV_NAMES: ["node", "worker"]
   G_CLP_FFI_JS_TARGET_PREFIX: "ClpFfiJs-"
@@ -23,7 +20,6 @@ vars:
   G_DEPS_CMAKE_SETTINGS_FILE: "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/settings.cmake"
 
   G_CLP_FFI_JS_CHECKSUM: "{{.G_BUILD_DIR}}/clp-ffi-js.md5"
-  G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
 
 tasks:
   default:
@@ -31,17 +27,7 @@ tasks:
 
   clean:
     cmds:
-      - task: "clean-emsdk"
-      - task: "clean-clp-ffi-js"
       - "rm -rf '{{.G_BUILD_DIR}}'"
-
-  clean-emsdk:
-    cmds:
-      - "rm -rf '{{.G_EMSDK_DIR}}'"
-
-  clean-clp-ffi-js:
-    cmds:
-      - "rm -rf '{{.G_CLP_FFI_JS_BUILD_DIR}}'"
 
   clp-ffi-js:
     vars:
@@ -55,7 +41,6 @@ tasks:
       - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     deps:
-      - "emsdk"
       - task: "utils:checksum:validate"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
@@ -71,47 +56,6 @@ tasks:
       - task: "utils:checksum:compute"
         vars:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
-
-  emsdk:
-    vars:
-      CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
-      EMSDK_VERSION: "4.0.10"
-      OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
-    sources: ["{{.TASKFILE}}"]
-    generates: ["{{.CHECKSUM_FILE}}"]
-    run: "once"
-    deps:
-      - "init"
-      - task: "utils:checksum:validate"
-        vars:
-          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          EXCLUDE_PATTERNS: &emsdk_checksum_exclude_paths
-            - "upstream/emscripten/__pycache__"
-            - "upstream/emscripten/cache/sanity.txt"
-            - "upstream/emscripten/cache/symbol_lists"
-            - "upstream/emscripten/cache/symbol_lists.lock"
-            - "upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/lto"
-            - "upstream/emscripten/third_party/leb128/__pycache__"
-            - "upstream/emscripten/tools/__pycache__"
-            - "upstream/emscripten/tools/ports/__pycache__"
-            - "upstream/emscripten/tools/ports/contrib/__pycache__"
-          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
-    cmds:
-      - task: "clean-emsdk"
-      - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
-      - |-
-        cd "{{.G_EMSDK_DIR}}"
-        ./emsdk install {{.EMSDK_VERSION}}
-        ./emsdk activate {{.EMSDK_VERSION}}
-      - |-
-        cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
-        PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
-      # This command must be last
-      - task: "utils:checksum:compute"
-        vars:
-          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
-          EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
           INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
 
   package:
@@ -160,7 +104,6 @@ tasks:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
     deps:
       - "deps"
-      - "emsdk"
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \

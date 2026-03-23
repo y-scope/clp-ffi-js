@@ -1,5 +1,8 @@
 version: "3"
 
+includes:
+  emsdk: "./emsdk.yaml"
+
 vars:
   # Library names
   G_BOOST_LIB_NAME: "Boost"
@@ -28,7 +31,7 @@ tasks:
     desc: "Download, and install (except for clp) all dependencies using Emscripten toolchain."
     run: "once"
     deps:
-      - ":emsdk"
+      - "emsdk"
     cmds:
       - task: ":utils:cmake:install-deps-and-generate-settings"
         vars:
