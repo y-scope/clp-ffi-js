@@ -23,7 +23,7 @@ vars:
 
 tasks:
   default:
-    deps: ["clp-ffi-js"]
+    deps: ["package"]
 
   clean:
     cmds:
