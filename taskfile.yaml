@@ -1,7 +1,7 @@
 version: "3"
 
 includes:
-  deps: "taskfiles/deps/main.yaml"
+  deps: "taskfiles/deps.yaml"
   node-modules: "taskfiles/node-modules.yaml"
   lint: "taskfiles/lint.yaml"
   test: "taskfiles/test.yaml"
