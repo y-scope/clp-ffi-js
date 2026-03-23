@@ -85,7 +85,7 @@ tasks:
           rsync -a
           "{{.G_CLP_FFI_JS_BUILD_DIR}}/{{.G_CLP_FFI_JS_TARGET_PREFIX}}{{.ITEM}}."{d.ts,js,wasm}
           "{{.OUTPUT_DIR}}/"
-      - "npx tsc -p tsconfig.build.json"
+      - "npm run build:ts -- --outDir '{{.OUTPUT_DIR}}'"
       - "npm pack"
       # This command must be last
       - task: "utils:checksum:compute"
