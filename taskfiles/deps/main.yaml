@@ -1,8 +1,5 @@
 version: "3"
 
-includes:
-  node-modules: "./node-modules.yaml"
-
 vars:
   # Library names
   G_BOOST_LIB_NAME: "Boost"
