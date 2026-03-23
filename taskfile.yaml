@@ -31,17 +31,19 @@ tasks:
     run: "once"
     cmds:
       - "rm -rf '{{.G_BUILD_DIR}}'"
+      - "rm -rf '{{.G_DIST_DIR}}'"
 
   clp-ffi-js:
     vars:
       CHECKSUM_FILE: "{{.G_CLP_FFI_JS_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
+      - "CMakeLists.txt"
+      - "src/**/*"
+      - "taskfiles/toolchains.yaml"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
-      - "CMakeLists.txt"
-      - "src/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     run: "once"
     deps:
@@ -101,16 +103,15 @@ tasks:
   config-cmake-project:
     internal: true
     sources:
+      - "CMakeLists.txt"
+      - "taskfiles/toolchains.yaml"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
-      - "CMakeLists.txt"
     generates:
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/compile_commands.json"
     run: "once"
-    deps:
-      - "deps"
-      - "toolchains:emsdk"
+    deps: ["deps"]
     cmd: |-
       cmake \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
