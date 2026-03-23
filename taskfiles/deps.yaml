@@ -28,7 +28,7 @@ tasks:
     desc: "Download, and install (except for clp) all dependencies using Emscripten toolchain."
     run: "once"
     deps:
-      - ":emsdk"
+      - ":toolchains:emsdk"
     cmds:
       - task: ":utils:cmake:install-deps-and-generate-settings"
         vars:
