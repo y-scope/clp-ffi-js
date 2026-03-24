@@ -120,8 +120,10 @@ tasks:
       CHECKSUM_FILE: "{{.G_BUILD_DIR}}/{{.TASK}}.md5"
       OUTPUT_DIR: "{{.G_DIST_DIR}}"
     sources:
+      - "package.json"
       - "src/**/*.ts"
       - "tsconfig.build.json"
+      - "tsconfig.json"
       - "{{.G_CLP_FFI_JS_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]

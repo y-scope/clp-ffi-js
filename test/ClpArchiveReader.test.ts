@@ -69,7 +69,7 @@ describe("ClpArchiveReader", () => {
 
     it("should read postgresql sfa archive from buffer", async () => {
         const data = await loadTestData("postgresql.clp");
-        reader = await ClpArchiveReader.create(data);
+        reader = ClpArchiveReader.create(data);
 
         expect(reader.getEventCount()).toBe(POSTGRESQL_EXPECTED_EVENT_COUNT);
         assertLogEventIndices(reader, POSTGRESQL_EXPECTED_EVENT_COUNT);
@@ -77,10 +77,10 @@ describe("ClpArchiveReader", () => {
 
     it("should read cockroachdb sfa archive from buffer", async () => {
         const data = await loadTestData("cockroachdb.clp");
-        reader = await ClpArchiveReader.create(data);
+        reader = ClpArchiveReader.create(data);
 
         const data_wo_ts = await loadTestData("cockroachdb_wo_ts.clp");
-        readerWoTs = await ClpArchiveReader.create(data_wo_ts);
+        readerWoTs = ClpArchiveReader.create(data_wo_ts);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
         expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
@@ -125,5 +125,23 @@ describe("ClpArchiveReader", () => {
 
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
         assertLogEventIndices(reader, CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
+    });
+
+    it("should throw when calling getEventCount after close", async () => {
+        const data = await loadTestData("postgresql.clp");
+        const closedReader = ClpArchiveReader.create(data);
+        closedReader.close();
+
+        expect(() => closedReader.getEventCount()).toThrow();
+    });
+
+    it("should not throw when calling close multiple times", async () => {
+        const data = await loadTestData("postgresql.clp");
+        const closedReader = ClpArchiveReader.create(data);
+        closedReader.close();
+
+        expect(() => {
+            closedReader.close();
+        }).not.toThrow();
     });
 });
