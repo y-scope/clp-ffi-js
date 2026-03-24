@@ -12,7 +12,7 @@ tasks:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
-      VERSION: "5.0.4"
+      VERSION: "4.0.23"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
     run: "once"
@@ -38,7 +38,7 @@ tasks:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
           CHECKSUM_FILE: "{{.G_EMSDK_DIR}}.tar.gz.md5"
-          FILE_SHA256: "5bb0b33a08a33d11cfd59592261b1b08b6df6ac683111446ca260e6aff094e26"
+          FILE_SHA256: "a91a4c1f42dbb0345faac093161e27d43e9b6964840d8c8d80976ab8d3eaf2d3"
           OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
           TAR_FILE: "{{.G_EMSDK_DIR}}.tar.gz"
           URL: "https://github.com/emscripten-core/emsdk/archive/refs/tags/{{.VERSION}}.tar.gz"
