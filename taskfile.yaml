@@ -41,8 +41,9 @@ tasks:
     sources:
       - "CMakeLists.txt"
       - "src/**/*"
-      - "taskfiles/toolchains.yaml"
+      - "taskfiles/**/*"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
+      - "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates: ["{{.CHECKSUM_FILE}}"]
@@ -105,7 +106,8 @@ tasks:
     internal: true
     sources:
       - "CMakeLists.txt"
-      - "taskfiles/toolchains.yaml"
+      - "taskfiles/**/*"
+      - "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
     generates:

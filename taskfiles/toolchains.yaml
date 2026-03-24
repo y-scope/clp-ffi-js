@@ -11,8 +11,8 @@ tasks:
   emsdk:
     vars:
       CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
-      EMSDK_VERSION: "4.0.10"
       OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+      VERSION: "4.0.23"
     sources: ["{{.TASKFILE}}"]
     generates: ["{{.CHECKSUM_FILE}}"]
     run: "once"
@@ -34,11 +34,18 @@ tasks:
           INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
       - "rm -rf '{{.G_EMSDK_DIR}}'"
-      - "git clone https://github.com/emscripten-core/emsdk.git '{{.G_EMSDK_DIR}}'"
+      - "rm -rf '{{.G_EMSDK_DIR}}.tar.gz'"
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          CHECKSUM_FILE: "{{.G_EMSDK_DIR}}.tar.gz.md5"
+          FILE_SHA256: "a91a4c1f42dbb0345faac093161e27d43e9b6964840d8c8d80976ab8d3eaf2d3"
+          OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+          TAR_FILE: "{{.G_EMSDK_DIR}}.tar.gz"
+          URL: "https://github.com/emscripten-core/emsdk/archive/refs/tags/{{.VERSION}}.tar.gz"
       - |-
         cd "{{.G_EMSDK_DIR}}"
-        ./emsdk install {{.EMSDK_VERSION}}
-        ./emsdk activate {{.EMSDK_VERSION}}
+        ./emsdk install {{.VERSION}}
+        ./emsdk activate {{.VERSION}}
       - |-
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
         PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
