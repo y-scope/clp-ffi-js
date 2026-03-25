@@ -5,7 +5,7 @@ tasks:
     deps: ["js"]
 
   init:
-    deps: [":package", ":node-modules"]
+    deps: [":node-modules", ":package"]
     cmd: "npm run test:init"
 
   js:
