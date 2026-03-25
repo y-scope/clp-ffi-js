@@ -38,13 +38,13 @@ tasks:
       CHECKSUM_FILE: "{{.G_CLP_FFI_JS_CHECKSUM}}"
       OUTPUT_DIR: "{{.G_CLP_FFI_JS_BUILD_DIR}}"
     sources:
-      - "CMakeLists.txt"
-      - "src/**/*"
-      - "taskfiles/**/*"
       - "{{.G_CLP_FFI_JS_BUILD_DIR}}/CMakeCache.txt"
       - "{{.G_DEPS_CMAKE_SETTINGS_FILE}}"
       - "{{.G_EMSDK_CHECKSUM}}"
       - "{{.TASKFILE}}"
+      - "CMakeLists.txt"
+      - "src/**/*"
+      - "taskfiles/**/*"
     generates: ["{{.CHECKSUM_FILE}}"]
     run: "once"
     deps:
@@ -86,7 +86,7 @@ tasks:
           CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
           INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
     cmds:
-      - "rm -rf {{.OUTPUT_DIR}}"
+      - "rm -rf '{{.OUTPUT_DIR}}'"
       - for:
           var: "G_CLP_FFI_JS_ENV_NAMES"
         cmd: >-

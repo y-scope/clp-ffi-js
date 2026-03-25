@@ -2,7 +2,6 @@ version: "3"
 
 vars:
   G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
-
   G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
       {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
   G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
@@ -48,7 +47,7 @@ tasks:
         ./emsdk activate {{.VERSION}}
       - |-
         cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
-        PATH=$(echo {{.G_EMSDK_DIR}}/node/*/bin):$PATH npm install
+        PATH="$(echo '{{.G_EMSDK_DIR}}'/node/*/bin):$PATH" npm install
       # This command must be last
       - task: ":utils:checksum:compute"
         vars:
