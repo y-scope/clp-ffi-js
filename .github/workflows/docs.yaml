@@ -25,7 +25,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  docs:
+  build:
+    name: "build"
     permissions:
       contents: "read"
     strategy:
