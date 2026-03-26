@@ -1,0 +1,19 @@
+version: "3"
+
+vars:
+  G_DOCS_BUILD_DIR: "{{.G_BUILD_DIR}}/docs"
+
+tasks:
+  clean:
+    cmds:
+      - "rm -rf '{{.G_DOCS_BUILD_DIR}}'"
+
+  site:
+    deps: [":init", ":node-modules", ":package"]
+    cmds:
+      - "npm run docs:site -- --out '{{.G_DOCS_BUILD_DIR}}'"
+
+  serve:
+    deps: ["site"]
+    cmds:
+      - "npm run docs:serve -- '{{.G_DOCS_BUILD_DIR}}'"
