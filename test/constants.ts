@@ -24,15 +24,19 @@ const TEST_DATA_WEB_BASE_PATH = "/test/data/";
  * Remote sources used to download fixture files during global setup.
  */
 const TEST_DATA_URLS: Readonly<Record<string, string>> = {
+    "clp_json_test_log_files.clp":
+        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/clp_json_test_log_files.clp",
+    "cockroachdb.clp":
+        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb.clp",
+    "cockroachdb_wo_ts.clp":
+        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb_wo_ts.clp",
+    "postgresql.clp":
+        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/postgresql.clp",
     "structured-cockroachdb.clp.zst":
         "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/cockroachdb.clp.zst",
     "unstructured-yarn.clp.zst":
         "https://yscope.s3.us-east-2.amazonaws.com/sample-logs/" +
         "yarn-ubuntu-resourcemanager-ip-172-31-17-135.log.1.clp.zst",
-    "postgresql.clp":
-        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/postgresql.clp",
-    "cockroachdb.clp":
-        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb.clp",
 };
 
 /**

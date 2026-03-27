@@ -1,4 +1,5 @@
 import {getModule} from "./module.js";
+import type {FileInfoArray} from "./types.js";
 
 import type {ClpSfaReader as WasmClpArchiveReader} from "#clp-ffi-js/node";
 
@@ -42,6 +43,26 @@ class ClpArchiveReader {
      */
     getEventCount (): bigint {
         return this.#getWasmReader().getEventCount();
+    }
+
+    /**
+     * Gets source file names in range-index order.
+     *
+     * @return Source file names in range-index order.
+     * @throws {Error} If the reader has been closed.
+     */
+    getFileNames (): string[] {
+        return this.#getWasmReader().getFileNames();
+    }
+
+    /**
+     * Gets source file metadata in range-index order.
+     *
+     * @return Source file metadata in range-index order.
+     * @throws {Error} If the reader has been closed.
+     */
+    getFileInfos (): FileInfoArray {
+        return this.#getWasmReader().getFileInfos() as FileInfoArray;
     }
 
     /**

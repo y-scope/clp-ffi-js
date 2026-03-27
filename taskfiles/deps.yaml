@@ -126,7 +126,7 @@ tasks:
         >> "{{.G_DEPS_CMAKE_SETTINGS_DIR}}/{{.G_BOOST_LIB_NAME}}.cmake"
 
   clp:
-    #internal: true
+    internal: true
     vars:
       LIB_NAME: "clp"
       OUTPUT_DIR: "{{.G_DEPS_DIR}}/{{.LIB_NAME}}"
