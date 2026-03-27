@@ -62,7 +62,7 @@ class ClpArchiveReader {
      * @throws {Error} If the reader has been closed.
      */
     getFileInfos (): FileInfoArray {
-        return this.#getWasmReader().getFileInfos() as FileInfoArray;
+        return this.#getWasmReader().getFileInfos();
     }
 
     /**

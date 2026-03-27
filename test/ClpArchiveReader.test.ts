@@ -58,6 +58,9 @@ describe("ClpArchiveReader", () => {
         expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
+        expect(
+            fileInfos.reduce((sum, fileInfo) => sum + fileInfo.logEventCount, 0n)
+        ).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 
     it("should throw when calling getEventCount after close", async () => {
