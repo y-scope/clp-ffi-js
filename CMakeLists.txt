@@ -173,9 +173,6 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
 
-set(CLP_BUILD_CLP_STRING_UTILS ON)
-add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
-
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
 #
@@ -183,10 +180,13 @@ add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/stri
 # archive readers, etc.). Disabling them prevents an increase in the binary size and reduces the
 # number of dependencies needed during the build process.
 set(CLP_BUILD_EXECUTABLES OFF)
+set(CLP_BUILD_TESTING OFF)
+set(CLP_BUILD_CLP_STRING_UTILS ON)
 set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
 set(CLP_BUILD_CLP_S_ARCHIVEWRITER OFF)
 set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
 set(CLP_BUILD_CLP_S_ENABLE_CURL OFF)
+set(CLP_BUILD_CLP_S_FILTER OFF)
 set(CLP_BUILD_CLP_S_IO ON)
 set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR OFF)
 set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES OFF)
@@ -195,12 +195,12 @@ set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
-set(CLP_BUILD_TESTING OFF)
 
 # Sanity check CLP build flags
 include("${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/cmake/Options/options.cmake")
 validate_and_setup_all_clp_dependency_flags()
 
+add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
 add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
