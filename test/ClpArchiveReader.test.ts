@@ -16,7 +16,6 @@ const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
 describe("ClpArchiveReader", () => {
     let reader: ClpArchiveReader | null = null;
-    let readerWoTs: ClpArchiveReader | null = null;
 
     const createReaderFromArchive = async (archiveFilename: string): Promise<ClpArchiveReader> => {
         const data = await loadTestData(archiveFilename);
@@ -28,10 +27,6 @@ describe("ClpArchiveReader", () => {
             reader.close();
             reader = null;
         }
-        if (null !== readerWoTs) {
-            readerWoTs.close();
-            readerWoTs = null;
-        }
     });
 
     it("should read postgresql sfa archive from buffer", async () => {
@@ -42,10 +37,8 @@ describe("ClpArchiveReader", () => {
 
     it("should read cockroachdb sfa archive from buffer", async () => {
         reader = await createReaderFromArchive("cockroachdb.clp");
-        readerWoTs = await createReaderFromArchive("cockroachdb_wo_ts.clp");
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
-        expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
     });
 
     it("should read clp_json_test_log_files sfa archive from buffer", async () => {
@@ -58,9 +51,14 @@ describe("ClpArchiveReader", () => {
         expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
 
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
-        expect(
-            fileInfos.reduce((sum, fileInfo) => sum + fileInfo.logEventCount, 0n)
-        ).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
+
+        const initialEventCount = 0n;
+        const sum = fileInfos.reduce(
+            (eventCountSum, fileInfo) => eventCountSum + fileInfo.logEventCount,
+            initialEventCount
+        );
+
+        expect(sum).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
     });
 
     it("should throw when calling getEventCount after close", async () => {

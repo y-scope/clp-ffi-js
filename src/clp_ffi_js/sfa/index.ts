@@ -1,4 +1,4 @@
 export {ClpArchiveReader} from "./ClpArchiveReader.js";
 export type {
-    FieldValue, FileInfo, FileInfoArray,
+    FileInfo, FileInfoArray,
 } from "./types.js";

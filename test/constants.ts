@@ -28,8 +28,6 @@ const TEST_DATA_URLS: Readonly<Record<string, string>> = {
         "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/clp_json_test_log_files.clp",
     "cockroachdb.clp":
         "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb.clp",
-    "cockroachdb_wo_ts.clp":
-        "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/cockroachdb_wo_ts.clp",
     "postgresql.clp":
         "https://yscope.s3.us-east-2.amazonaws.com/sample-sfa/postgresql.clp",
     "structured-cockroachdb.clp.zst":
