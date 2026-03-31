@@ -49,6 +49,7 @@ describe("ClpArchiveReader", () => {
 
         const fileInfos = reader.getFileInfos();
         expect(fileInfos.length).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT);
+        expect(fileInfos.map((fileInfo) => fileInfo.fileName)).toEqual(fileNames);
 
         expect(reader.getEventCount()).toBe(CLP_JSON_TEST_LOG_FILES_EXPECTED_EVENT_COUNT);
 
