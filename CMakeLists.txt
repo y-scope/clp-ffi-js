@@ -177,7 +177,7 @@ message(STATUS "Found zstd ${zstd_VERSION}")
 # by reusing `clp_s`'s AST and KQL libraries.
 #
 # However, 'clp-ffi-js' doesn't currently require other 'clp_s' build targets (e.g., executables,
-# archive readers, etc.). Disabling them prevents an increase in the binary size and reduces the
+# archive writers, etc.). Disabling them prevents an increase in the binary size and reduces the
 # number of dependencies needed during the build process.
 set(CLP_BUILD_EXECUTABLES OFF)
 set(CLP_BUILD_TESTING OFF)
