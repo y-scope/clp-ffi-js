@@ -12,7 +12,6 @@
 
 namespace clp_ffi_js::sfa {
 EMSCRIPTEN_DECLARE_VAL_TYPE(FileInfoArrayTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventArrayTsType);
 
 class SfaReader {
 public:
