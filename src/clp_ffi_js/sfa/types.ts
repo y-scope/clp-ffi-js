@@ -8,9 +8,4 @@ interface FileInfo {
     logEventCount: bigint;
 }
 
-type FileInfoArray = FileInfo[];
-
-export type {
-    FileInfo,
-    FileInfoArray,
-};
+export type {FileInfo};
