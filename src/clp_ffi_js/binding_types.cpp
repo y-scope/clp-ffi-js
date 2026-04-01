@@ -6,5 +6,8 @@ namespace clp_ffi_js {
 EMSCRIPTEN_BINDINGS(ClpFfiJsBindingTypes) {
     // JS types used as inputs
     emscripten::register_type<DataArrayTsType>("Uint8Array");
+
+    // JS types used as outputs
+    emscripten::register_type<StringArrayTsType>("string[]");
 }
 }  // namespace clp_ffi_js

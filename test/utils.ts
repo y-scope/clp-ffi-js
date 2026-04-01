@@ -1,10 +1,10 @@
-import {expect} from "vitest";
-
 import type {
     ClpSfaReader,
     ClpStreamReader,
     MainModule,
-} from "../dist/ClpFfiJs-node.js";
+} from "clp-ffi-js/node";
+import {expect} from "vitest";
+
 import {
     DEFAULT_NODE_MODULE_PATH,
     DEFAULT_READER_OPTIONS,
