@@ -112,24 +112,22 @@ set(CLP_FFI_JS_SRC_SFA
     src/clp_ffi_js/sfa/SfaReader.cpp
 )
 
-set(CLP_FFI_JS_CLP_CORE_SRC_DIR ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src)
-
 set(CLP_FFI_JS_SRC_CLP_CORE
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/EncodedTextAstError.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/decoding_methods.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/IrDeserializationError.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/ErrorCode.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/search/utils.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/ir_stream/utils.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/KeyValuePairLogEvent.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ffi/SchemaTree.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ir/EncodedTextAst.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ir/LogEventDeserializer.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ReadOnlyMemoryMappedFile.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/ReaderInterface.cpp
-    ${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/streaming_compression/zstd/Decompressor.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/EncodedTextAstError.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/decoding_methods.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/IrDeserializationError.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/ir_unit_deserialization_methods.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/ErrorCode.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/QueryHandlerImpl.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/search/utils.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/ir_stream/utils.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/KeyValuePairLogEvent.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ffi/SchemaTree.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ir/EncodedTextAst.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ir/LogEventDeserializer.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ReadOnlyMemoryMappedFile.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/ReaderInterface.cpp
+    ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/streaming_compression/zstd/Decompressor.cpp
 )
 
 set(CLP_FFI_JS_SUPPORTED_ENVIRONMENTS
@@ -175,35 +173,37 @@ message(STATUS "Found ystdlib ${ystdlib_VERSION}")
 find_package(zstd REQUIRED)
 message(STATUS "Found zstd ${zstd_VERSION}")
 
-set(CLP_BUILD_CLP_STRING_UTILS ON)
-add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp/string_utils)
-
 # The `clp_s` component is linked because the IR search feature uses the same KQL syntax as `clp_s`,
 # by reusing `clp_s`'s AST and KQL libraries.
 #
 # However, 'clp-ffi-js' doesn't currently require other 'clp_s' build targets (e.g., executables,
-# archive readers, etc.). Disabling them prevents an increase in the binary size and reduces the
+# archive writers, etc.). Disabling them prevents an increase in the binary size and reduces the
 # number of dependencies needed during the build process.
 set(CLP_BUILD_EXECUTABLES OFF)
 set(CLP_BUILD_TESTING OFF)
+set(CLP_BUILD_CLP_REGEX_UTILS OFF)
+set(CLP_BUILD_CLP_STRING_UTILS ON)
 set(CLP_BUILD_CLP_S_ARCHIVEREADER ON)
 set(CLP_BUILD_CLP_S_ARCHIVEWRITER OFF)
 set(CLP_BUILD_CLP_S_CLP_DEPENDENCIES ON)
-set(CLP_BUILD_CLP_S_ENABLE_CURL OFF)
 set(CLP_BUILD_CLP_S_IO ON)
 set(CLP_BUILD_CLP_S_JSONCONSTRUCTOR OFF)
 set(CLP_BUILD_CLP_S_REDUCER_DEPENDENCIES OFF)
 set(CLP_BUILD_CLP_S_SEARCH OFF)
 set(CLP_BUILD_CLP_S_SEARCH_AST ON)
 set(CLP_BUILD_CLP_S_SEARCH_KQL ON)
+set(CLP_BUILD_CLP_S_SEARCH_SQL OFF)
 set(CLP_BUILD_CLP_S_TIMESTAMP_PARSER ON)
 set(CLP_BUILD_CLP_S_TIMESTAMPPATTERN ON)
+set(CLP_BUILD_CLP_S_ENABLE_CURL OFF)
+set(CLP_BUILD_CLP_S_FILTER OFF)
 
 # Sanity check CLP build flags
-include("${CLP_FFI_JS_CLP_CORE_SRC_DIR}/../cmake/Options/options.cmake")
+include("${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/cmake/Options/options.cmake")
 validate_and_setup_all_clp_dependency_flags()
 
-add_subdirectory(${CLP_FFI_JS_CLP_CORE_SRC_DIR}/clp_s)
+add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp/string_utils)
+add_subdirectory(${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp_s)
 
 foreach(env ${CLP_FFI_JS_SUPPORTED_ENVIRONMENTS})
     set(CLP_FFI_JS_BIN_NAME "ClpFfiJs-${env}")
@@ -254,7 +254,8 @@ Link options: ${CLP_FFI_JS_LINK_OPTIONS}."
         ${CLP_FFI_JS_BIN_NAME}
         SYSTEM
         PRIVATE
-        ${CLP_FFI_JS_CLP_CORE_SRC_DIR}
+        ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src
+        ${CLP_FFI_JS_CLP_SOURCE_DIRECTORY}/components/core/src/clp
     )
 
     target_include_directories(${CLP_FFI_JS_BIN_NAME} PRIVATE src/)

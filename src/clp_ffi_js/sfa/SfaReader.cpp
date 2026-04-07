@@ -54,6 +54,19 @@ auto SfaReader::get_file_names() const -> StringArrayTsType {
     return StringArrayTsType{file_names};
 }
 
+auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
+    auto file_infos{emscripten::val::array()};
+    for (auto const& file_info : m_reader.get_file_infos()) {
+        auto entry{emscripten::val::object()};
+        entry.set("fileName", emscripten::val(file_info.get_file_name()));
+        entry.set("logEventIdxStart", emscripten::val(file_info.get_start_index()));
+        entry.set("logEventIdxEnd", emscripten::val(file_info.get_end_index()));
+        entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
+        file_infos.call<void>("push", entry);
+    }
+    return FileInfoArrayTsType{file_infos};
+}
+
 auto SfaReader::decode_all() -> LogEventArrayTsType {
     auto decoded_result{m_reader.decode_all()};
     if (decoded_result.has_error()) {
@@ -77,19 +90,6 @@ auto SfaReader::decode_all() -> LogEventArrayTsType {
     }
     return LogEventArrayTsType{decoded_events};
 }
-
-auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
-    auto file_infos{emscripten::val::array()};
-    for (auto const& file_info : m_reader.get_file_infos()) {
-        auto entry{emscripten::val::object()};
-        entry.set("fileName", emscripten::val(file_info.get_file_name()));
-        entry.set("logEventIdxStart", emscripten::val(file_info.get_start_index()));
-        entry.set("logEventIdxEnd", emscripten::val(file_info.get_end_index()));
-        entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
-        file_infos.call<void>("push", entry);
-    }
-    return FileInfoArrayTsType{file_infos};
-}
 }  // namespace clp_ffi_js::sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
@@ -106,8 +106,8 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                     &clp_ffi_js::sfa::SfaReader::create,
                     emscripten::return_value_policy::take_ownership()
             )
-            .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all)
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
-            .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);
+            .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos)
+            .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all);
 }

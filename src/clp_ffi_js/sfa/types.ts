@@ -8,8 +8,6 @@ interface FileInfo {
     logEventCount: bigint;
 }
 
-type FileInfoArray = FileInfo[];
-
 type FieldValue =
     number |
     string |
@@ -21,5 +19,4 @@ type FieldValue =
 export type {
     FieldValue,
     FileInfo,
-    FileInfoArray,
 };

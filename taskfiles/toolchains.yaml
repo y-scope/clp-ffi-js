@@ -1,0 +1,56 @@
+version: "3"
+
+vars:
+  G_EMSDK_DIR: "{{.G_BUILD_DIR}}/emsdk"
+  G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE: >-
+      {{.G_EMSDK_DIR}}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+  G_EMSDK_CHECKSUM: "{{.G_BUILD_DIR}}/emsdk.md5"
+
+tasks:
+  emsdk:
+    vars:
+      CHECKSUM_FILE: "{{.G_EMSDK_CHECKSUM}}"
+      OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+      VERSION: "4.0.23"
+    sources: ["{{.TASKFILE}}"]
+    generates: ["{{.CHECKSUM_FILE}}"]
+    run: "once"
+    deps:
+      - ":init"
+      - task: ":utils:checksum:validate"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATTERNS: &emsdk_checksum_exclude_paths
+            - "upstream/emscripten/__pycache__"
+            - "upstream/emscripten/cache/sanity.txt"
+            - "upstream/emscripten/cache/symbol_lists"
+            - "upstream/emscripten/cache/symbol_lists.lock"
+            - "upstream/emscripten/cache/sysroot/lib/wasm32-emscripten/lto"
+            - "upstream/emscripten/third_party/leb128/__pycache__"
+            - "upstream/emscripten/tools/__pycache__"
+            - "upstream/emscripten/tools/ports/__pycache__"
+            - "upstream/emscripten/tools/ports/contrib/__pycache__"
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]
+    cmds:
+      - "rm -rf '{{.G_EMSDK_DIR}}'"
+      - "rm -rf '{{.G_EMSDK_DIR}}.tar.gz'"
+      - task: ":utils:remote:download-and-extract-tar"
+        vars:
+          CHECKSUM_FILE: "{{.G_EMSDK_DIR}}.tar.gz.md5"
+          FILE_SHA256: "a91a4c1f42dbb0345faac093161e27d43e9b6964840d8c8d80976ab8d3eaf2d3"
+          OUTPUT_DIR: "{{.G_EMSDK_DIR}}"
+          TAR_FILE: "{{.G_EMSDK_DIR}}.tar.gz"
+          URL: "https://github.com/emscripten-core/emsdk/archive/refs/tags/{{.VERSION}}.tar.gz"
+      - |-
+        cd "{{.G_EMSDK_DIR}}"
+        ./emsdk install {{.VERSION}}
+        ./emsdk activate {{.VERSION}}
+      - |-
+        cd "{{.G_EMSDK_DIR}}/upstream/emscripten"
+        PATH="$(echo '{{.G_EMSDK_DIR}}'/node/*/bin):$PATH" npm install
+      # This command must be last
+      - task: ":utils:checksum:compute"
+        vars:
+          CHECKSUM_FILE: "{{.CHECKSUM_FILE}}"
+          EXCLUDE_PATTERNS: *emsdk_checksum_exclude_paths
+          INCLUDE_PATTERNS: ["{{.OUTPUT_DIR}}"]

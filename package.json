@@ -12,6 +12,10 @@
   "bugs": {
     "url": "https://github.com/y-scope/clp-ffi-js/issues"
   },
+  "imports": {
+    "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
+    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
+  },
   "scripts": {
     "build:ts": "tsc -p tsconfig.build.json",
     "docs:serve": "npm exec -- serve",
@@ -23,10 +27,6 @@
     "test": "PLAYWRIGHT_BROWSERS_PATH=0 vitest run"
   },
   "type": "module",
-  "imports": {
-    "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
-    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
-  },
   "files": [
     "dist"
   ],
@@ -44,8 +44,14 @@
       "types": "./dist/ClpFfiJs-worker.d.ts"
     },
     "./sfa": {
-      "import": "./dist/clp_ffi_js/sfa/index.js",
-      "types": "./dist/clp_ffi_js/sfa/index.d.ts"
+      "node": {
+        "import": "./dist/clp_ffi_js/sfa/index-node.js",
+        "types": "./dist/clp_ffi_js/sfa/index-node.d.ts"
+      },
+      "default": {
+        "import": "./dist/clp_ffi_js/sfa/index-worker.js",
+        "types": "./dist/clp_ffi_js/sfa/index-worker.d.ts"
+      }
     }
   },
   "devDependencies": {
