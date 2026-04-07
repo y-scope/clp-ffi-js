@@ -1,17 +1,15 @@
 import {
+    ClpArchiveReader,
+    type FieldValue,
+} from "clp-ffi-js/sfa";
+import {
     afterEach,
     describe,
     expect,
     it,
 } from "vitest";
 
-import {
-    ClpArchiveReader,
-    type FieldValue,
-} from "clp-ffi-js/sfa";
-import {
-    loadTestData,
-} from "./utils.js";
+import {loadTestData} from "./utils.js";
 
 
 const CLP_JSON_TEST_LOG_FILES_EXPECTED_FILE_COUNT = 9;
@@ -21,6 +19,11 @@ const COCKROACHDB_TIMESTAMP_CHECK_COUNT = 1000;
 const MAX_LOG_EVENT_INDEX_CHECKS = 1000;
 const POSTGRESQL_EXPECTED_EVENT_COUNT = 1000000n;
 
+/**
+ *
+ * @param reader
+ * @param expectedCount
+ */
 const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint): void => {
     const decodedEvents = reader.decodeAll();
     expect(decodedEvents.length).toBe(Number(expectedCount));
@@ -33,6 +36,10 @@ const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint):
     }
 };
 
+/**
+ *
+ * @param value
+ */
 const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
     if ("number" === typeof value) {
         return BigInt(Math.trunc(value));
@@ -43,12 +50,14 @@ const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
             if (Number.isFinite(asNumber)) {
                 return BigInt(Math.trunc(asNumber * 1000));
             }
+
             return null;
         }
-        if (/^-?\d+$/.test(value)) {
+        if ((/^-?\d+$/).test(value)) {
             return BigInt(value);
         }
     }
+
     return null;
 };
 
@@ -82,8 +91,8 @@ describe("ClpArchiveReader", () => {
     it("should read cockroachdb sfa archive from buffer", async () => {
         reader = await createReaderFromArchive("cockroachdb.clp");
 
-        const data_wo_ts = await loadTestData("cockroachdb_wo_ts.clp");
-        readerWoTs = ClpArchiveReader.create(data_wo_ts);
+        const dataWoTs = await loadTestData("cockroachdb_wo_ts.clp");
+        readerWoTs = ClpArchiveReader.create(dataWoTs);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
         expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
@@ -108,7 +117,7 @@ describe("ClpArchiveReader", () => {
             expect(eventWoTs?.timestamp).toBe(0n);
             const kvPairs = event?.getKvPairs();
             expect(kvPairs).not.toBeNull();
-            const timestampField = kvPairs?.["timestamp"];
+            const timestampField = kvPairs?.["timestamp"]
             expect(timestampField).toBeDefined();
             const parsedTimestamp = parseTimestampFieldToMs(timestampField as FieldValue);
             expect(parsedTimestamp).not.toBeNull();

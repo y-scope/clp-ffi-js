@@ -9,6 +9,7 @@ const EslintConfig = [
             "build/",
             "dist/",
             "node_modules/",
+            "test/",
         ],
     },
     CommonConfig,
