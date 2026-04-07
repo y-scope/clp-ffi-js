@@ -117,7 +117,6 @@ tasks:
     deps: ["deps"]
     cmd: |-
       cmake \
-      -DCLP_FFI_JS_ENABLE_SFA_READER_BINDING=ON \
       -DCLP_FFI_JS_SUPPORTED_ENVIRONMENTS="{{.G_CLP_FFI_JS_ENV_NAMES | join ";"}}" \
       -DCMAKE_TOOLCHAIN_FILE="{{.G_EMSCRIPTEN_CMAKE_TOOLCHAIN_FILE}}" \
       -S "{{.ROOT_DIR}}" \
