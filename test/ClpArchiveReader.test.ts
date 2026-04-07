@@ -67,7 +67,7 @@ describe("ClpArchiveReader", () => {
 
     const createReaderFromArchive = async (archiveFilename: string): Promise<ClpArchiveReader> => {
         const data = await loadTestData(archiveFilename);
-        return ClpArchiveReader.create(data);
+        return await ClpArchiveReader.create(data);
     };
 
     afterEach(() => {
@@ -92,7 +92,7 @@ describe("ClpArchiveReader", () => {
         reader = await createReaderFromArchive("cockroachdb.clp");
 
         const dataWoTs = await loadTestData("cockroachdb_wo_ts.clp");
-        readerWoTs = ClpArchiveReader.create(dataWoTs);
+        readerWoTs = await ClpArchiveReader.create(dataWoTs);
 
         expect(reader.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
         expect(readerWoTs.getEventCount()).toBe(COCKROACHDB_EXPECTED_EVENT_COUNT);
@@ -117,7 +117,7 @@ describe("ClpArchiveReader", () => {
             expect(eventWoTs?.timestamp).toBe(0n);
             const kvPairs = event?.getKvPairs();
             expect(kvPairs).not.toBeNull();
-            const timestampField = kvPairs?.["timestamp"]
+            const timestampField = kvPairs?.["timestamp"];
             expect(timestampField).toBeDefined();
             const parsedTimestamp = parseTimestampFieldToMs(timestampField as FieldValue);
             expect(parsedTimestamp).not.toBeNull();
