@@ -1,36 +1,41 @@
 import type {MainModule} from "#clp-ffi-js/node";
 
 
-let mainModule: MainModule | null = null;
+let mainModuleFactory: (() => Promise<MainModule>) | null = null;
+let mainModulePromise: Promise<MainModule> | null = null;
 
 /**
- * Sets the shared WASM module.
+ * Sets the shared WASM module factory.
  *
- * @param newMainModule The loaded WASM module.
- * @throws {Error} If the module has already been set.
+ * @param newMainModuleFactory Factory for loading the WASM module.
+ * @throws {Error} If the factory has already been set.
  */
-const setModule = (newMainModule: MainModule): void => {
-    if (null !== mainModule) {
-        throw new Error("WASM module has already been initialized.");
+const setModuleFactory = (newMainModuleFactory: () => Promise<MainModule>): void => {
+    if (null !== mainModuleFactory) {
+        throw new Error("WASM module factory has already been initialized.");
     }
-    mainModule = newMainModule;
+    mainModuleFactory = newMainModuleFactory;
 };
 
 /**
  * Returns the shared WASM module.
  *
  * @return The loaded module.
- * @throws {Error} If the module has not been set via {@link setModule}.
+ * @throws {Error} If the module factory has not been set via {@link setModuleFactory}.
  */
-const getModule = (): MainModule => {
-    if (null === mainModule) {
-        throw new Error("WASM module has not been initialized.");
+const getModule = async (): Promise<MainModule> => {
+    if (null === mainModulePromise) {
+        if (null === mainModuleFactory) {
+            throw new Error("WASM module factory has not been initialized.");
+        }
+
+        mainModulePromise = mainModuleFactory();
     }
 
-    return mainModule;
+    return mainModulePromise;
 };
 
 export {
     getModule,
-    setModule,
+    setModuleFactory,
 };
