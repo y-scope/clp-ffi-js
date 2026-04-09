@@ -8,7 +8,7 @@ You can use GitHub issues to [request features][feature-req] or [report bugs][bu
 ## Requirements
 * CMake >= 3.16
 * GNU Make
-* Python >= 3.10
+* Python 3
 * [Task] >= 3.49.1
 
 ## Setup

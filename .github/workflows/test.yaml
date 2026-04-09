@@ -9,7 +9,7 @@ on:
       - "package.json"
       - "src/**"
       - "taskfile.yaml"
-      - "taskfiles/**/*"
+      - "taskfiles/**"
       - "test/**"
       - "tools/yscope-dev-utils"
       - "tsconfig.json"

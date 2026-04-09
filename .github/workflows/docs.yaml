@@ -8,7 +8,7 @@ on:
       - "package.json"
       - "src/**/*.ts"
       - "taskfile.yaml"
-      - "taskfiles/**/*"
+      - "taskfiles/**"
       - "tools/yscope-dev-utils"
       - "typedoc.json"
   push:
