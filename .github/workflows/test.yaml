@@ -11,7 +11,7 @@ on:
       - "taskfile.yaml"
       - "taskfiles/**"
       - "test/**"
-      - "tools/yscope-dev-utils/**"
+      - "tools/yscope-dev-utils"
       - "tsconfig.json"
       - "vitest.config.ts"
   push:

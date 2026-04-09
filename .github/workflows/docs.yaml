@@ -9,7 +9,7 @@ on:
       - "src/**/*.ts"
       - "taskfile.yaml"
       - "taskfiles/**"
-      - "tools/yscope-dev-utils/**"
+      - "tools/yscope-dev-utils"
       - "typedoc.json"
   push:
     paths: *monitored_paths
