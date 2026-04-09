@@ -19,7 +19,7 @@ jobs:
           submodules: "recursive"
 
       - name: "Install task"
-        run: "npm install --global @go-task/cli@3.48.0"
+        uses: "./tools/yscope-dev-utils/exports/github/actions/install-go-task"
 
       - run: "task package"
 
