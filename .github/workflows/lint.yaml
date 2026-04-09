@@ -30,6 +30,8 @@ jobs:
       - name: "Install task"
         uses: "./tools/yscope-dev-utils/exports/github/actions/install-go-task"
 
+      - uses: "./tools/yscope-dev-utils/exports/github/actions/print-tool-versions"
+
       - name: "Lint .cpp files (format only)"
         run: "task lint:check-cpp-format"
 
