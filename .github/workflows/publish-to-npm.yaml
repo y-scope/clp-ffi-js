@@ -52,9 +52,11 @@ jobs:
           registry-url: "https://registry.npmjs.org/"
 
       # Trusted publishing requires npm >= 11.5.1 for OIDC token exchange.
+      # `corepack enable` (without args) does not create an npm shim because npm is bundled
+      # with Node.js; we must pass `npm` explicitly so the shim replaces the bundled binary.
       - name: "Install npm with OIDC trusted publishing support"
         run: |-
-          corepack enable
+          corepack enable npm
           corepack prepare npm@11.12.0 --activate
 
       # Determine the `dist-tag` for npm publish: use the prerelease identifier
