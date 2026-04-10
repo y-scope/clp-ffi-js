@@ -9,7 +9,7 @@ You can use GitHub issues to [request features][feature-req] or [report bugs][bu
 * CMake >= 3.16
 * GNU Make
 * Python 3
-* [Task] >= 3.48.0
+* [Task] >= 3.49.1
 
 ## Setup
 Initialize and update submodules:
