@@ -26,6 +26,7 @@
     "test:init": "PLAYWRIGHT_BROWSERS_PATH=0 npm exec playwright -- install --with-deps",
     "test": "PLAYWRIGHT_BROWSERS_PATH=0 vitest run"
   },
+  "packageManager": "npm@11.12.1",
   "type": "module",
   "files": [
     "dist"
