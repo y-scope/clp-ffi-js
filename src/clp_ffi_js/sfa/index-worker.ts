@@ -4,6 +4,7 @@
  * NOTE: This entry point uses the `?url` import suffix to resolve the `.wasm` asset, which is a
  * Vite/Rollup-specific convention and is not recognized by every bundler (e.g., Webpack, esbuild).
  * Consumers using other bundlers may need to provide their own entry point.
+ *
  * @module
  */
 import {setModuleFactory} from "./module.js";
