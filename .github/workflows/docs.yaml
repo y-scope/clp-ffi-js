@@ -8,7 +8,8 @@ on:
       - "package.json"
       - "src/**/*.ts"
       - "taskfile.yaml"
-      - "taskfiles/docs.yaml"
+      - "taskfiles/**"
+      - "tools/yscope-dev-utils"
       - "typedoc.json"
   push:
     paths: *monitored_paths
@@ -38,12 +39,9 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: "Install task"
-        run: "npm install -g @go-task/cli@3.48.0"
+      - uses: "./tools/yscope-dev-utils/exports/github/actions/install-go-task"
 
-      - if: "matrix.os == 'macos-latest'"
-        name: "Install coreutils (for md5sum)"
-        run: "brew install coreutils"
+      - uses: "./tools/yscope-dev-utils/exports/github/actions/print-tool-versions"
 
       - name: "Build docs"
         run: "task docs:site"
