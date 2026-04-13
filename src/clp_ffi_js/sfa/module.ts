@@ -20,7 +20,7 @@ const setModuleFactory = (newMainModuleFactory: () => Promise<MainModule>): void
 /**
  * Returns the shared WASM module.
  *
- * @return The loaded module.
+ * @return A promise that resolves to the loaded module.
  * @throws {Error} If the module factory has not been set via {@link setModuleFactory}.
  */
 const getModule = async (): Promise<MainModule> => {
