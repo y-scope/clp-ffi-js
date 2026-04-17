@@ -6,7 +6,7 @@
 import {setModuleFactory} from "./module.js";
 
 import mainModuleFactory from "#clp-ffi-js/worker";
-import workerWasmUrl from "#clp-ffi-js/worker-wasm?url";
+import workerWasmUrl from "../../ClpFfiJs-worker.wasm?url";
 
 
 setModuleFactory(() => {
