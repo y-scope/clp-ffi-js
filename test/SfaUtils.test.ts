@@ -1,4 +1,7 @@
-import {isClpFile} from "clp-ffi-js/sfa";
+import {
+    CLP_SFA_MAGIC_BYTES,
+    isClpFile,
+} from "clp-ffi-js/sfa";
 import {
     describe,
     expect,
@@ -19,9 +22,12 @@ describe("SFA utilities", () => {
         for (const filename of SFA_FIXTURE_FILENAMES) {
             const data = await loadTestData(filename);
 
-            expect(isClpFile(data.buffer)).toBe(true);
-            expect(isClpFile(data.buffer.slice(0, 4))).toBe(true);
-            expect(isClpFile(data.buffer.slice(0, 2))).toBe(false);
+            expect(isClpFile(data.slice().buffer)).toBe(true);
+            for (let len = 0; CLP_SFA_MAGIC_BYTES.length >= len; len += 1) {
+                expect(isClpFile(data.slice(0, len).buffer)).toBe(
+                    len === CLP_SFA_MAGIC_BYTES.length
+                );
+            }
         }
     });
 });
