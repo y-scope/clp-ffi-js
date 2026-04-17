@@ -18,8 +18,9 @@ jobs:
         with:
           submodules: "recursive"
 
-      - name: "Install task"
-        uses: "./tools/yscope-dev-utils/exports/github/actions/install-go-task"
+      - uses: "./tools/yscope-dev-utils/exports/github/actions/install-go-task"
+
+      - uses: "./tools/yscope-dev-utils/exports/github/actions/print-tool-versions"
 
       - run: "task package"
 
@@ -51,13 +52,12 @@ jobs:
           node-version: 22
           registry-url: "https://registry.npmjs.org/"
 
-      # Trusted publishing requires npm >= 11.5.1 for OIDC token exchange.
-      # `corepack enable` (without args) does not create an npm shim because npm is bundled
-      # with Node.js; we must pass `npm` explicitly so the shim replaces the bundled binary.
+      # Trusted publishing requires npm >= 11.5.1 for OIDC token exchange. The exact version is
+      # pinned via the `packageManager` field in `package.json`.
       - name: "Install npm with OIDC trusted publishing support"
         run: |-
           corepack enable npm
-          corepack prepare npm@11.12.0 --activate
+          corepack install
 
       # Determine the `dist-tag` for npm publish: use the prerelease identifier
       # (e.g., "beta" from "1.0.0-beta.1") or "latest" for stable versions.
