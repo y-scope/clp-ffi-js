@@ -6,6 +6,9 @@ const CLP_SFA_MAGIC_BYTE_1 = 0x2F;
 const CLP_SFA_MAGIC_BYTE_2 = 0xC5;
 const CLP_SFA_MAGIC_BYTE_3 = 0x30;
 
+/**
+ * Starting byte sequence that identifies a CLP JSON single-file archive (SFA).
+ */
 const CLP_SFA_MAGIC_BYTES = [
     CLP_SFA_MAGIC_BYTE_0,
     CLP_SFA_MAGIC_BYTE_1,
