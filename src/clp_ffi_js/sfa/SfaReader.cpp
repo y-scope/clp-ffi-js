@@ -66,12 +66,39 @@ auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
     }
     return FileInfoArrayTsType{file_infos};
 }
+
+auto SfaReader::decode_all() -> LogEventArrayTsType {
+    auto decoded_result{m_reader.decode_all()};
+    if (decoded_result.has_error()) {
+        auto const error{decoded_result.error()};
+        auto const err_msg{fmt::format(
+                "Failed to decode SFA archive: {} - {}.",
+                error.category().name(),
+                error.message()
+        )};
+        SPDLOG_ERROR("{}", err_msg);
+        throw std::runtime_error{err_msg};
+    }
+
+    auto decoded_events{emscripten::val::array()};
+    for (auto const& event : decoded_result.value()) {
+        auto entry{emscripten::val::object()};
+        entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
+        entry.set("timestamp", emscripten::val(event.get_timestamp()));
+        entry.set("message", emscripten::val(event.get_message()));
+        decoded_events.call<void>("push", entry);
+    }
+    return LogEventArrayTsType{decoded_events};
+}
 }  // namespace clp_ffi_js::sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::register_type<clp_ffi_js::sfa::FileInfoArrayTsType>(
             "Array<{fileName: string, logEventIdxStart: bigint, logEventIdxEnd: bigint, "
             "logEventCount: bigint}>"
+    );
+    emscripten::register_type<clp_ffi_js::sfa::LogEventArrayTsType>(
+            "Array<{logEventIdx: bigint, timestamp: bigint, message: string}>"
     );
 
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
@@ -81,5 +108,6 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
             )
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
-            .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos);
+            .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos)
+            .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all);
 }

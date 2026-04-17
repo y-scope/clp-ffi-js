@@ -1,2 +1,3 @@
 export {ClpArchiveReader} from "./ClpArchiveReader.js";
-export type {FileInfo} from "./types.js";
+export {LogEvent} from "./LogEvent.js";
+export type {FieldValue, FileInfo} from "./types.js";
