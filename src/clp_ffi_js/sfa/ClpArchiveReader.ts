@@ -28,7 +28,7 @@ class ClpArchiveReader {
      *
      * @param dataArray A Uint8Array containing the SFA archive bytes.
      * @return A promise for a new ClpArchiveReader instance.
-     * @throws {Error} If the archive data cannot be parsed.
+     * @throws {Error} If the archive data cannot be loaded or parsed.
      */
     static async create (dataArray: Uint8Array): Promise<ClpArchiveReader> {
         const module = await getModule();
