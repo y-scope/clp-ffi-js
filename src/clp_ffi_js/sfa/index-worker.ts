@@ -27,6 +27,8 @@
  * Vite dependency optimization does not reliably handle `?url` on package
  * import specifiers. So we cannot write something like:
  *
+ *   import workerWasmUrl from "#clp-ffi-js/worker-wasm?url";
+ *
  * See also:
  * https://emscripten.org/docs/api_reference/module.html#Module.locateFile
  * https://vite.dev/guide/features.html#accessing-the-webassembly-module
