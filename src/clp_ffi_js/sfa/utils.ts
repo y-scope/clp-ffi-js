@@ -23,7 +23,10 @@ const CLP_SFA_MAGIC_BYTES = [
  * @return `true` if the buffer starts with the CLP SFA magic bytes.
  */
 const isClpFile = (buffer: ArrayBuffer): boolean => {
-    const header = new Uint8Array(buffer.slice(0, CLP_SFA_MAGIC_BYTES.length));
+    if (buffer.byteLength < CLP_SFA_MAGIC_BYTES.length) {
+        return false;
+    }
+    const header = new Uint8Array(buffer, 0, CLP_SFA_MAGIC_BYTES.length);
 
     return CLP_SFA_MAGIC_BYTES.every((value, index) => header[index] === value);
 };
