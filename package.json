@@ -14,8 +14,7 @@
   },
   "imports": {
     "#clp-ffi-js/node": "./dist/ClpFfiJs-node.js",
-    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js",
-    "#clp-ffi-js/worker-wasm": "./dist/ClpFfiJs-worker.wasm"
+    "#clp-ffi-js/worker": "./dist/ClpFfiJs-worker.js"
   },
   "scripts": {
     "build:ts": "tsc -p tsconfig.build.json",
