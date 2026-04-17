@@ -22,7 +22,7 @@ describe("SFA utilities", () => {
         for (const filename of SFA_FIXTURE_FILENAMES) {
             const data = await loadTestData(filename);
 
-            expect(isClpFile(data.buffer)).toBe(true);
+            expect(isClpFile(data.slice().buffer)).toBe(true);
             for (let len = 0; CLP_SFA_MAGIC_BYTES.length >= len; len += 1) {
                 expect(isClpFile(data.slice(0, len).buffer)).toBe(
                     len === CLP_SFA_MAGIC_BYTES.length
@@ -30,4 +30,10 @@ describe("SFA utilities", () => {
             }
         }
     });
+
+    it("should reject buffers that don't start with the CLP SFA magic bytes", () => {
+        const nonClp = new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05]);
+        expect(isClpFile(nonClp.buffer)).toBe(false);
+    });
+});
 });
