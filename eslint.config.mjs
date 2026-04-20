@@ -8,7 +8,9 @@ const EslintConfig = [
         ignores: [
             "build/",
             "dist/",
+            "docs/",
             "node_modules/",
+            "test/",
         ],
     },
     CommonConfig,
