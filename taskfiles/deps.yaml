@@ -169,8 +169,8 @@ tasks:
             - "-DFMT_DOC=OFF"
             - "-DFMT_TEST=OFF"
           LIB_NAME: "{{.G_FMT_LIB_NAME}}"
-          TARBALL_SHA256: "bc23066d87ab3168f27cef3e97d545fa63314f5c79df5ea444d41d56f962c6af"
-          TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.tar.gz"
+          TARBALL_SHA256: "ea7de4299689e12b6dddd392f9896f08fb0777ac7168897a244a6d6085043fea"
+          TARBALL_URL: "https://github.com/fmtlib/fmt/archive/refs/tags/12.1.0.tar.gz"
 
   nlohmann-json:
     internal: true
@@ -224,8 +224,8 @@ tasks:
             - "-DSPDLOG_BUILD_EXAMPLE=OFF"
             - "-DSPDLOG_FMT_EXTERNAL=ON"
           LIB_NAME: "spdlog"
-          TARBALL_SHA256: "15a04e69c222eb6c01094b5c7ff8a249b36bb22788d72519646fb85feb267e67"
-          TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.15.3.tar.gz"
+          TARBALL_SHA256: "d8862955c6d74e5846b3f580b1605d2428b11d97a410d86e2fb13e857cd3a744"
+          TARBALL_URL: "https://github.com/gabime/spdlog/archive/refs/tags/v1.17.0.tar.gz"
 
   log-surgeon:
     internal: true
