@@ -22,6 +22,7 @@ const setModuleFactory = (newMainModuleFactory: () => Promise<MainModule>): void
  *
  * @return A promise that resolves to the loaded module.
  * @throws {Error} If the module factory has not been set via {@link setModuleFactory}.
+ * @throws {Error} Propagates `mainModuleFactory`'s exceptions.
  */
 const getModule = async (): Promise<MainModule> => {
     if (null !== mainModulePromise) {
