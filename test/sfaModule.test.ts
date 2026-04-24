@@ -46,6 +46,7 @@ const createDeferred = <T>(): {
     return {promise, reject, resolve};
 };
 
+// eslint-disable-next-line max-lines-per-function
 describe("sfa/module.ts", () => {
     describe("getModule", () => {
         it("throws if the factory has not been set", async () => {
@@ -74,7 +75,7 @@ describe("sfa/module.ts", () => {
             const [
                 result1,
                 result2,
-                result3
+                result3,
             ] = await Promise.all(pendingResults);
 
             expect(result1).toBe(stubModule);
