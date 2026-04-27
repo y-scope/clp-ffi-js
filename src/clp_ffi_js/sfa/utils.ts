@@ -13,9 +13,9 @@ const CLP_SFA_MAGIC_BYTES = [
  * @return `true` if the input starts with the CLP SFA magic bytes.
  */
 const isClpFile = (input: ArrayBuffer | ArrayBufferView): boolean => {
-    const bytes = input instanceof ArrayBuffer
-        ? new Uint8Array(input)
-        : new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+    const bytes = input instanceof ArrayBuffer ?
+        new Uint8Array(input) :
+        new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
 
     if (bytes.byteLength < CLP_SFA_MAGIC_BYTES.length) {
         return false;
