@@ -26,11 +26,11 @@ class ClpArchiveReader {
      * Creates a `ClpArchiveReader` instance from the given SFA archive data.
      *
      * @param dataArray A Uint8Array containing the SFA archive bytes.
-     * @return A new ClpArchiveReader instance.
-     * @throws {Error} If the archive data cannot be parsed.
+     * @return A promise for a new ClpArchiveReader instance.
+     * @throws {Error} If the archive data cannot be loaded or parsed.
      */
-    static create (dataArray: Uint8Array): ClpArchiveReader {
-        const module = getModule();
+    static async create (dataArray: Uint8Array): Promise<ClpArchiveReader> {
+        const module = await getModule();
 
         return new ClpArchiveReader(new module.ClpSfaReader(dataArray));
     }
