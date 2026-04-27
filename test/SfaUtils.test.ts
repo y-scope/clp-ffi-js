@@ -22,6 +22,7 @@ describe("SFA utilities", () => {
         for (const filename of SFA_FIXTURE_FILENAMES) {
             const data = await loadTestData(filename);
 
+            expect(isClpFile(data)).toBe(true);
             expect(isClpFile(data.slice().buffer)).toBe(true);
             for (let len = 0; CLP_SFA_MAGIC_BYTES.length >= len; len += 1) {
                 expect(isClpFile(data.slice(0, len).buffer)).toBe(

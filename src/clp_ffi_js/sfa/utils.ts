@@ -9,16 +9,19 @@ const CLP_SFA_MAGIC_BYTES = [
 /**
  * Detects whether a buffer is a CLP JSON single-file archive (SFA).
  *
- * @param buffer Buffer containing the archive bytes.
- * @return `true` if the buffer starts with the CLP SFA magic bytes.
+ * @param input Buffer or view containing the archive bytes.
+ * @return `true` if the input starts with the CLP SFA magic bytes.
  */
-const isClpFile = (buffer: ArrayBuffer): boolean => {
-    if (buffer.byteLength < CLP_SFA_MAGIC_BYTES.length) {
+const isClpFile = (input: ArrayBuffer | ArrayBufferView): boolean => {
+    const bytes = input instanceof ArrayBuffer
+        ? new Uint8Array(input)
+        : new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+
+    if (bytes.byteLength < CLP_SFA_MAGIC_BYTES.length) {
         return false;
     }
-    const header = new Uint8Array(buffer, 0, CLP_SFA_MAGIC_BYTES.length);
 
-    return CLP_SFA_MAGIC_BYTES.every((value, index) => header[index] === value);
+    return CLP_SFA_MAGIC_BYTES.every((value, index) => bytes[index] === value);
 };
 
 export {
