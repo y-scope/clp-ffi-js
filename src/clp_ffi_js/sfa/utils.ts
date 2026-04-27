@@ -1,19 +1,9 @@
 /**
- * CLP JSON single-file archive (SFA) magic bytes.
- */
-const CLP_SFA_MAGIC_BYTE_0 = 0xFD;
-const CLP_SFA_MAGIC_BYTE_1 = 0x2F;
-const CLP_SFA_MAGIC_BYTE_2 = 0xC5;
-const CLP_SFA_MAGIC_BYTE_3 = 0x30;
-
-/**
  * Starting byte sequence that identifies a CLP JSON single-file archive (SFA).
  */
 const CLP_SFA_MAGIC_BYTES = [
-    CLP_SFA_MAGIC_BYTE_0,
-    CLP_SFA_MAGIC_BYTE_1,
-    CLP_SFA_MAGIC_BYTE_2,
-    CLP_SFA_MAGIC_BYTE_3,
+    // eslint-disable-next-line no-magic-numbers, @stylistic/array-element-newline
+    0xFD, 0x2F, 0xC5, 0x30,
 ] as const;
 
 /**
