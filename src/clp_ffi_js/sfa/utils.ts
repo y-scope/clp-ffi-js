@@ -12,7 +12,7 @@ const CLP_SFA_MAGIC_BYTES = [
  * @param input Buffer or view containing the archive bytes.
  * @return `true` if the input starts with the CLP SFA magic bytes.
  */
-const isClpFile = (input: ArrayBuffer | ArrayBufferView): boolean => {
+const isClpJsonSingleFileArchive = (input: ArrayBuffer | ArrayBufferView): boolean => {
     const bytes = input instanceof ArrayBuffer ?
         new Uint8Array(input) :
         new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
@@ -26,5 +26,5 @@ const isClpFile = (input: ArrayBuffer | ArrayBufferView): boolean => {
 
 export {
     CLP_SFA_MAGIC_BYTES,
-    isClpFile,
+    isClpJsonSingleFileArchive,
 };
