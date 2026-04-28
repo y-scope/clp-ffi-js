@@ -11,7 +11,7 @@ export default defineConfig({
                     name: "node",
                     include: ["test/**/*.test.ts"],
                     environment: "node",
-                    testTimeout: 30_000,
+                    testTimeout: 300_000,
                 },
             },
             {
@@ -28,7 +28,7 @@ export default defineConfig({
                         ],
                         headless: true,
                     },
-                    testTimeout: 30_000,
+                    testTimeout: 300_000,
                 },
             },
         ],

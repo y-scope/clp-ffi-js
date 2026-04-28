@@ -1,3 +1,4 @@
+import {LogEvent} from "./LogEvent.js";
 import {getModule} from "./module.js";
 import type {FileInfo} from "./types.js";
 
@@ -63,6 +64,26 @@ class ClpArchiveReader {
      */
     getFileInfos (): FileInfo[] {
         return this.#getWasmReader().getFileInfos();
+    }
+
+    /**
+     * Decodes all log events in global log-event-index order.
+     *
+     * @return Decoded log events.
+     * @throws {Error} If the reader has been closed.
+     */
+    decodeAll (): LogEvent[] {
+        return (this.#getWasmReader().decodeAll() as Array<{
+            logEventIdx: bigint;
+            message: string;
+            timestamp: bigint;
+        }>).map((rawEvent) => {
+            return new LogEvent(
+                rawEvent.logEventIdx,
+                rawEvent.timestamp,
+                rawEvent.message
+            );
+        });
     }
 
     /**
