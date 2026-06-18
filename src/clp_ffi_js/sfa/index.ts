@@ -4,5 +4,6 @@ export type {
     FieldValue, FileInfo,
 } from "./types.js";
 export {
-    CLP_SFA_MAGIC_BYTES, isClpFile,
+    CLP_SFA_MAGIC_BYTES,
+    isClpJsonSingleFileArchive,
 } from "./utils.js";
