@@ -36,7 +36,6 @@ describe("SFA utilities", () => {
     it("should reject buffers that don't start with the CLP SFA magic bytes", () => {
         expect(isClpJsonSingleFileArchive(new ArrayBuffer(0))).toBe(false);
 
-        // eslint-disable-next-line @stylistic/array-element-newline, no-magic-numbers
         const nonClp = new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05]);
 
         expect(isClpJsonSingleFileArchive(nonClp)).toBe(false);
