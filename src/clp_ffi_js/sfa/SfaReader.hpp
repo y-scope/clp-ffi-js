@@ -12,6 +12,7 @@
 
 namespace clp_ffi_js::sfa {
 EMSCRIPTEN_DECLARE_VAL_TYPE(FileInfoArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventArrayTsType);
 
 class SfaReader {
 public:
@@ -30,6 +31,8 @@ public:
     [[nodiscard]] auto get_file_names() const -> clp_ffi_js::StringArrayTsType;
 
     [[nodiscard]] auto get_file_infos() const -> FileInfoArrayTsType;
+
+    [[nodiscard]] auto decode_all() -> LogEventArrayTsType;
 
 private:
     explicit SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader) : m_reader(std::move(reader)) {}
