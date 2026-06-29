@@ -18,7 +18,6 @@ const EslintConfig = [
         files: ["test/**/*.ts"],
         rules: {
             "@stylistic/array-element-newline": "off",
-            "dot-notation": "off",
             "jsdoc/require-description": "off",
             "jsdoc/require-returns": "off",
             "max-lines-per-function": "off",
