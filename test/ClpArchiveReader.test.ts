@@ -108,7 +108,12 @@ describe("ClpArchiveReader", () => {
             expect(decodedEventsWoTs[i]?.message).toBe(decodedEvents[i]?.message);
         }
 
-        for (let i = 0; i < Math.min(COCKROACHDB_TIMESTAMP_CHECK_COUNT, decodedEvents.length); i += 1) {
+        const timestampCheckCount = Math.min(
+            COCKROACHDB_TIMESTAMP_CHECK_COUNT,
+            decodedEvents.length
+        );
+
+        for (let i = 0; i < timestampCheckCount; i += 1) {
             const event = decodedEvents[i];
             const eventWoTs = decodedEventsWoTs[i];
             expect(event).toBeDefined();
