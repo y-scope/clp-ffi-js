@@ -1,4 +1,4 @@
-import type {FieldValue} from "./types.js";
+import type {JsonObject} from "./types.js";
 
 
 /**
@@ -27,9 +27,9 @@ class LogEvent {
      *
      * @return The key-value pairs, or null if the message is not valid JSON.
      */
-    getKvPairs (): Readonly<{[key: string]: FieldValue}> | null {
+    getKvPairs (): Readonly<JsonObject> | null {
         try {
-            return JSON.parse(this.message) as {[key: string]: FieldValue};
+            return JSON.parse(this.message) as JsonObject;
         } catch {
             return null;
         }

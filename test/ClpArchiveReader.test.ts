@@ -1,6 +1,6 @@
 import {
     ClpArchiveReader,
-    type FieldValue,
+    type JsonValue,
 } from "clp-ffi-js/sfa";
 import {
     afterEach,
@@ -40,7 +40,7 @@ const assertLogEventIndices = (reader: ClpArchiveReader, expectedCount: bigint):
  *
  * @param value
  */
-const parseTimestampFieldToMs = (value: FieldValue): bigint | null => {
+const parseTimestampFieldToMs = (value: JsonValue): bigint | null => {
     if ("number" === typeof value) {
         return BigInt(Math.trunc(value));
     }
@@ -119,7 +119,7 @@ describe("ClpArchiveReader", () => {
             expect(kvPairs).not.toBeNull();
             const timestampField = kvPairs?.["timestamp"];
             expect(timestampField).toBeDefined();
-            const parsedTimestamp = parseTimestampFieldToMs(timestampField as FieldValue);
+            const parsedTimestamp = parseTimestampFieldToMs(timestampField as JsonValue);
             expect(parsedTimestamp).not.toBeNull();
             expect(parsedTimestamp).toBe(event?.timestamp);
         }

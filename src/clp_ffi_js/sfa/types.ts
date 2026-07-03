@@ -8,15 +8,29 @@ interface FileInfo {
     logEventCount: bigint;
 }
 
-type FieldValue =
-    number |
+/**
+ * Type for values in a JSON object/array.
+ * Reference: https://www.json.org/json-en.html
+ */
+type JsonValue = null |
     string |
+    number |
     boolean |
-    null |
-    {[key: string]: FieldValue} |
-    FieldValue[];
+    {
+        [key: string]: JsonValue;
+    } |
+    Array<JsonValue>;
+
+/**
+ * JSON object type.
+ * Reference: https://www.json.org/json-en.html
+ */
+type JsonObject = {
+    [key: string]: JsonValue;
+};
 
 export type {
-    FieldValue,
     FileInfo,
+    JsonObject,
+    JsonValue,
 };
