@@ -8,4 +8,29 @@ interface FileInfo {
     logEventCount: bigint;
 }
 
-export type {FileInfo};
+/**
+ * Type for values in a JSON object/array.
+ * Reference: https://www.json.org/json-en.html
+ */
+type JsonValue = null |
+    string |
+    number |
+    boolean |
+    {
+        [key: string]: JsonValue;
+    } |
+    Array<JsonValue>;
+
+/**
+ * JSON object type.
+ * Reference: https://www.json.org/json-en.html
+ */
+type JsonObject = {
+    [key: string]: JsonValue;
+};
+
+export type {
+    FileInfo,
+    JsonObject,
+    JsonValue,
+};

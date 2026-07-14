@@ -1,3 +1,9 @@
+import type {
+    JsonObject,
+    JsonValue,
+} from "./types.js";
+
+
 /**
  * Starting byte sequence that identifies a CLP JSON single-file archive (SFA).
  */
@@ -24,7 +30,19 @@ const isClpJsonSingleFileArchive = (input: ArrayBuffer | ArrayBufferView): boole
     return CLP_SFA_MAGIC_BYTES.every((value, index) => bytes[index] === value);
 };
 
+/**
+ * Determines whether the given value is a `JsonObject` and applies a TypeScript narrowing
+ * conversion if so.
+ *
+ * @param value
+ * @return A TypeScript type predicate indicating whether `value` is a `JsonObject`.
+ */
+const isJsonObject = (value: JsonValue): value is JsonObject => {
+    return "object" === typeof value && null !== value && false === Array.isArray(value);
+};
+
 export {
     CLP_SFA_MAGIC_BYTES,
     isClpJsonSingleFileArchive,
+    isJsonObject,
 };
