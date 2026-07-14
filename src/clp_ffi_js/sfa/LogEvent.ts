@@ -1,6 +1,7 @@
 import type {
     JsonObject,
     JsonValue,
+    RawLogEvent,
 } from "./types.js";
 import {isJsonObject} from "./utils.js";
 
@@ -8,47 +9,43 @@ import {isJsonObject} from "./utils.js";
 /**
  * Single log event from a CLP archive.
  */
-class LogEvent {
-    readonly logEventIdx: bigint;
-
-    readonly timestamp: bigint;
-
-    readonly message: string;
+class LogEvent implements RawLogEvent {
+    /**
+     * Global log event index.
+     */
+    declare readonly logEventIdx: bigint;
 
     /**
-     * @param logEventIdx Global log event index.
-     * @param timestamp Epoch timestamp.
-     * @param message Serialized message string.
+     * Epoch timestamp.
      */
-    constructor (logEventIdx: bigint, timestamp: bigint, message: string) {
-        this.logEventIdx = logEventIdx;
-        this.timestamp = timestamp;
-        this.message = message;
+    declare readonly timestamp: bigint;
+
+    /**
+     * Serialized message string.
+     */
+    declare readonly message: string;
+
+    /**
+     * @param rawEvent Raw log event interface returned by the WASM binding.
+     */
+    constructor (rawEvent: RawLogEvent) {
+        Object.assign(this, rawEvent);
     }
 
     /**
-     * Returns the key-value pairs of this log event by parsing the message as JSON.
+     * Parses the serialized message as a JSON object.
      *
-     * @return The key-value pairs, or null if the message is not a JSON object.
+     * @return The parsed object, or null if parsing fails or produces a non-object.
      */
     getKvPairs (): Readonly<JsonObject> | null {
         try {
             const kvPairs = JSON.parse(this.message) as JsonValue;
             if (false === isJsonObject(kvPairs)) {
-                console.warn(
-                    `Log event message is not a JSON object. Log event index: ${this.logEventIdx}.`
-                );
-
                 return null;
             }
 
             return kvPairs;
-        } catch (error) {
-            console.warn(
-                `Failed to parse log event message as JSON. Log event index: ${this.logEventIdx}.`,
-                error
-            );
-
+        } catch {
             return null;
         }
     }

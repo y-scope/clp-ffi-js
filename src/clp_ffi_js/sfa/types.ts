@@ -9,6 +9,15 @@ interface FileInfo {
 }
 
 /**
+ * Data used to construct a `LogEvent`.
+ */
+interface RawLogEvent {
+    logEventIdx: bigint;
+    timestamp: bigint;
+    message: string;
+}
+
+/**
  * Type for values in a JSON object/array.
  * Reference: https://www.json.org/json-en.html
  */
@@ -33,4 +42,5 @@ export type {
     FileInfo,
     JsonObject,
     JsonValue,
+    RawLogEvent,
 };

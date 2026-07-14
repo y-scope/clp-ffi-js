@@ -75,13 +75,7 @@ class ClpArchiveReader {
     decodeAll (): LogEvent[] {
         return this.#getWasmReader()
             .decodeAll()
-            .map((rawEvent) => {
-                return new LogEvent(
-                    rawEvent.logEventIdx,
-                    rawEvent.timestamp,
-                    rawEvent.message
-                );
-            });
+            .map((rawEvent) => new LogEvent(rawEvent));
     }
 
     /**
