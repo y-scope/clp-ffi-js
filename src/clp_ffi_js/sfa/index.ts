@@ -1,5 +1,8 @@
 export {ClpArchiveReader} from "./ClpArchiveReader.js";
-export type {FileInfo} from "./types.js";
+export {LogEvent} from "./LogEvent.js";
+export type {
+    FileInfo, JsonObject, JsonValue,
+} from "./types.js";
 export {
     CLP_SFA_MAGIC_BYTES,
     isClpJsonSingleFileArchive,
