@@ -5,6 +5,27 @@ import type {FileInfo} from "./types.js";
 import type {ClpSfaReader as WasmClpArchiveReader} from "#clp-ffi-js/node";
 
 
+interface RawLogEvent {
+    logEventIdx: bigint;
+    message: string;
+    timestamp: bigint;
+}
+
+/**
+ * Converts log events returned by the WASM binding into the public JavaScript representation.
+ *
+ * @param rawEvents Log events returned by the WASM binding.
+ * @return Public log-event objects.
+ */
+const createLogEvents = (rawEvents: RawLogEvent[]): LogEvent[] => rawEvents.map((rawEvent) => {
+    return new LogEvent(
+        rawEvent.logEventIdx,
+        rawEvent.timestamp,
+        rawEvent.message
+    );
+});
+
+
 /**
  * A high-level wrapper around the WASM-based `ClpSfaReader` module for reading CLP single-file
  * archives (SFA). This class manages the lifecycle of the underlying WASM module and the wrapped
@@ -67,23 +88,36 @@ class ClpArchiveReader {
     }
 
     /**
+     * Decodes and caches all log events without returning them.
+     *
+     * @throws {Error} If the reader has been closed or decoding fails.
+     */
+    decode (): void {
+        this.#getWasmReader().decode();
+    }
+
+    /**
      * Decodes all log events in global log-event-index order.
      *
      * @return Decoded log events.
      * @throws {Error} If the reader has been closed.
      */
     decodeAll (): LogEvent[] {
-        return (this.#getWasmReader().decodeAll() as Array<{
-            logEventIdx: bigint;
-            message: string;
-            timestamp: bigint;
-        }>).map((rawEvent) => {
-            return new LogEvent(
-                rawEvent.logEventIdx,
-                rawEvent.timestamp,
-                rawEvent.message
-            );
-        });
+        return createLogEvents(this.#getWasmReader().decodeAll() as RawLogEvent[]);
+    }
+
+    /**
+     * Decodes all log events, if necessary, and returns the requested half-open event range.
+     *
+     * @param beginIdx Index of the first event to return.
+     * @param endIdx Index one past the final event to return.
+     * @return Decoded log events in the requested range.
+     * @throws {Error} If the reader has been closed, decoding fails, or the range is invalid.
+     */
+    decodeRange (beginIdx: number, endIdx: number): LogEvent[] {
+        return createLogEvents(
+            this.#getWasmReader().decodeRange(beginIdx, endIdx) as RawLogEvent[]
+        );
     }
 
     /**

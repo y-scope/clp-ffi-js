@@ -1,6 +1,7 @@
 #ifndef CLP_FFI_JS_SFA_SFAREADER_HPP
 #define CLP_FFI_JS_SFA_SFAREADER_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
 #include <utility>
@@ -32,7 +33,11 @@ public:
 
     [[nodiscard]] auto get_file_infos() const -> FileInfoArrayTsType;
 
+    auto decode() -> void;
+
     [[nodiscard]] auto decode_all() -> LogEventArrayTsType;
+
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) -> LogEventArrayTsType;
 
 private:
     explicit SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader) : m_reader(std::move(reader)) {}
