@@ -27,6 +27,7 @@
 #include <clp_ffi_js/ir/LogEventWithFilterData.hpp>
 #include <clp_ffi_js/ir/StreamReader.hpp>
 #include <clp_ffi_js/ir/StreamReaderDataContext.hpp>
+#include <clp_ffi_js/utils.hpp>
 
 namespace clp_ffi_js::ir {
 using namespace std::literals::string_literals;
@@ -185,7 +186,13 @@ UnstructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bool 
 auto UnstructuredIrStreamReader::find_nearest_log_event_by_timestamp(
         clp::ir::epoch_time_ms_t const target_ts
 ) -> NullableLogEventIdx {
-    return generic_find_nearest_log_event_by_timestamp(m_encoded_log_events, target_ts);
+    auto const optional_log_event_idx{
+            clp_ffi_js::find_nearest_log_event_by_timestamp(m_encoded_log_events, target_ts)
+    };
+    if (false == optional_log_event_idx.has_value()) {
+        return NullableLogEventIdx{emscripten::val::null()};
+    }
+    return NullableLogEventIdx{emscripten::val{optional_log_event_idx.value()}};
 }
 
 UnstructuredIrStreamReader::UnstructuredIrStreamReader(

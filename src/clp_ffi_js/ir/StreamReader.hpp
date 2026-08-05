@@ -33,7 +33,8 @@ EMSCRIPTEN_DECLARE_VAL_TYPE(ReaderOptions);
 EMSCRIPTEN_DECLARE_VAL_TYPE(DecodedResultsTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(MetadataTsType);
-EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
+
+using clp_ffi_js::NullableLogEventIdx;
 
 enum class StreamType : uint8_t {
     Structured,
@@ -219,20 +220,6 @@ protected:
             LogLevelFilterTsType const& log_level_filter,
             LogEvents<LogEvent> const& log_events
     ) -> void;
-
-    /**
-     * Templated implementation of `find_nearest_log_event_by_timestamp`.
-     *
-     * @tparam LogEvent
-     * @param log_events
-     * @param target_ts
-     * @return See `find_nearest_log_event_by_timestamp`.
-     */
-    template <typename LogEvent>
-    auto generic_find_nearest_log_event_by_timestamp(
-            LogEvents<LogEvent> const& log_events,
-            clp::ir::epoch_time_ms_t target_ts
-    ) -> NullableLogEventIdx;
 };
 
 template <typename LogEvent, typename ToStringFunc>
@@ -326,34 +313,6 @@ auto StreamReader::generic_filter_log_events(
             filtered_log_event_map->emplace_back(log_event_idx);
         }
     }
-}
-
-template <typename LogEvent>
-auto StreamReader::generic_find_nearest_log_event_by_timestamp(
-        LogEvents<LogEvent> const& log_events,
-        clp::ir::epoch_time_ms_t target_ts
-) -> NullableLogEventIdx {
-    if (log_events.empty()) {
-        return NullableLogEventIdx{emscripten::val::null()};
-    }
-
-    // Find the log event whose timestamp is just after `target_ts`
-    auto first_greater_it{std::upper_bound(
-            log_events.begin(),
-            log_events.end(),
-            target_ts,
-            [](clp::ir::epoch_time_ms_t ts, LogEventWithFilterData<LogEvent> const& log_event) {
-                return ts < log_event.get_timestamp();
-            }
-    )};
-
-    if (first_greater_it == log_events.begin()) {
-        return NullableLogEventIdx{emscripten::val(0)};
-    }
-
-    auto const first_greater_idx{std::distance(log_events.begin(), first_greater_it)};
-
-    return NullableLogEventIdx{emscripten::val(first_greater_idx - 1)};
 }
 }  // namespace clp_ffi_js::ir
 

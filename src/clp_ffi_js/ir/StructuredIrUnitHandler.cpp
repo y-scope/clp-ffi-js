@@ -8,7 +8,6 @@
 #include <optional>
 #include <string>
 #include <string_view>
-#include <type_utils.hpp>
 #include <utility>
 
 #include <clp/ffi/ir_stream/decoding_methods.hpp>
@@ -16,6 +15,7 @@
 #include <clp/ffi/Value.hpp>
 #include <clp/ir/types.hpp>
 #include <clp/time_types.hpp>
+#include <clp/type_utils.hpp>
 #include <emscripten/val.h>
 #include <spdlog/spdlog.h>
 

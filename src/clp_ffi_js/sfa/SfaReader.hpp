@@ -1,9 +1,13 @@
 #ifndef CLP_FFI_JS_SFA_SFAREADER_HPP
 #define CLP_FFI_JS_SFA_SFAREADER_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include <clp_s/ffi/sfa/ClpArchiveReader.hpp>
 #include <emscripten/val.h>
@@ -12,6 +16,13 @@
 
 namespace clp_ffi_js::sfa {
 EMSCRIPTEN_DECLARE_VAL_TYPE(FileInfoArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableFileInfoTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableStringTsType);
+
+using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
 class SfaReader {
 public:
@@ -27,14 +38,47 @@ public:
 
     [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
 
+    [[nodiscard]] auto get_active_event_count() const -> uint64_t {
+        return m_reader.get_active_event_count();
+    }
+
+    [[nodiscard]] auto get_uncompressed_size() const -> uint64_t {
+        return m_reader.get_uncompressed_size();
+    }
+
     [[nodiscard]] auto get_file_names() const -> clp_ffi_js::StringArrayTsType;
 
     [[nodiscard]] auto get_file_infos() const -> FileInfoArrayTsType;
 
+    [[nodiscard]] auto get_file_info(std::string const& file_name) const -> NullableFileInfoTsType;
+
+    [[nodiscard]] auto get_selected_file_name() const -> NullableStringTsType;
+
+    void select_file(std::string const& file_name);
+
+    [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType;
+
+    void filter_log_events(std::string const& kql_filter, std::string const& log_level_kql_filter);
+
+    void clear_query() { m_filtered_log_event_map.reset(); }
+
+    auto decode() -> void;
+
+    [[nodiscard]] auto decode_all() -> LogEventArrayTsType;
+
+    [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
+            -> NullableLogEventArrayTsType;
+
+    [[nodiscard]] auto find_nearest_log_event_by_timestamp(int64_t target_timestamp)
+            -> clp_ffi_js::NullableLogEventIdx;
+
 private:
     explicit SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader) : m_reader(std::move(reader)) {}
 
+    [[nodiscard]] auto get_log_event_idx_offset() const -> int64_t;
+
     clp_s::ffi::sfa::ClpArchiveReader m_reader;
+    FilteredLogEventsMap m_filtered_log_event_map;
 };
 }  // namespace clp_ffi_js::sfa
 

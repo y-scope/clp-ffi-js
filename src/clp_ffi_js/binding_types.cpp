@@ -8,6 +8,7 @@ EMSCRIPTEN_BINDINGS(ClpFfiJsBindingTypes) {
     emscripten::register_type<DataArrayTsType>("Uint8Array");
 
     // JS types used as outputs
+    emscripten::register_type<NullableLogEventIdx>("number | null");
     emscripten::register_type<StringArrayTsType>("string[]");
 }
 }  // namespace clp_ffi_js
