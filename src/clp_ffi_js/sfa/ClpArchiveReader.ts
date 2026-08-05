@@ -68,6 +68,27 @@ class ClpArchiveReader {
     }
 
     /**
+     * Gets the number of log events in the selected source file, or the total archive event count
+     * when no source file is selected.
+     *
+     * @return The active event count as a bigint.
+     * @throws {Error} If the reader has been closed.
+     */
+    getActiveEventCount (): bigint {
+        return this.#getWasmReader().getActiveEventCount();
+    }
+
+    /**
+     * Gets the total size of the original uncompressed logs represented by the archive.
+     *
+     * @return The uncompressed size in bytes.
+     * @throws {Error} If the reader has been closed.
+     */
+    getUncompressedSize (): bigint {
+        return this.#getWasmReader().getUncompressedSize();
+    }
+
+    /**
      * Gets source file names in range-index order.
      *
      * @return Source file names in range-index order.
@@ -85,6 +106,39 @@ class ClpArchiveReader {
      */
     getFileInfos (): FileInfo[] {
         return this.#getWasmReader().getFileInfos();
+    }
+
+    /**
+     * Finds source file metadata by exact, case-sensitive filename.
+     *
+     * @param fileName Source filename stored in the archive range index.
+     * @return The source file metadata, or `null` if the filename doesn't exist.
+     * @throws {Error} If the reader has been closed.
+     */
+    getFileInfo (fileName: string): FileInfo | null {
+        return this.#getWasmReader().getFileInfo(fileName);
+    }
+
+    /**
+     * Gets the selected source filename.
+     *
+     * @return The selected filename, or `null` when the entire archive is active.
+     * @throws {Error} If the reader has been closed.
+     */
+    getSelectedFileName (): string | null {
+        return this.#getWasmReader().getSelectedFileName();
+    }
+
+    /**
+     * Selects a source file as the active log-event collection.
+     *
+     * This method must be called before decoding or searching begins.
+     *
+     * @param fileName Source filename stored in the archive range index.
+     * @throws {Error} If the reader is closed, the filename doesn't exist, or decoding has begun.
+     */
+    selectFile (fileName: string): void {
+        this.#getWasmReader().selectFile(fileName);
     }
 
     /**
@@ -126,7 +180,8 @@ class ClpArchiveReader {
     }
 
     /**
-     * Decodes all log events in global log-event-index order.
+     * Decodes all log events in the active collection. Log-event indices are relative to the
+     * selected source file when one is selected.
      *
      * @return Decoded log events.
      * @throws {Error} If the reader has been closed.
@@ -136,7 +191,8 @@ class ClpArchiveReader {
     }
 
     /**
-     * Decodes all log events, if necessary, and returns the requested half-open event range.
+     * Decodes all log events in the active collection, if necessary, and returns the requested
+     * half-open event range. Indices are relative to the selected source file when one is selected.
      *
      * @param beginIdx Index of the first event to return.
      * @param endIdx Index one past the final event to return.

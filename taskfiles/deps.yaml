@@ -134,9 +134,9 @@ tasks:
     cmds:
       - task: ":utils:remote:download-and-extract-tar"
         vars:
-          FILE_SHA256: "92bab51d1faeb743f485e9170ef492ea7083620848cf2ec9bf94a8c732c385d5"
+          FILE_SHA256: "e5e96bdc43a5c184a523dbb19de4b371792139e3fa9cf1de6217d1be448d5ad8"
           OUTPUT_DIR: "{{.OUTPUT_DIR}}"
-          URL: "https://github.com/y-scope/clp/archive/2b18607.tar.gz"
+          URL: "https://github.com/y-scope/clp/archive/ad5815b3.tar.gz"
       - >-
         echo "set(
         CLP_FFI_JS_CLP_SOURCE_DIRECTORY \"{{.OUTPUT_DIR}}\"

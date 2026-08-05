@@ -43,11 +43,24 @@ throw_if_error(ystdlib::error_handling::Result<ValueType> const& result, std::st
     }
 }
 
-auto create_log_event_array(clp_s::ffi::sfa::LogEventView events) -> emscripten::val {
+auto create_file_info(clp_s::ffi::sfa::FileInfo const& file_info) -> emscripten::val {
+    auto entry{emscripten::val::object()};
+    entry.set("fileName", emscripten::val(file_info.get_file_name()));
+    entry.set("logEventIdxStart", emscripten::val(file_info.get_start_index()));
+    entry.set("logEventIdxEnd", emscripten::val(file_info.get_end_index()));
+    entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
+    return entry;
+}
+
+auto create_log_event_array(clp_s::ffi::sfa::LogEventView events, int64_t log_event_idx_offset)
+        -> emscripten::val {
     auto decoded_events{emscripten::val::array()};
     for (auto const& event : events) {
         auto entry{emscripten::val::object()};
-        entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
+        entry.set(
+                "logEventIdx",
+                emscripten::val(event.get_log_event_idx() - log_event_idx_offset)
+        );
         entry.set("timestamp", emscripten::val(event.get_timestamp()));
         entry.set("message", emscripten::val(event.get_message()));
         decoded_events.call<void>("push", entry);
@@ -94,14 +107,31 @@ auto SfaReader::get_file_names() const -> StringArrayTsType {
 auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
     auto file_infos{emscripten::val::array()};
     for (auto const& file_info : m_reader.get_file_infos()) {
-        auto entry{emscripten::val::object()};
-        entry.set("fileName", emscripten::val(file_info.get_file_name()));
-        entry.set("logEventIdxStart", emscripten::val(file_info.get_start_index()));
-        entry.set("logEventIdxEnd", emscripten::val(file_info.get_end_index()));
-        entry.set("logEventCount", emscripten::val(file_info.get_event_count()));
-        file_infos.call<void>("push", entry);
+        file_infos.call<void>("push", create_file_info(file_info));
     }
     return FileInfoArrayTsType{file_infos};
+}
+
+auto SfaReader::get_file_info(std::string const& file_name) const -> NullableFileInfoTsType {
+    auto const file_info{m_reader.find_file_info(file_name)};
+    if (false == file_info.has_value()) {
+        return NullableFileInfoTsType{emscripten::val::null()};
+    }
+    return NullableFileInfoTsType{create_file_info(file_info.value())};
+}
+
+auto SfaReader::get_selected_file_name() const -> NullableStringTsType {
+    auto const file_info{m_reader.get_selected_file_info()};
+    if (false == file_info.has_value()) {
+        return NullableStringTsType{emscripten::val::null()};
+    }
+    return NullableStringTsType{emscripten::val(file_info->get_file_name())};
+}
+
+void SfaReader::select_file(std::string const& file_name) {
+    auto select_result{m_reader.select_file(file_name)};
+    throw_if_error(select_result, "select source file from");
+    m_filtered_log_event_map.reset();
 }
 
 auto SfaReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
@@ -146,7 +176,7 @@ void SfaReader::filter_log_events(
     }
 
     if (filtered_log_event_map.has_value()
-        && filtered_log_event_map->size() == m_reader.get_event_count())
+        && filtered_log_event_map->size() == m_reader.get_active_event_count())
     {
         filtered_log_event_map.reset();
     }
@@ -161,7 +191,9 @@ auto SfaReader::decode() -> void {
 auto SfaReader::decode_all() -> LogEventArrayTsType {
     auto decoded_result{m_reader.decode_all()};
     throw_if_error(decoded_result, "decode");
-    return LogEventArrayTsType{create_log_event_array(decoded_result.value())};
+    return LogEventArrayTsType{
+            create_log_event_array(decoded_result.value(), get_log_event_idx_offset())
+    };
 }
 
 auto SfaReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
@@ -172,7 +204,7 @@ auto SfaReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
 
     auto const collection_size{
             use_filter ? m_filtered_log_event_map->size()
-                       : static_cast<size_t>(m_reader.get_event_count())
+                       : static_cast<size_t>(m_reader.get_active_event_count())
     };
     if (begin_idx > end_idx || end_idx > collection_size) {
         return NullableLogEventArrayTsType{emscripten::val::null()};
@@ -181,17 +213,23 @@ auto SfaReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
     if (false == use_filter) {
         auto decoded_result{m_reader.decode_range(begin_idx, end_idx)};
         throw_if_error(decoded_result, "decode");
-        return NullableLogEventArrayTsType{create_log_event_array(decoded_result.value())};
+        return NullableLogEventArrayTsType{
+                create_log_event_array(decoded_result.value(), get_log_event_idx_offset())
+        };
     }
 
     auto decoded_result{m_reader.decode_all()};
     throw_if_error(decoded_result, "decode");
     auto decoded_events{emscripten::val::array()};
+    auto const log_event_idx_offset{get_log_event_idx_offset()};
     for (size_t filtered_idx{begin_idx}; filtered_idx < end_idx; ++filtered_idx) {
         auto const log_event_idx{m_filtered_log_event_map->at(filtered_idx)};
         auto const& event{decoded_result.value()[log_event_idx]};
         auto entry{emscripten::val::object()};
-        entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
+        entry.set(
+                "logEventIdx",
+                emscripten::val(event.get_log_event_idx() - log_event_idx_offset)
+        );
         entry.set("timestamp", emscripten::val(event.get_timestamp()));
         entry.set("message", emscripten::val(event.get_message()));
         decoded_events.call<void>("push", entry);
@@ -213,6 +251,11 @@ auto SfaReader::find_nearest_log_event_by_timestamp(int64_t target_timestamp)
     }
     return clp_ffi_js::NullableLogEventIdx{emscripten::val{optional_log_event_idx.value()}};
 }
+
+auto SfaReader::get_log_event_idx_offset() const -> int64_t {
+    auto const file_info{m_reader.get_selected_file_info()};
+    return file_info.has_value() ? file_info->get_start_index() : 0;
+}
 }  // namespace clp_ffi_js::sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
@@ -223,10 +266,15 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::register_type<clp_ffi_js::sfa::LogEventArrayTsType>(
             "Array<{logEventIdx: bigint, timestamp: bigint, message: string}>"
     );
+    emscripten::register_type<clp_ffi_js::sfa::NullableFileInfoTsType>(
+            "{fileName: string, logEventIdxStart: bigint, logEventIdxEnd: bigint, "
+            "logEventCount: bigint} | null"
+    );
     emscripten::register_type<clp_ffi_js::sfa::NullableLogEventArrayTsType>(
             "Array<{logEventIdx: bigint, timestamp: bigint, message: string}> | null"
     );
     emscripten::register_type<clp_ffi_js::sfa::FilteredLogEventMapTsType>("number[] | null");
+    emscripten::register_type<clp_ffi_js::sfa::NullableStringTsType>("string | null");
 
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
             .constructor(
@@ -234,8 +282,16 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
                     emscripten::return_value_policy::take_ownership()
             )
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
+            .function("getActiveEventCount", &clp_ffi_js::sfa::SfaReader::get_active_event_count)
+            .function("getUncompressedSize", &clp_ffi_js::sfa::SfaReader::get_uncompressed_size)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos)
+            .function("getFileInfo", &clp_ffi_js::sfa::SfaReader::get_file_info)
+            .function(
+                    "getSelectedFileName",
+                    &clp_ffi_js::sfa::SfaReader::get_selected_file_name
+            )
+            .function("selectFile", &clp_ffi_js::sfa::SfaReader::select_file)
             .function(
                     "getFilteredLogEventMap",
                     &clp_ffi_js::sfa::SfaReader::get_filtered_log_event_map

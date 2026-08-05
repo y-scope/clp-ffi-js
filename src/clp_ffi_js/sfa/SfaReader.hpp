@@ -18,7 +18,9 @@ namespace clp_ffi_js::sfa {
 EMSCRIPTEN_DECLARE_VAL_TYPE(FileInfoArrayTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(FilteredLogEventMapTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(LogEventArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableFileInfoTsType);
 EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventArrayTsType);
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableStringTsType);
 
 using FilteredLogEventsMap = std::optional<std::vector<size_t>>;
 
@@ -36,9 +38,23 @@ public:
 
     [[nodiscard]] auto get_event_count() const -> uint64_t { return m_reader.get_event_count(); }
 
+    [[nodiscard]] auto get_active_event_count() const -> uint64_t {
+        return m_reader.get_active_event_count();
+    }
+
+    [[nodiscard]] auto get_uncompressed_size() const -> uint64_t {
+        return m_reader.get_uncompressed_size();
+    }
+
     [[nodiscard]] auto get_file_names() const -> clp_ffi_js::StringArrayTsType;
 
     [[nodiscard]] auto get_file_infos() const -> FileInfoArrayTsType;
+
+    [[nodiscard]] auto get_file_info(std::string const& file_name) const -> NullableFileInfoTsType;
+
+    [[nodiscard]] auto get_selected_file_name() const -> NullableStringTsType;
+
+    void select_file(std::string const& file_name);
 
     [[nodiscard]] auto get_filtered_log_event_map() const -> FilteredLogEventMapTsType;
 
@@ -58,6 +74,8 @@ public:
 
 private:
     explicit SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader) : m_reader(std::move(reader)) {}
+
+    [[nodiscard]] auto get_log_event_idx_offset() const -> int64_t;
 
     clp_s::ffi::sfa::ClpArchiveReader m_reader;
     FilteredLogEventsMap m_filtered_log_event_map;
