@@ -88,6 +88,35 @@ class ClpArchiveReader {
     }
 
     /**
+     * Gets the mapping from filtered positions to unfiltered decoded-event indices.
+     *
+     * @return The filtered-event map, or `null` when no filter is active or all events match.
+     */
+    getFilteredLogEventMap (): number[] | null {
+        return this.#getWasmReader().getFilteredLogEventMap();
+    }
+
+    /**
+     * Replaces the current KQL filter.
+     *
+     * The user query is evaluated case-sensitively. The generated log-level query is evaluated
+     * case-insensitively, and the two result sets are intersected.
+     *
+     * @param kqlFilter User-provided KQL query.
+     * @param logLevelKqlFilter Generated KQL query for log-level filtering.
+     */
+    filterLogEvents (kqlFilter: string, logLevelKqlFilter = ""): void {
+        this.#getWasmReader().filterLogEvents(kqlFilter, logLevelKqlFilter);
+    }
+
+    /**
+     * Clears the current KQL query and filtered-event map.
+     */
+    clearQuery (): void {
+        this.#getWasmReader().clearQuery();
+    }
+
+    /**
      * Decodes and caches all log events without returning them.
      *
      * @throws {Error} If the reader has been closed or decoding fails.
@@ -111,13 +140,21 @@ class ClpArchiveReader {
      *
      * @param beginIdx Index of the first event to return.
      * @param endIdx Index one past the final event to return.
-     * @return Decoded log events in the requested range.
+     * @param useFilter Whether to decode from the filtered event collection.
+     * @return Decoded log events, or `null` if the requested collection or range is unavailable.
      * @throws {Error} If the reader has been closed, decoding fails, or the range is invalid.
      */
-    decodeRange (beginIdx: number, endIdx: number): LogEvent[] {
-        return createLogEvents(
-            this.#getWasmReader().decodeRange(beginIdx, endIdx) as RawLogEvent[]
-        );
+    decodeRange (beginIdx: number, endIdx: number): LogEvent[];
+
+    decodeRange (beginIdx: number, endIdx: number, useFilter: boolean): LogEvent[] | null;
+
+    decodeRange (beginIdx: number, endIdx: number, useFilter = false): LogEvent[] | null {
+        const rawEvents = this.#getWasmReader().decodeRange(beginIdx, endIdx, useFilter) as
+            RawLogEvent[] | null;
+
+        return null === rawEvents ?
+            null :
+            createLogEvents(rawEvents);
     }
 
     /**

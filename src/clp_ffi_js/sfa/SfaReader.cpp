@@ -1,9 +1,14 @@
 #include "SfaReader.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <iterator>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -22,12 +27,14 @@ using clp_ffi_js::StringArrayTsType;
 
 namespace {
 template <typename ValueType>
-auto throw_if_decode_error(ystdlib::error_handling::Result<ValueType> const& decoded_result)
+auto
+throw_if_error(ystdlib::error_handling::Result<ValueType> const& result, std::string_view operation)
         -> void {
-    if (decoded_result.has_error()) {
-        auto const error{decoded_result.error()};
+    if (result.has_error()) {
+        auto const error{result.error()};
         auto const err_msg{fmt::format(
-                "Failed to decode SFA archive: {} - {}.",
+                "Failed to {} SFA archive: {} - {}.",
+                operation,
                 error.category().name(),
                 error.message()
         )};
@@ -36,20 +43,16 @@ auto throw_if_decode_error(ystdlib::error_handling::Result<ValueType> const& dec
     }
 }
 
-auto create_log_event_array(
-        ystdlib::error_handling::Result<clp_s::ffi::sfa::LogEventView> const& decoded_result
-) -> LogEventArrayTsType {
-    throw_if_decode_error(decoded_result);
-
+auto create_log_event_array(clp_s::ffi::sfa::LogEventView events) -> emscripten::val {
     auto decoded_events{emscripten::val::array()};
-    for (auto const& event : decoded_result.value()) {
+    for (auto const& event : events) {
         auto entry{emscripten::val::object()};
         entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
         entry.set("timestamp", emscripten::val(event.get_timestamp()));
         entry.set("message", emscripten::val(event.get_message()));
         decoded_events.call<void>("push", entry);
     }
-    return LogEventArrayTsType{decoded_events};
+    return decoded_events;
 }
 }  // namespace
 
@@ -101,25 +104,105 @@ auto SfaReader::get_file_infos() const -> FileInfoArrayTsType {
     return FileInfoArrayTsType{file_infos};
 }
 
+auto SfaReader::get_filtered_log_event_map() const -> FilteredLogEventMapTsType {
+    if (false == m_filtered_log_event_map.has_value()) {
+        return FilteredLogEventMapTsType{emscripten::val::null()};
+    }
+    return FilteredLogEventMapTsType{emscripten::val::array(*m_filtered_log_event_map)};
+}
+
+void SfaReader::filter_log_events(
+        std::string const& kql_filter,
+        std::string const& log_level_kql_filter
+) {
+    m_filtered_log_event_map.reset();
+    FilteredLogEventsMap filtered_log_event_map;
+
+    if (false == kql_filter.empty()) {
+        auto search_result{m_reader.search(kql_filter, false)};
+        throw_if_error(search_result, "search");
+        filtered_log_event_map.emplace(std::move(search_result.value()));
+    }
+
+    if (false == log_level_kql_filter.empty()) {
+        auto search_result{m_reader.search(log_level_kql_filter, true)};
+        throw_if_error(search_result, "search");
+        if (filtered_log_event_map.has_value()) {
+            std::vector<size_t> intersection;
+            intersection.reserve(
+                    std::min(filtered_log_event_map->size(), search_result.value().size())
+            );
+            std::set_intersection(
+                    filtered_log_event_map->begin(),
+                    filtered_log_event_map->end(),
+                    search_result.value().begin(),
+                    search_result.value().end(),
+                    std::back_inserter(intersection)
+            );
+            filtered_log_event_map = std::move(intersection);
+        } else {
+            filtered_log_event_map.emplace(std::move(search_result.value()));
+        }
+    }
+
+    if (filtered_log_event_map.has_value()
+        && filtered_log_event_map->size() == m_reader.get_event_count())
+    {
+        filtered_log_event_map.reset();
+    }
+    m_filtered_log_event_map = std::move(filtered_log_event_map);
+}
+
 auto SfaReader::decode() -> void {
     auto decoded_result{m_reader.decode()};
-    throw_if_decode_error(decoded_result);
+    throw_if_error(decoded_result, "decode");
 }
 
 auto SfaReader::decode_all() -> LogEventArrayTsType {
     auto decoded_result{m_reader.decode_all()};
-    return create_log_event_array(decoded_result);
+    throw_if_error(decoded_result, "decode");
+    return LogEventArrayTsType{create_log_event_array(decoded_result.value())};
 }
 
-auto SfaReader::decode_range(size_t begin_idx, size_t end_idx) -> LogEventArrayTsType {
-    auto decoded_result{m_reader.decode_range(begin_idx, end_idx)};
-    return create_log_event_array(decoded_result);
+auto SfaReader::decode_range(size_t begin_idx, size_t end_idx, bool use_filter)
+        -> NullableLogEventArrayTsType {
+    if (use_filter && false == m_filtered_log_event_map.has_value()) {
+        return NullableLogEventArrayTsType{emscripten::val::null()};
+    }
+
+    auto const collection_size{
+            use_filter ? m_filtered_log_event_map->size()
+                       : static_cast<size_t>(m_reader.get_event_count())
+    };
+    if (begin_idx > end_idx || end_idx > collection_size) {
+        return NullableLogEventArrayTsType{emscripten::val::null()};
+    }
+
+    if (false == use_filter) {
+        auto decoded_result{m_reader.decode_range(begin_idx, end_idx)};
+        throw_if_error(decoded_result, "decode");
+        return NullableLogEventArrayTsType{create_log_event_array(decoded_result.value())};
+    }
+
+    auto decoded_result{m_reader.decode_all()};
+    throw_if_error(decoded_result, "decode");
+    auto decoded_events{emscripten::val::array()};
+    for (size_t filtered_idx{begin_idx}; filtered_idx < end_idx; ++filtered_idx) {
+        auto const log_event_idx{m_filtered_log_event_map->at(filtered_idx)};
+        auto const& event{decoded_result.value()[log_event_idx]};
+        auto entry{emscripten::val::object()};
+        entry.set("logEventIdx", emscripten::val(event.get_log_event_idx()));
+        entry.set("timestamp", emscripten::val(event.get_timestamp()));
+        entry.set("message", emscripten::val(event.get_message()));
+        decoded_events.call<void>("push", entry);
+    }
+    return NullableLogEventArrayTsType{decoded_events};
 }
 
 auto SfaReader::find_nearest_log_event_by_timestamp(int64_t target_timestamp)
         -> clp_ffi_js::NullableLogEventIdx {
     auto decoded_result{m_reader.decode_all()};
-    throw_if_decode_error(decoded_result);
+    throw_if_error(decoded_result, "decode");
 
     auto const optional_log_event_idx{clp_ffi_js::find_nearest_log_event_by_timestamp(
             decoded_result.value(),
@@ -140,6 +223,10 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
     emscripten::register_type<clp_ffi_js::sfa::LogEventArrayTsType>(
             "Array<{logEventIdx: bigint, timestamp: bigint, message: string}>"
     );
+    emscripten::register_type<clp_ffi_js::sfa::NullableLogEventArrayTsType>(
+            "Array<{logEventIdx: bigint, timestamp: bigint, message: string}> | null"
+    );
+    emscripten::register_type<clp_ffi_js::sfa::FilteredLogEventMapTsType>("number[] | null");
 
     emscripten::class_<clp_ffi_js::sfa::SfaReader>("ClpSfaReader")
             .constructor(
@@ -149,6 +236,12 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
             .function("getEventCount", &clp_ffi_js::sfa::SfaReader::get_event_count)
             .function("getFileNames", &clp_ffi_js::sfa::SfaReader::get_file_names)
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos)
+            .function(
+                    "getFilteredLogEventMap",
+                    &clp_ffi_js::sfa::SfaReader::get_filtered_log_event_map
+            )
+            .function("filterLogEvents", &clp_ffi_js::sfa::SfaReader::filter_log_events)
+            .function("clearQuery", &clp_ffi_js::sfa::SfaReader::clear_query)
             .function("decode", &clp_ffi_js::sfa::SfaReader::decode)
             .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all)
             .function("decodeRange", &clp_ffi_js::sfa::SfaReader::decode_range)
