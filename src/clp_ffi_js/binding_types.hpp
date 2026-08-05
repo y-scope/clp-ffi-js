@@ -8,6 +8,7 @@ namespace clp_ffi_js {
 EMSCRIPTEN_DECLARE_VAL_TYPE(DataArrayTsType);
 
 // JS types used as outputs
+EMSCRIPTEN_DECLARE_VAL_TYPE(NullableLogEventIdx);
 EMSCRIPTEN_DECLARE_VAL_TYPE(StringArrayTsType);
 }  // namespace clp_ffi_js
 

@@ -76,7 +76,6 @@ EMSCRIPTEN_BINDINGS(ClpStreamReader) {
             "utcOffset: bigint}> | null"
     );
     emscripten::register_type<clp_ffi_js::ir::FilteredLogEventMapTsType>("number[] | null");
-    emscripten::register_type<clp_ffi_js::ir::NullableLogEventIdx>("number | null");
     emscripten::class_<clp_ffi_js::ir::StreamReader>("ClpStreamReader")
             .constructor(
                     &clp_ffi_js::ir::StreamReader::create,

@@ -121,6 +121,19 @@ class ClpArchiveReader {
     }
 
     /**
+     * Finds the last log event whose timestamp is less than or equal to `targetTimestamp`.
+     *
+     * If `targetTimestamp` precedes every event, returns the first event's index.
+     *
+     * @param targetTimestamp Epoch timestamp in milliseconds.
+     * @return The zero-based log-event index, or `null` if the archive contains no log events.
+     * @throws {Error} If the reader has been closed or decoding fails.
+     */
+    findNearestLogEventByTimestamp (targetTimestamp: bigint): number | null {
+        return this.#getWasmReader().findNearestLogEventByTimestamp(targetTimestamp);
+    }
+
+    /**
      * Releases the underlying WASM resources. After calling this method, the reader is no longer
      * usable and any subsequent method calls will throw.
      *

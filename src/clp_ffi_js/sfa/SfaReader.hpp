@@ -39,6 +39,9 @@ public:
 
     [[nodiscard]] auto decode_range(size_t begin_idx, size_t end_idx) -> LogEventArrayTsType;
 
+    [[nodiscard]] auto find_nearest_log_event_by_timestamp(int64_t target_timestamp)
+            -> clp_ffi_js::NullableLogEventIdx;
+
 private:
     explicit SfaReader(clp_s::ffi::sfa::ClpArchiveReader&& reader) : m_reader(std::move(reader)) {}
 

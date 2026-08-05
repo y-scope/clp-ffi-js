@@ -14,6 +14,7 @@
 #include <spdlog/spdlog.h>
 
 #include <clp_ffi_js/binding_types.hpp>
+#include <clp_ffi_js/utils.hpp>
 
 namespace clp_ffi_js::sfa {
 using clp_ffi_js::DataArrayTsType;
@@ -21,9 +22,8 @@ using clp_ffi_js::StringArrayTsType;
 
 namespace {
 template <typename ValueType>
-auto throw_if_decode_error(
-        ystdlib::error_handling::Result<ValueType> const& decoded_result
-) -> void {
+auto throw_if_decode_error(ystdlib::error_handling::Result<ValueType> const& decoded_result)
+        -> void {
     if (decoded_result.has_error()) {
         auto const error{decoded_result.error()};
         auto const err_msg{fmt::format(
@@ -115,6 +115,21 @@ auto SfaReader::decode_range(size_t begin_idx, size_t end_idx) -> LogEventArrayT
     auto decoded_result{m_reader.decode_range(begin_idx, end_idx)};
     return create_log_event_array(decoded_result);
 }
+
+auto SfaReader::find_nearest_log_event_by_timestamp(int64_t target_timestamp)
+        -> clp_ffi_js::NullableLogEventIdx {
+    auto decoded_result{m_reader.decode_all()};
+    throw_if_decode_error(decoded_result);
+
+    auto const optional_log_event_idx{clp_ffi_js::find_nearest_log_event_by_timestamp(
+            decoded_result.value(),
+            target_timestamp
+    )};
+    if (false == optional_log_event_idx.has_value()) {
+        return clp_ffi_js::NullableLogEventIdx{emscripten::val::null()};
+    }
+    return clp_ffi_js::NullableLogEventIdx{emscripten::val{optional_log_event_idx.value()}};
+}
 }  // namespace clp_ffi_js::sfa
 
 EMSCRIPTEN_BINDINGS(SfaReader) {
@@ -136,5 +151,9 @@ EMSCRIPTEN_BINDINGS(SfaReader) {
             .function("getFileInfos", &clp_ffi_js::sfa::SfaReader::get_file_infos)
             .function("decode", &clp_ffi_js::sfa::SfaReader::decode)
             .function("decodeAll", &clp_ffi_js::sfa::SfaReader::decode_all)
-            .function("decodeRange", &clp_ffi_js::sfa::SfaReader::decode_range);
+            .function("decodeRange", &clp_ffi_js::sfa::SfaReader::decode_range)
+            .function(
+                    "findNearestLogEventByTimestamp",
+                    &clp_ffi_js::sfa::SfaReader::find_nearest_log_event_by_timestamp
+            );
 }

@@ -247,7 +247,13 @@ auto StructuredIrStreamReader::decode_range(size_t begin_idx, size_t end_idx, bo
 auto StructuredIrStreamReader::find_nearest_log_event_by_timestamp(
         clp::ir::epoch_time_ms_t const target_ts
 ) -> NullableLogEventIdx {
-    return generic_find_nearest_log_event_by_timestamp(*m_deserialized_log_events, target_ts);
+    auto const optional_log_event_idx{
+            clp_ffi_js::find_nearest_log_event_by_timestamp(*m_deserialized_log_events, target_ts)
+    };
+    if (false == optional_log_event_idx.has_value()) {
+        return NullableLogEventIdx{emscripten::val::null()};
+    }
+    return NullableLogEventIdx{emscripten::val{optional_log_event_idx.value()}};
 }
 
 StructuredIrStreamReader::StructuredIrStreamReader(
